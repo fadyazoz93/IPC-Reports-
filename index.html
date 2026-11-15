@@ -1,0 +1,3529 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>نظام تقارير مكافحة العدوى</title>
+  <!-- Favicon / App Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700&display=swap');
+    body { font-family: 'Tajawal', sans-serif; background-color: #f9fafb; }
+    
+    /* Print Styles */
+    @media print {
+      /* 1. Global Resets for Print */
+      @page { margin: 5mm; size: auto; } /* Narrow Margins */
+
+      html, body { 
+        height: auto !important; 
+        overflow: visible !important; 
+        margin: 0 !important; 
+        padding: 0 !important;
+        width: 100% !important;
+        background-color: white !important;
+      }
+      
+      /* 2. Hide UI Navigation, Helpers & Default App Favicon in Print/PDF */
+      .no-print, #sidebar, #mobileMenu, #archive-filter-input, #loading, img[src*="favicon"] { 
+        display: none !important; 
+      }
+
+      /* Custom Right & Left Header Logos in Print/PDF */
+      .report-header-bar {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+      }
+      .report-logo-slot {
+        width: 58px !important;
+        height: 58px !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+      }
+      .report-logo-slot-right {
+        justify-content: flex-start !important;
+      }
+      .report-logo-slot-left {
+        justify-content: flex-end !important;
+      }
+      .report-header-logo {
+        max-width: 58px !important;
+        max-height: 58px !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+        display: block !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* 3. Reset Layout Containers */
+      div.flex.h-screen.overflow-hidden,
+      div.fixed.inset-0.flex.overflow-hidden {
+        position: static !important;
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      
+      #main-content {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+      }
+
+      /* 4. Section Visibility */
+      .page-section:not(.hidden) {
+        display: block !important;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* 5. Page Break Logic */
+      .page-break { 
+          page-break-after: always !important; 
+          break-after: page !important; 
+          display: block; 
+          height: 1px; 
+          width: 100%;
+          border: none;
+          margin: 0;
+          visibility: hidden;
+      }
+      
+      .print-container {
+          page-break-inside: avoid;
+          break-inside: avoid;
+          margin-bottom: 5px; /* Reduced from 10px */
+      }
+      
+      .avoid-break {
+          page-break-inside: avoid;
+          break-inside: avoid;
+      }
+
+      /* 6. Table Optimizations */
+      table { 
+          border-collapse: collapse !important; 
+          width: 100% !important; 
+          font-size: 9pt !important; /* Slightly smaller font for print */
+      }
+      thead { display: table-header-group; } 
+      tr { page-break-inside: avoid; break-inside: avoid; } 
+      th, td { 
+          border: 1px solid #000 !important; 
+          padding: 3px !important; /* Reduced padding */
+          color: #000 !important; 
+      }
+      thead th { 
+          background-color: #f3f4f6 !important; 
+          color: #000 !important;
+          border-bottom: 1px solid #000 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+      }
+      
+      .shadow-md, .shadow, .shadow-lg, .shadow-xl { box-shadow: none !important; }
+      .border { border: 1px solid #ccc !important; }
+    }
+    
+    /* Loader */
+    .loader {
+      border: 4px solid #f3f3f3; border-top: 4px solid #1e3a8a; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Custom Scroll for Checkbox list */
+    .checkbox-list::-webkit-scrollbar { width: 6px; }
+    .checkbox-list::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    .checkbox-list::-webkit-scrollbar-track { background-color: #f1f5f9; }
+
+    /* Report Header Logos (Screen) */
+    .report-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .report-logo-slot {
+      width: 68px;
+      height: 68px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+    }
+    .report-logo-slot-right {
+      justify-content: flex-start;
+    }
+    .report-logo-slot-left {
+      justify-content: flex-end;
+    }
+    .report-header-logo {
+      max-width: 68px;
+      max-height: 68px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+  </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="text-gray-800">
+
+  <!-- Sidebar / Navigation -->
+  <div class="fixed inset-0 flex overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-blue-900 text-white flex-shrink-0 hidden md:flex flex-col no-print transition-all duration-300 shadow-xl" id="sidebar">
+      <div class="p-4 flex items-center justify-center font-bold text-xl border-b border-blue-800 gap-2.5">
+        <img src="/favicon.svg" alt="شعار مكافحة العدوى" class="w-8 h-8 object-contain drop-shadow">
+        <span>مكافحة العدوى</span>
+      </div>
+
+      <!-- Active Center Info Card in Sidebar -->
+      <div class="p-3 bg-blue-950/70 border-b border-blue-800/80 flex flex-col gap-1.5">
+        <div class="text-[11px] text-blue-300 font-bold flex items-center justify-between">
+          <span class="flex items-center gap-1.5"><i class="fas fa-hospital text-blue-400"></i> المركز النشط حالياً:</span>
+          <button onclick="openCenterSwitcherModal()" class="text-[11px] bg-blue-700 hover:bg-blue-600 px-2 py-0.5 rounded text-white transition flex items-center gap-1" title="تغيير / تبديل المركز">
+            <i class="fas fa-sync-alt text-[9px]"></i> تبديل
+          </button>
+        </div>
+        <div id="sidebar-center-name" class="font-bold text-sm text-white truncate" title="اسم المركز">جاري التحميل...</div>
+        <div id="sidebar-center-hospital" class="text-[11px] text-blue-200 truncate">--</div>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto py-4 flex flex-col">
+        <button onclick="nav('dashboard')" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-chart-pie ml-3 w-6"></i> لوحة التحكم</button>
+        <button onclick="nav('dailyReport')" class="nav-daily w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-calendar-week ml-3 w-6"></i> تقرير أسبوعي</button>
+        <button onclick="nav('monthlyReport')" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-calendar-alt ml-3 w-6"></i> تقارير شهرية</button>
+        <button onclick="nav('annualReport')" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-calendar ml-3 w-6"></i> تقرير سنوي</button>
+        <button onclick="nav('archive')" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-box-archive ml-3 w-6"></i> الأرشيف</button>
+        <button onclick="nav('centersPage')" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300 text-cyan-200"><i class="fas fa-hospital ml-3 w-6"></i> المراكز الصحية</button>
+        <button onclick="nav('settings')" class="nav-settings w-full text-right py-3 px-6 hover:bg-blue-800 transition text-yellow-300"><i class="fas fa-cog ml-3 w-6"></i> الإعدادات</button>
+        <div class="mt-auto pt-4 border-t border-blue-800">
+            <button onclick="openCenterSwitcherModal()" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition text-cyan-200"><i class="fas fa-exchange-alt ml-3 w-6"></i> تبديل المركز</button>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed w-full bg-blue-900 text-white z-50 flex justify-between items-center p-3 px-4 no-print shadow-md">
+       <span class="font-bold flex items-center gap-2">
+         <img src="/favicon.svg" alt="شعار مكافحة العدوى" class="w-7 h-7 object-contain drop-shadow">
+         <span class="truncate max-w-[150px]" id="mobile-header-title">مكافحة العدوى</span>
+       </span>
+       <div class="flex items-center gap-2">
+         <button onclick="openCenterSwitcherModal()" class="text-xs bg-blue-800 px-2 py-1 rounded text-blue-200 hover:text-white flex items-center gap-1">
+           <i class="fas fa-hospital"></i> <span id="mobile-badge-center">المركز</span>
+         </button>
+         <button onclick="document.getElementById('mobileMenu').classList.toggle('hidden')"><i class="fas fa-bars text-lg"></i></button>
+       </div>
+    </div>
+    <div id="mobileMenu" class="hidden fixed top-14 left-0 w-full bg-blue-800 text-white z-40 no-print shadow-lg">
+        <button onclick="nav('dashboard')" class="block w-full text-right p-4 border-b border-blue-700">لوحة التحكم</button>
+        <button onclick="nav('dailyReport')" class="nav-daily block w-full text-right p-4 border-b border-blue-700">تقرير أسبوعي</button>
+        <button onclick="nav('monthlyReport')" class="block w-full text-right p-4 border-b border-blue-700">تقارير شهرية</button>
+        <button onclick="nav('annualReport')" class="block w-full text-right p-4 border-b border-blue-700">تقرير سنوي</button>
+        <button onclick="nav('archive')" class="block w-full text-right p-4 border-b border-blue-700">الأرشيف</button>
+        <button onclick="nav('centersPage')" class="block w-full text-right p-4 border-b border-blue-700 text-cyan-200">المراكز الصحية</button>
+        <button onclick="nav('settings')" class="nav-settings block w-full text-right p-4 border-b border-blue-700 text-yellow-300">الإعدادات</button>
+        <button onclick="openCenterSwitcherModal()" class="block w-full text-right p-4 text-cyan-200">تبديل المركز</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-auto bg-gray-50 pt-16 md:pt-0" id="main-content">
+      
+      <!-- Top Center Status Bar (Active Center Indicator & Quick Actions) -->
+      <div id="topbar-center-status" class="bg-white border-b border-gray-200 px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-sm no-print">
+        <div class="flex items-center gap-3">
+          <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-800 border border-blue-100 flex items-center justify-center font-bold text-base shadow-sm">
+            <i class="fas fa-hospital-user"></i>
+          </span>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-500 font-bold">المركز النشط:</span>
+              <span id="topbar-center-name" class="font-bold text-blue-900 text-sm md:text-base">--</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                <span>متصل</span>
+              </span>
+            </div>
+            <div id="topbar-center-hospital" class="text-xs text-gray-500 font-medium">--</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mr-auto">
+          <button onclick="openCenterSwitcherModal()" class="bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-200 transition flex items-center gap-1.5 shadow-sm">
+            <i class="fas fa-exchange-alt"></i>
+            <span>تبديل المركز</span>
+          </button>
+          <button onclick="openAddCenterModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+            <i class="fas fa-plus"></i>
+            <span>إضافة مركز جديد</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div id="loading" class="hidden fixed inset-0 bg-black bg-opacity-30 z-[100] flex justify-center items-center">
+        <div class="bg-white p-5 rounded-lg shadow-lg flex flex-col items-center">
+          <div class="loader mb-2"></div>
+          <p class="text-blue-900 font-bold">جاري المعالجة...</p>
+        </div>
+      </div>
+
+
+
+      <!-- Center Switcher Modal -->
+      <div id="center-switcher-modal" class="hidden fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-[210] flex justify-center items-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 text-right border-t-4 border-blue-600">
+          <div class="flex items-center justify-between border-b pb-3 mb-4">
+            <h3 class="font-bold text-lg text-blue-900 flex items-center gap-2">
+              <i class="fas fa-exchange-alt text-blue-600"></i> تبديل المركز الصحي
+            </h3>
+            <button onclick="closeCenterSwitcherModal()" class="text-gray-400 hover:text-gray-600 text-lg"><i class="fas fa-times"></i></button>
+          </div>
+          <p class="text-xs text-gray-600 mb-4">اختر المركز الذي ترغب في عرض بياناته وتقاريره وإحصائياته:</p>
+          <div id="switcher-centers-list" class="flex flex-col gap-2 max-h-72 overflow-y-auto mb-4 p-1">
+            <!-- Dynamic centers list -->
+          </div>
+          <div class="flex items-center justify-between pt-3 border-t">
+            <button onclick="openAddCenterModal()" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+              <i class="fas fa-plus"></i> إضافة مركز جديد
+            </button>
+            <button onclick="closeCenterSwitcherModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1.5 rounded-lg text-xs font-bold transition">إغلاق</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add New Center Modal -->
+      <div id="add-center-modal" class="hidden fixed inset-0 bg-gray-900/85 backdrop-blur-sm z-[220] flex justify-center items-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-right border-t-4 border-emerald-500">
+          <div class="flex items-center justify-between border-b pb-3 mb-4">
+            <h3 class="font-bold text-lg text-emerald-900 flex items-center gap-2">
+              <i class="fas fa-plus-circle text-emerald-600"></i> إضافة مركز صحي جديد
+            </h3>
+            <button onclick="closeAddCenterModal()" class="text-gray-400 hover:text-gray-600 text-lg"><i class="fas fa-times"></i></button>
+          </div>
+          
+          <div class="mb-5">
+            <label class="block text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+              <i class="fas fa-hospital text-emerald-600"></i>
+              <span>اسم المركز / المستشفى:</span>
+              <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="add-center-name-input" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" placeholder="أدخل اسم المركز أو المستشفى (مثال: مركز صحة الأسرة بالمنيا)">
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800 mb-5 leading-relaxed">
+            <i class="fas fa-info-circle text-blue-600 ml-1"></i>
+            سيتم تهيئة هذا المركز تلقائياً بإعدادات وإجراءات وأقسام مكافحة العدوى الافتراضية، ويمكنك تخصيصها لاحقاً من صفحة الإعدادات.
+          </div>
+
+          <div id="add-center-error-msg" class="hidden mb-4 p-2 bg-red-100 border border-red-300 rounded text-xs text-red-700"></div>
+
+          <div class="flex items-center justify-end gap-2">
+            <button type="button" onclick="closeAddCenterModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold transition">إلغاء</button>
+            <button type="button" onclick="confirmAddCenter()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5">
+              <i class="fas fa-save"></i> حفظ وإضافة المركز
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Center Confirmation Modal -->
+      <div id="delete-center-modal" class="hidden fixed inset-0 bg-gray-900/85 backdrop-blur-sm z-[230] flex justify-center items-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-right border-t-4 border-red-600">
+          <div class="flex items-center gap-3 text-red-600 mb-3">
+            <span class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-xl font-bold flex-shrink-0">
+              <i class="fas fa-exclamation-triangle"></i>
+            </span>
+            <div>
+              <h3 class="font-bold text-lg text-red-900">حذف المركز وجميع بياناته</h3>
+              <p class="text-xs text-red-600 font-semibold">تحذير أمني شديد — هذا الإجراء لا يمكن التراجع عنه</p>
+            </div>
+          </div>
+
+          <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-xs text-red-800 mb-4 leading-relaxed">
+            <p class="font-bold mb-2">أنت على وشك حذف المركز التالي:</p>
+            <p class="text-sm font-bold text-red-900 mb-2 p-2 bg-white rounded border border-red-200" id="delete-center-name-display">--</p>
+            <p class="text-[11px] text-red-700">
+              ⚠️ سيتم حذف المركز نهائياً ومسح جميع التقارير اليومية والشهرية والسنوية والأرشيف والتقييمات المسجلة لهذا المركز من قاعدة البيانات فوراً.
+            </p>
+          </div>
+
+          <div id="delete-center-error-msg" class="hidden mb-3 p-2 bg-red-100 border border-red-300 rounded text-xs text-red-700"></div>
+
+          <div class="flex items-center justify-end gap-2">
+            <button type="button" onclick="closeDeleteCenterModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold transition">إلغاء</button>
+            <button type="button" onclick="executeDeleteCenter()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5">
+              <i class="fas fa-trash-alt"></i> نعم، حذف المركز وجميع بياناته
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Turso Database Migration / Import Modal -->
+      <div id="turso-migration-modal" class="hidden fixed inset-0 bg-gray-900/85 backdrop-blur-sm z-[235] flex justify-center items-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6 text-right border-t-4 border-indigo-600 my-8">
+          
+          <div class="flex items-center justify-between border-b pb-3 mb-4">
+            <div class="flex items-center gap-2.5">
+              <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-xl font-bold flex-shrink-0">
+                <i class="fas fa-database"></i>
+              </span>
+              <div>
+                <h3 class="font-bold text-lg text-gray-900">استيراد البيانات من قاعدة بيانات Turso سابقة</h3>
+                <p class="text-xs text-gray-500">نقل السجلات السابقة والإعدادات وإضافتها إلى المركز في القاعدة الحالية</p>
+              </div>
+            </div>
+            <button onclick="closeTursoMigrationModal()" class="text-gray-400 hover:text-gray-600 text-lg"><i class="fas fa-times"></i></button>
+          </div>
+
+          <!-- Step 1: Database Credentials -->
+          <div class="space-y-4 mb-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1.5">
+                <i class="fas fa-link text-indigo-600"></i>
+                <span>رابط قاعدة بيانات Turso السابقة (Database URL):</span>
+                <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="turso-mig-url" dir="ltr" class="w-full border border-gray-300 p-2.5 rounded-lg text-xs focus:outline-none focus:border-indigo-500 font-mono" placeholder="libsql://your-db-name.turso.io أو https://...">
+              <p class="text-[11px] text-gray-500 mt-1">الرابط من لوحة تحكم Turso أو عبر أمر `turso db show &lt;db-name&gt;`</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1.5">
+                <i class="fas fa-key text-yellow-500"></i>
+                <span>رمز المصادقة (Auth Token):</span>
+                <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <input type="password" id="turso-mig-token" dir="ltr" class="w-full border border-gray-300 p-2.5 rounded-lg text-xs focus:outline-none focus:border-indigo-500 font-mono pl-10" placeholder="eyJhbGciOi...">
+                <button type="button" onclick="toggleTursoTokenVisibility()" class="absolute left-3 top-2.5 text-gray-400 hover:text-gray-600 text-xs">
+                  <i id="turso-token-eye" class="fas fa-eye"></i>
+                </button>
+              </div>
+              <p class="text-[11px] text-gray-500 mt-1">يتم إنشاؤه عبر أمر `turso db tokens create &lt;db-name&gt;`</p>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <button type="button" id="btn-test-turso-conn" onclick="testTursoMigrationConnection()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                <i class="fas fa-plug"></i> فحص الاتصال وقراءة السجلات
+              </button>
+              <span id="turso-test-loading" class="hidden text-xs text-indigo-600 font-bold items-center gap-1.5">
+                <i class="fas fa-spinner fa-spin"></i> جاري فحص الاتصال...
+              </span>
+            </div>
+          </div>
+
+          <!-- Connection Test Feedback / Detected Summary -->
+          <div id="turso-mig-preview-box" class="hidden mb-4 p-3.5 rounded-xl border text-xs leading-relaxed transition-all"></div>
+
+          <!-- Step 2: Target Center Assignment -->
+          <div class="border-t pt-4 mb-4">
+            <h4 class="font-bold text-xs text-gray-800 mb-2 flex items-center gap-1.5">
+              <i class="fas fa-hospital-user text-blue-600"></i> تخصيص السجلات المستوردة للمركز:
+            </h4>
+            
+            <div class="space-y-2 bg-gray-50 p-3 rounded-xl border border-gray-200">
+              <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-800">
+                <input type="radio" name="turso_mig_target" value="current" checked onchange="onTursoTargetCenterChange()" class="text-indigo-600 focus:ring-indigo-500">
+                <span>إضافة وتعيين السجلات للمركز النشط حالياً:</span>
+                <strong class="text-blue-900 bg-blue-100 px-2 py-0.5 rounded text-[11px]" id="turso-mig-current-center-label">--</strong>
+              </label>
+
+              <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-800">
+                <input type="radio" name="turso_mig_target" value="new" onchange="onTursoTargetCenterChange()" class="text-indigo-600 focus:ring-indigo-500">
+                <span>إنشاء مركز صحي جديد وتخزين السجلات فيه</span>
+              </label>
+
+              <div id="turso-mig-new-center-wrap" class="hidden mr-6 mt-1.5">
+                <input type="text" id="turso-mig-new-center-input" class="w-full border border-gray-300 p-2 rounded-lg text-xs focus:outline-none focus:border-indigo-500" placeholder="أدخل اسم المركز الجديد (أو اتركه فارغاً للاعتماد على الاسم المكتشف)">
+              </div>
+
+              <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-800">
+                <input type="radio" name="turso_mig_target" value="auto" onchange="onTursoTargetCenterChange()" class="text-indigo-600 focus:ring-indigo-500">
+                <span>الحفاظ على أسماء المراكز المسجلة في القاعدة السابقة تلقائياً</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Step 3: Migration Options -->
+          <div class="border-t pt-3 mb-5 space-y-2 text-xs">
+            <label class="flex items-start gap-2 cursor-pointer text-gray-800">
+              <input type="checkbox" id="turso-mig-import-settings" checked class="mt-0.5 text-indigo-600 rounded">
+              <span>استيراد وتحديث إعدادات وأقسام وإجراءات مكافحة العدوى الخاصة بالمركز</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-pointer text-gray-800">
+              <input type="checkbox" id="turso-mig-replace-existing" class="mt-0.5 text-red-600 rounded">
+              <span class="text-red-700">استبدال سجلات المركز السابقة (حذف القديم قبل الاستيراد). افتراضياً غير محدد للدمج وتخطي المكرر.</span>
+            </label>
+          </div>
+
+          <div id="turso-mig-error-box" class="hidden mb-4 p-2.5 bg-red-100 border border-red-300 rounded-lg text-xs text-red-700 font-medium"></div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-between border-t pt-3">
+            <button type="button" onclick="closeTursoMigrationModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold transition">إلغاء</button>
+            <button type="button" id="btn-start-turso-migration" onclick="executeTursoMigration()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold transition shadow-lg flex items-center gap-2">
+              <i class="fas fa-file-import"></i> بدء استيراد ونقل السجلات
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGES -->
+
+      <!-- 1. DASHBOARD -->
+      <section id="dashboard" class="page-section p-6">
+        <h2 class="text-2xl font-bold mb-6 text-blue-900 border-b border-gray-200 pb-2">لوحة التحكم (Dashboard)</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 border-r-4 border-r-blue-600">
+            <h3 class="text-gray-500 text-sm font-bold">متوسط الالتزام هذا الأسبوع</h3>
+            <p class="text-3xl font-bold text-blue-700 mt-2" id="dash-daily-val">--%</p>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 border-r-4 border-r-emerald-500">
+            <h3 class="text-gray-500 text-sm font-bold">متوسط الالتزام هذا الشهر</h3>
+            <p class="text-3xl font-bold text-emerald-600 mt-2" id="dash-monthly-val">--%</p>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 border-r-4 border-r-purple-500">
+            <h3 class="text-gray-500 text-sm font-bold">متوسط الالتزام السنوي</h3>
+            <p class="text-3xl font-bold text-purple-600 mt-2" id="dash-yearly-val">--%</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <h4 class="font-bold mb-4 text-blue-900">أداء الأقسام (شهري)</h4>
+            <canvas id="deptChart"></canvas>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <h4 class="font-bold mb-4 text-blue-900">التطور الزمني للالتزام</h4>
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+        
+        <div class="mt-6 text-left no-print">
+          <button onclick="window.print()" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded shadow transition">
+            <i class="fas fa-print"></i> طباعة / حفظ PDF
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. SETTINGS -->
+      <section id="settings" class="page-section hidden p-6">
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-6 border-b border-gray-200 pb-2">
+            <div>
+              <h2 class="text-2xl font-bold text-blue-900">إعدادات النظام</h2>
+              <div class="text-xs text-blue-800 font-semibold mt-1 flex items-center gap-1.5">
+                <i class="fas fa-hospital text-blue-600"></i>
+                <span>تعديل إعدادات مركز:</span>
+                <span id="settings-center-badge" class="font-bold text-blue-900 bg-blue-100 px-2.5 py-0.5 rounded-full">--</span>
+              </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="saveSettings()" class="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800 transition font-bold text-sm">حفظ التغييرات</button>
+            </div>
+        </div>
+        <div id="settings-save-banner" class="hidden mb-4 p-3 rounded border text-sm font-bold flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i id="settings-save-banner-icon" class="fas fa-check-circle"></i>
+                <span id="settings-save-banner-text"></span>
+            </div>
+            <button type="button" onclick="document.getElementById('settings-save-banner').classList.add('hidden')" class="text-gray-500 hover:text-gray-800 px-2">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow-sm border border-gray-200 mb-6">
+            <h3 class="font-bold mb-4 text-blue-900">إعدادات عامة</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-700">اسم المستشفى (ترويسة التقارير)</label>
+                    <input type="text" id="set-hospital-name" oninput="updateLiveHeaderTitlePreview()" class="w-full border border-gray-500 p-2 rounded bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-700">توقيع مشرف مكافحة العدوى</label>
+                    <input type="text" id="set-team-signature" class="w-full border border-gray-500 p-2 rounded bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400" placeholder="مشرف مكافحة العدوى">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-700">توقيع المدير</label>
+                    <input type="text" id="set-manager-signature" class="w-full border border-gray-500 p-2 rounded bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400" placeholder="مدير عام المستشفى">
+                </div>
+            </div>
+        </div>
+
+        <!-- Header Logos Configuration (Google Drive Links) -->
+        <div class="bg-white p-4 rounded shadow-sm border border-gray-200 mb-6">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <h3 class="font-bold text-blue-900 flex items-center gap-2">
+                    <i class="fas fa-images text-blue-700"></i> شعارات ترويسة التقارير (Google Drive)
+                </h3>
+                <span class="text-xs text-blue-800 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded">
+                    تظهر في الترويسة على الشاشة وعند طباعة PDF
+                </span>
+            </div>
+            <p class="text-xs text-gray-500 mb-4">
+                الصق رابط مشاركة الصورة من جوجل درايف (تأكد من ضبط صلاحية الملف في Google Drive على: <strong>أي شخص لديه الرابط / Anyone with the link</strong>).
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
+                <!-- Far Right Logo -->
+                <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-sm font-bold text-gray-800">رابط اللوجو أقصى اليمين</label>
+                        <button type="button" onclick="clearLogoInput('right')" class="text-xs text-red-600 hover:text-red-800 font-bold">
+                            <i class="fas fa-times-circle"></i> مسح
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-16 h-16 rounded border border-dashed border-gray-300 bg-white flex items-center justify-center shrink-0 p-1 overflow-hidden">
+                            <img id="preview-right-logo" alt="لوجو اليمين" class="hidden max-w-full max-h-full object-contain" onload="onPreviewLogoLoad('right')" onerror="onPreviewLogoError('right')">
+                            <i id="placeholder-right-logo" class="fas fa-image text-gray-300 text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <input type="url" id="set-right-logo" dir="ltr" oninput="updateSettingsLogoPreview('right')" placeholder="https://drive.google.com/file/d/.../view?usp=sharing" class="w-full border border-gray-500 p-2 rounded bg-gray-600 text-white placeholder-gray-300 text-xs focus:outline-none focus:border-blue-400">
+                            <p id="status-right-logo" class="text-[11px] text-gray-500 mt-1">اختياري — يظهر أقصى يمين الترويسة</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Far Left Logo -->
+                <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-sm font-bold text-gray-800">رابط اللوجو أقصى اليسار</label>
+                        <button type="button" onclick="clearLogoInput('left')" class="text-xs text-red-600 hover:text-red-800 font-bold">
+                            <i class="fas fa-times-circle"></i> مسح
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-16 h-16 rounded border border-dashed border-gray-300 bg-white flex items-center justify-center shrink-0 p-1 overflow-hidden">
+                            <img id="preview-left-logo" alt="لوجو اليسار" class="hidden max-w-full max-h-full object-contain" onload="onPreviewLogoLoad('left')" onerror="onPreviewLogoError('left')">
+                            <i id="placeholder-left-logo" class="fas fa-image text-gray-300 text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <input type="url" id="set-left-logo" dir="ltr" oninput="updateSettingsLogoPreview('left')" placeholder="https://drive.google.com/file/d/.../view?usp=sharing" class="w-full border border-gray-500 p-2 rounded bg-gray-600 text-white placeholder-gray-300 text-xs focus:outline-none focus:border-blue-400">
+                            <p id="status-left-logo" class="text-[11px] text-gray-500 mt-1">اختياري — يظهر أقصى يسار الترويسة</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Header Simulation -->
+            <div class="border border-gray-300 rounded-lg p-4 bg-white">
+                <div class="text-[11px] font-bold text-gray-400 mb-2">معاينة شكل ترويسة التقرير (Header Preview):</div>
+                <div class="report-header-bar border-b-2 border-blue-900 pb-2">
+                    <div id="live-header-right-slot" class="report-logo-slot report-logo-slot-right"></div>
+                    <div class="text-center flex-1 px-2">
+                        <h4 id="live-header-hosp-name" class="text-base md:text-lg font-bold text-blue-900">مستشفى المنيا الجامعى للعيون</h4>
+                        <p class="text-sm font-bold text-blue-800">وحدة مكافحة العدوى</p>
+                        <p class="text-xs text-gray-500 mt-0.5">نموذج ترويسة التقرير المطبوع</p>
+                    </div>
+                    <div id="live-header-left-slot" class="report-logo-slot report-logo-slot-left"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+           <!-- Depts -->
+           <div class="bg-white p-4 rounded shadow-sm border border-gray-200">
+             <div class="flex items-center justify-between mb-2">
+               <h3 class="font-bold text-blue-900">الأقسام</h3>
+             </div>
+             <textarea id="set-depts" class="w-full border border-gray-500 p-2 rounded h-32 bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400" placeholder="كل قسم في سطر جديد"></textarea>
+           </div>
+           <!-- Periods -->
+           <div class="bg-white p-4 rounded shadow-sm border border-gray-200">
+             <div class="flex items-center justify-between mb-2">
+               <h3 class="font-bold text-blue-900">فترات المرور</h3>
+             </div>
+             <textarea id="set-periods" class="w-full border border-gray-500 p-2 rounded h-32 bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400" placeholder="كل فترة في سطر جديد"></textarea>
+           </div>
+           <!-- Inspectors -->
+           <div class="bg-white p-4 rounded shadow-sm border border-gray-200">
+             <div class="flex items-center justify-between mb-2">
+               <h3 class="font-bold text-blue-900">القائمين بالمرور</h3>
+             </div>
+             <textarea id="set-inspectors" class="w-full border border-gray-500 p-2 rounded h-32 bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400" placeholder="كل اسم في سطر جديد"></textarea>
+           </div>
+           <!-- Implementers (المسؤولين عن التنفيذ) -->
+           <div class="bg-white p-4 rounded shadow-sm border border-gray-200 border-r-4 border-r-blue-600">
+             <div class="flex items-center justify-between mb-2">
+               <h3 class="font-bold text-blue-900 flex items-center gap-1.5">
+                 <i class="fas fa-user-check text-blue-600"></i>
+                 <span>المسؤولين عن التنفيذ</span>
+               </h3>
+             </div>
+             <textarea id="set-implementers" class="w-full border border-gray-500 p-2 rounded h-32 bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400" placeholder="كل مسؤول في سطر جديد"></textarea>
+           </div>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow-sm border border-gray-200 mt-6 mb-6">
+            <h3 class="font-bold mb-2 text-blue-900 flex items-center gap-2">
+                <i class="fas fa-clipboard-list text-blue-600"></i>
+                <span>الملاحظات والتوصيات الأسبوعية</span>
+            </h3>
+            <p class="text-xs text-gray-500 mb-3">قائمة الملاحظات والتوصيات الافتراضية (تظهر كخيارات Checkbox في التقرير الأسبوعي للمرور السريع)</p>
+            <table class="w-full text-sm text-right border border-gray-200">
+                <thead class="bg-blue-50 text-blue-900">
+                    <tr>
+                        <th class="p-2.5 border border-gray-200 w-1/2">الملاحظة</th>
+                        <th class="p-2.5 border border-gray-200 w-1/2">التوصية</th>
+                    </tr>
+                </thead>
+                <tbody id="proc-table-body">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+            
+            <div class="flex flex-wrap justify-between items-start mt-4 border-t border-gray-100 pt-4 gap-3">
+               <button onclick="addProcRow()" class="text-blue-700 text-sm font-bold hover:underline">+ إضافة ملاحظة وتوصية (يدوي)</button>
+               
+               <!-- Bulk Import Box -->
+               <div class="bg-gray-100 p-3 rounded border border-gray-300 w-full md:w-1/2 mt-2 md:mt-0">
+                  <h4 class="font-bold text-xs text-gray-700 mb-1 flex items-center gap-1">
+                      <i class="fas fa-file-excel text-green-600"></i> نسخ سريع من إكسيل (Bulk Import)
+                  </h4>
+                  <p class="text-[10px] text-gray-500 mb-2">انسخ الأعمدة من إكسيل بالترتيب: <strong>الملاحظة | التوصية</strong></p>
+                  <textarea id="bulk-proc-input" class="w-full h-20 text-xs p-2 border border-gray-300 rounded focus:border-blue-500 outline-none" placeholder="الصق البيانات هنا..."></textarea>
+                  <button onclick="importBulkProcedures()" class="mt-2 bg-green-600 text-white text-xs px-3 py-1 rounded hover:bg-green-700 transition">استيراد البيانات</button>
+               </div>
+            </div>
+        </div>
+
+        <!-- Database Optimization & Cloud Shielding Card -->
+        <div class="bg-gradient-to-r from-blue-900 to-indigo-950 text-white p-5 rounded-lg shadow-md mb-6 border border-blue-800">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-microchip text-emerald-400 text-lg"></i>
+                    <h3 class="font-bold text-base text-white">ترشيد استهلاك قاعدة البيانات (Database Optimization)</h3>
+                </div>
+                <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> درع الترشيد نشط
+                </span>
+            </div>
+            <p class="text-xs text-blue-200 mb-4 leading-relaxed">
+                النظام محمي بالكامل ضد استنزاف القراءات السحابية (Row Reads Exhaustion): فهارس إلزامية (Mandatory Indexes)، نمط الكاش العشوائي (In-Memory Cache-Aside)، حظر تام لاستعلامات SELECT *، وتقييد حجم الاستعلامات (Query Limits).
+            </p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div class="bg-white/10 p-2.5 rounded border border-white/10">
+                    <span class="text-blue-300 block mb-1">الفهارس الإلزامية</span>
+                    <strong class="text-emerald-300 font-bold">7 فهارس نشطة</strong>
+                </div>
+                <div class="bg-white/10 p-2.5 rounded border border-white/10">
+                    <span class="text-blue-300 block mb-1">طبقة الكاش السحابي</span>
+                    <strong class="text-white font-bold" id="cache-hit-rate">In-Memory (0 Reads)</strong>
+                </div>
+                <div class="bg-white/10 p-2.5 rounded border border-white/10">
+                    <span class="text-blue-300 block mb-1">القراءات الموفرة</span>
+                    <strong class="text-emerald-300 font-bold" id="cache-saved-reads">ترشيد لحظي</strong>
+                </div>
+                <div class="bg-white/10 p-2.5 rounded border border-white/10 flex items-center justify-center">
+                    <button onclick="refreshCacheMetricsUI()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition text-xs font-bold flex items-center gap-1">
+                        <i class="fas fa-sync-alt"></i> فحص الكاش
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Turso Migration Card -->
+        <div class="bg-gradient-to-r from-indigo-900 to-blue-900 text-white p-6 rounded-lg shadow-sm border border-indigo-700 mb-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h3 class="font-bold text-lg text-indigo-100 flex items-center gap-2 mb-1">
+                        <i class="fas fa-database text-yellow-400"></i> استيراد وترحيل البيانات من قاعدة بيانات Turso سابقة
+                    </h3>
+                    <p class="text-xs text-indigo-200 leading-relaxed max-w-2xl">
+                        هل لديك قاعدة بيانات Turso سابقة تحتوي على سجلات وتقارير المركز؟ يمكنك الآن إدخال رابط القاعدة ورمز المصادقة لنقل جميع التقارير والإعدادات إلى هذه المنظومة تلقائياً مع الحفاظ على البيانات.
+                    </p>
+                </div>
+                <button onclick="openTursoMigrationModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow transition flex items-center gap-2 whitespace-nowrap self-start md:self-center">
+                    <i class="fas fa-file-import"></i> بدء استيراد السجلات السابقة
+                </button>
+            </div>
+        </div>
+      </section>
+
+      <!-- 3. WEEKLY REPORT FORM -->
+      <section id="dailyReport" class="page-section hidden p-6">
+        <h2 class="text-2xl font-bold mb-6 text-blue-900 border-b border-gray-200 pb-2 no-print flex items-center gap-2">
+            <i class="fas fa-calendar-week text-blue-600"></i>
+            <span>إدخال تقرير أسبوعي</span>
+        </h2>
+        
+        <!-- Input Form -->
+        <div id="daily-form-container" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8 no-print">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-700">تاريخ التقرير الأسبوعي</label>
+                    <input type="date" id="daily-date" class="w-full border border-gray-300 p-2 rounded bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-700">الفترة</label>
+                    <select id="daily-period" class="w-full border border-gray-300 p-2 rounded bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-700">القسم</label>
+                    <select id="daily-dept" class="w-full border border-gray-300 p-2 rounded bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition" onchange="renderDailyProcedures(this.value)"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-700">القائم بالمرور</label>
+                    <select id="daily-inspector" class="w-full border border-gray-300 p-2 rounded bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition"></select>
+                </div>
+
+                <!-- المسؤول عن التنفيذ (Checkboxes) -->
+                <div class="col-span-1 md:col-span-2 lg:col-span-4 bg-blue-50/60 p-4 rounded-xl border border-blue-200 mt-2">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <label class="block text-sm font-bold text-blue-900 flex items-center gap-2">
+                            <i class="fas fa-user-check text-blue-600"></i>
+                            <span>المسؤول عن التنفيذ (اختر من القائمة المحددة مسبقاً في الإعدادات):</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <span class="text-[11px] text-gray-500 font-medium">يمكن اختيار أكثر من مسؤول بالتحديد</span>
+                    </div>
+                    <div id="weekly-implementers-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 bg-white p-3 rounded-lg border border-gray-200 max-h-44 overflow-y-auto checkbox-list">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                    <input type="hidden" id="daily-supervisor" value="">
+                </div>
+            </div>
+
+            <div class="border-t border-gray-200 pt-5 mt-4">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div>
+                        <h3 class="font-bold text-base text-blue-900 flex items-center gap-2">
+                            <i class="fas fa-clipboard-check text-blue-600"></i>
+                            <span>الملاحظات المرصودة خلال الأسبوع:</span>
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-0.5">حدد الملاحظات التي تم رصدها في هذا القسم لاحتساب المخالفات وتضمين التوصيات المقابلة لها مع ثبات الملاحظة والتوصية</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="toggleQuickAddObsModal(true)" class="text-xs text-white bg-blue-700 hover:bg-blue-800 px-3.5 py-1.5 rounded-lg shadow-sm font-bold transition flex items-center gap-1.5">
+                            <i class="fas fa-plus-circle"></i> إضافة ملاحظة جديدة
+                        </button>
+                        <button type="button" onclick="clearAllViolationCheckboxes()" class="text-xs text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg border font-medium transition">
+                            <i class="fas fa-times"></i> إلغاء تحديد الكل
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Add Observation Inline Panel -->
+                <div id="quick-add-obs-panel" class="hidden mb-4 p-4 bg-blue-50/80 border border-blue-200 rounded-xl shadow-sm transition-all">
+                    <div class="flex items-center justify-between mb-3 border-b border-blue-200/60 pb-2">
+                        <h4 class="font-bold text-sm text-blue-900 flex items-center gap-1.5">
+                            <i class="fas fa-plus-circle text-blue-600"></i>
+                            <span>إضافة ملاحظة وتوصية جديدة إلى القائمة</span>
+                        </h4>
+                        <button type="button" onclick="toggleQuickAddObsModal(false)" class="text-gray-400 hover:text-gray-600 text-sm">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">الملاحظة (المخالفة المرصودة) <span class="text-red-500">*</span></label>
+                            <input type="text" id="quick-obs-note" placeholder="اكتب نص الملاحظة هنا..." class="w-full text-xs border border-gray-300 p-2.5 rounded-lg bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">التوصية (الإجراء التصحيحي المقترح) <span class="text-red-500">*</span></label>
+                            <input type="text" id="quick-obs-rec" placeholder="اكتب التوصية المعتمدة هنا..." class="w-full text-xs border border-gray-300 p-2.5 rounded-lg bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <label class="flex items-center gap-2 cursor-pointer text-xs text-gray-700 select-none">
+                            <input type="checkbox" id="quick-obs-auto-check" checked class="w-4 h-4 accent-blue-600 rounded">
+                            <span>تحديد هذه الملاحظة كمخالفة مرصودة في التقرير الحالي فور إضافتها</span>
+                        </label>
+                        <div class="flex items-center gap-2 mr-auto">
+                            <button type="button" onclick="toggleQuickAddObsModal(false)" class="text-xs text-gray-600 hover:text-gray-800 bg-white border border-gray-300 px-3.5 py-1.5 rounded-lg transition">إلغاء</button>
+                            <button type="button" onclick="saveQuickObservation()" class="text-xs text-white bg-blue-700 hover:bg-blue-800 px-4 py-1.5 rounded-lg font-bold shadow-sm transition flex items-center gap-1.5">
+                                <i class="fas fa-check"></i> إضافة وحفظ بالقائمة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="procedures-list" class="space-y-2.5">
+                    <!-- Checkboxes generated via JS -->
+                </div>
+            </div>
+
+            <div class="mt-8 text-left">
+                <button onclick="submitDailyReport()" class="bg-emerald-600 text-white px-6 py-2 rounded shadow hover:bg-emerald-700 transition font-bold flex items-center gap-2 ml-auto">
+                    <i class="fas fa-save"></i> حفظ وعرض التقرير الأسبوعي
+                </button>
+            </div>
+        </div>
+
+        <!-- Generated Report View (Hidden initially) -->
+        <div id="daily-result-view" class="hidden bg-white p-8 max-w-4xl mx-auto border border-gray-300 shadow-lg print-only">
+            <div class="report-header-bar border-b-2 border-blue-900 pb-2 mb-3 avoid-break">
+                <div id="daily-right-logo-slot" class="report-logo-slot report-logo-slot-right"></div>
+                <div class="text-center flex-1 px-2">
+                    <h1 id="daily-hosp-name" class="text-lg font-bold text-blue-900">مستشفى المنيا الجامعى للعيون</h1>
+                    <h2 class="text-base font-bold text-blue-800">وحدة مكافحة العدوى</h2>
+                    <p class="text-gray-600 text-xs mt-0.5">تقرير مرور أسبوعي</p>
+                </div>
+                <div id="daily-left-logo-slot" class="report-logo-slot report-logo-slot-left"></div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-y-1 gap-x-8 mb-4 text-xs avoid-break">
+                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">تاريخ التقرير الأسبوعي:</span> <span id="res-date" class="text-gray-800"></span></p>
+                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">القسم:</span> <span id="res-dept" class="text-gray-800"></span></p>
+                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">الفترة:</span> <span id="res-period" class="text-gray-800"></span></p>
+                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">القائم بالمرور:</span> <span id="res-inspector" class="text-gray-800"></span></p>
+                <div class="border-b border-gray-100 py-1 col-span-2 flex items-start gap-2">
+                    <span class="font-bold text-blue-900 shrink-0">المسؤول عن التنفيذ:</span>
+                    <div id="res-supervisor" class="text-gray-800 flex-1"></div>
+                </div>
+            </div>
+
+            <h3 class="font-bold text-base mb-2 text-blue-900 border-b border-gray-300 pb-1 avoid-break">المخالفات والتوصيات</h3>
+            <table class="w-full text-xs border-collapse border border-gray-300 mb-6">
+                <thead>
+                    <tr class="bg-blue-50 text-blue-900">
+                        <th class="border border-gray-300 p-2 w-1/2">الملاحظات</th>
+                        <th class="border border-gray-300 p-2 w-1/2">التوصيات</th>
+                    </tr>
+                </thead>
+                <tbody id="res-table-body">
+                    <!-- Failures go here -->
+                </tbody>
+            </table>
+            
+            <div class="mt-4 pt-2 border-t border-gray-400 text-xs text-gray-800 avoid-break">
+                <div class="text-left font-bold pl-4">
+                    <p id="daily-team-sig">مشرف مكافحة العدوى</p>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center no-print">
+                <button onclick="window.print()" class="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition"><i class="fas fa-print"></i> طباعة PDF</button>
+                <button onclick="exportToWord('daily-result-view', 'WeeklyReport.doc')" class="bg-blue-700 text-white px-6 py-2 rounded ml-2 hover:bg-blue-600 transition"><i class="fas fa-file-word"></i> تصدير Word</button>
+                <button onclick="resetDailyForm()" class="bg-gray-500 text-white px-6 py-2 rounded ml-2 hover:bg-gray-600 transition">تقرير جديد</button>
+            </div>
+        </div>
+      </section>
+
+      <!-- 4. MONTHLY REPORT -->
+      <section id="monthlyReport" class="page-section hidden p-6">
+        <h2 class="text-2xl font-bold mb-6 text-blue-900 no-print">التقارير الشهرية</h2>
+        <div class="bg-white p-6 rounded shadow-sm border border-gray-200 mb-4 flex flex-wrap gap-4 items-end justify-between no-print">
+            <div class="flex flex-wrap gap-4 items-end">
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-700">اختر الشهر</label>
+                    <input type="month" id="month-picker" class="border border-gray-300 p-2 rounded bg-gray-50 focus:border-blue-500 outline-none">
+                </div>
+                <button onclick="generatePeriodicReport('monthly')" class="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition flex items-center gap-2">
+                    <i class="fas fa-chart-bar"></i> عرض التقرير
+                </button>
+            </div>
+            <button onclick="openCopyMonthModal()" class="bg-emerald-700 text-white px-5 py-2 rounded hover:bg-emerald-800 transition flex items-center gap-2 shadow-sm">
+                <i class="fas fa-copy"></i> نسخ تقرير شهري إلى شهر آخر
+            </button>
+        </div>
+
+        <!-- Inline Status Banner for Monthly Report Operations -->
+        <div id="monthly-copy-banner" class="hidden mb-6 p-4 rounded border flex items-center justify-between no-print">
+            <div class="flex items-center gap-3">
+                <i id="monthly-copy-banner-icon" class="fas fa-check-circle text-lg"></i>
+                <span id="monthly-copy-banner-text" class="text-sm font-bold"></span>
+            </div>
+            <button onclick="hideMonthlyBanner()" class="text-gray-500 hover:text-gray-800 px-2">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div id="monthly-result" class="hidden bg-white p-8 shadow max-w-5xl mx-auto border border-gray-200">
+           <!-- Dynamic Content -->
+        </div>
+
+        <!-- Copy Monthly Report Modal -->
+        <div id="copy-month-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 no-print">
+            <div class="bg-white rounded-lg shadow-xl border border-gray-200 w-full max-w-md overflow-hidden">
+                <div class="bg-blue-900 text-white px-6 py-4 flex items-center justify-between">
+                    <h3 class="text-lg font-bold flex items-center gap-2">
+                        <i class="fas fa-copy"></i> نسخ تقرير شهري
+                    </h3>
+                    <button onclick="closeCopyMonthModal()" class="text-blue-200 hover:text-white transition">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        يمكنك نسخ جميع تقييمات وملاحظات المرور المسجلة في شهر معين إلى شهر آخر مع ضبط التواريخ تلقائياً.
+                    </p>
+                    <div>
+                        <label class="block text-sm font-bold mb-1 text-gray-800">نسخ من شهر (المصدر)</label>
+                        <input type="month" id="copy-source-month" class="w-full border border-gray-300 p-2.5 rounded bg-gray-50 focus:border-blue-600 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1 text-gray-800">إلى شهر (الهدف)</label>
+                        <input type="month" id="copy-target-month" class="w-full border border-gray-300 p-2.5 rounded bg-gray-50 focus:border-blue-600 outline-none">
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded p-3">
+                        <label class="flex items-start gap-2.5 cursor-pointer">
+                            <input type="checkbox" id="copy-replace-existing" checked class="mt-1 w-4 h-4 text-emerald-700 rounded border-gray-300 focus:ring-emerald-600">
+                            <span class="text-xs text-amber-900 leading-relaxed font-medium">
+                                استبدال بيانات الشهر الهدف (إن وجدت) لمنع تكرار التقييمات عند النسخ أكثر من مرة.
+                            </span>
+                        </label>
+                    </div>
+                    <div id="copy-month-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs font-bold p-3 rounded flex items-center gap-2">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span id="copy-month-error-text"></span>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-3 border-t border-gray-200 flex justify-end gap-3">
+                    <button type="button" onclick="closeCopyMonthModal()" class="px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 text-sm font-bold hover:bg-gray-100 transition">
+                        إلغاء
+                    </button>
+                    <button type="button" id="copy-month-submit-btn" onclick="submitCopyMonthlyReport()" class="px-5 py-2 rounded bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 transition flex items-center gap-2">
+                        <i class="fas fa-check"></i> تنفيذ النسخ
+                    </button>
+                </div>
+            </div>
+        </div>
+      </section>
+
+      <!-- 5. ANNUAL REPORT -->
+      <section id="annualReport" class="page-section hidden p-6">
+        <h2 class="text-2xl font-bold mb-6 text-blue-900 no-print">التقرير السنوي</h2>
+        <div class="bg-white p-6 rounded shadow-sm border border-gray-200 mb-6 flex gap-4 items-end no-print">
+            <div>
+                <label class="block text-sm font-bold mb-1 text-gray-700">اختر السنة</label>
+                <select id="year-picker" class="border border-gray-300 p-2 rounded w-32 bg-gray-50 focus:border-blue-500 outline-none">
+                    <!-- Populated via JS -->
+                </select>
+            </div>
+            <button onclick="generatePeriodicReport('yearly')" class="bg-purple-700 text-white px-6 py-2 rounded hover:bg-purple-800 transition">عرض التقرير</button>
+        </div>
+        <div id="yearly-result" class="hidden bg-white p-8 shadow max-w-5xl mx-auto border border-gray-200"></div>
+      </section>
+      
+      <!-- 6. ARCHIVE -->
+      <section id="archive" class="page-section hidden p-6">
+        <h2 class="text-2xl font-bold mb-6 text-blue-900 no-print">الأرشيف</h2>
+        
+        <!-- Archive Search Form -->
+        <div class="bg-white p-6 rounded shadow-sm border border-gray-200 mb-6 no-print">
+          <div class="flex gap-2 mb-4 border-b border-gray-100 pb-3">
+             <span class="text-sm font-bold text-gray-500 flex items-center ml-2">عرض سريع:</span>
+             <button onclick="quickSetDate('today')" class="px-3 py-1 bg-blue-50 text-blue-700 rounded border border-blue-100 text-xs font-bold hover:bg-blue-100 transition">اليوم</button>
+             <button onclick="quickSetDate('month')" class="px-3 py-1 bg-blue-50 text-blue-700 rounded border border-blue-100 text-xs font-bold hover:bg-blue-100 transition">هذا الشهر</button>
+             <button onclick="quickSetDate('year')" class="px-3 py-1 bg-blue-50 text-blue-700 rounded border border-blue-100 text-xs font-bold hover:bg-blue-100 transition">هذه السنة</button>
+          </div>
+          <div class="flex gap-4 items-end flex-wrap">
+             <div>
+               <label class="block text-sm text-gray-700 font-bold mb-1">من تاريخ</label>
+               <input type="date" id="arch-start" class="border border-gray-300 p-2 rounded bg-gray-50 focus:border-blue-500 outline-none">
+             </div>
+             <div>
+               <label class="block text-sm text-gray-700 font-bold mb-1">إلى تاريخ</label>
+               <input type="date" id="arch-end" class="border border-gray-300 p-2 rounded bg-gray-50 focus:border-blue-500 outline-none">
+             </div>
+             <div>
+               <label class="block text-sm text-gray-700 font-bold mb-1">القسم</label>
+               <select id="arch-dept" class="border border-gray-300 p-2 rounded w-40 bg-gray-50 focus:border-blue-500 outline-none"><option value="">الكل</option></select>
+             </div>
+             <div>
+               <label class="block text-sm text-gray-700 font-bold mb-1">القائم بالمرور</label>
+               <select id="arch-inspector" class="border border-gray-300 p-2 rounded w-40 bg-gray-50 focus:border-blue-500 outline-none"><option value="">الكل</option></select>
+             </div>
+             <button onclick="generateArchive()" class="bg-gray-700 text-white px-6 py-2 rounded hover:bg-gray-800 transition">بحث</button>
+          </div>
+        </div>
+
+        <!-- Archive Results List -->
+        <div id="archive-result" class="hidden space-y-4"></div>
+
+        <!-- Archive Detail View (Single Report) -->
+        <div id="archive-detail-view" class="hidden bg-white p-8 max-w-4xl mx-auto border border-gray-300 shadow-lg print-only">
+             <!-- Back Button (No Print) -->
+             <div class="text-left mb-4 no-print border-b pb-4">
+                <button onclick="closeArchiveDetail()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition flex items-center gap-2">
+                    <i class="fas fa-arrow-right"></i> عودة للقائمة
+                </button>
+             </div>
+
+             <!-- Header -->
+            <div class="report-header-bar border-b-2 border-blue-900 pb-2 mb-3 avoid-break">
+                <div id="arc-right-logo-slot" class="report-logo-slot report-logo-slot-right"></div>
+                <div class="text-center flex-1 px-2">
+                    <h1 id="arc-res-hosp-name" class="text-lg font-bold text-blue-900">مستشفى المنيا الجامعى للعيون</h1>
+                    <h2 class="text-base font-bold text-blue-800">وحدة مكافحة العدوى</h2>
+                    <p class="text-gray-600 text-xs mt-1">تقرير مرور أسبوعي</p>
+                </div>
+                <div id="arc-left-logo-slot" class="report-logo-slot report-logo-slot-left"></div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-y-1 gap-x-8 mb-4 text-xs avoid-break">
+                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">تاريخ التقرير الأسبوعي:</span> <span id="arc-res-date" class="text-gray-800"></span></p>
+                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">القسم:</span> <span id="arc-res-dept" class="text-gray-800"></span></p>
+                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">الفترة:</span> <span id="arc-res-period" class="text-gray-800"></span></p>
+                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">القائم بالمرور:</span> <span id="arc-res-inspector" class="text-gray-800"></span></p>
+                <div class="border-b border-gray-100 py-1 col-span-2 flex items-start gap-2">
+                    <span class="font-bold text-blue-900 shrink-0">المسؤول عن التنفيذ:</span>
+                    <div id="arc-res-supervisor" class="text-gray-800 flex-1"></div>
+                </div>
+            </div>
+
+            <h3 class="font-bold text-base mb-2 text-blue-900 border-b border-gray-300 pb-1 avoid-break">المخالفات والتوصيات</h3>
+            <table class="w-full text-xs border-collapse border border-gray-300 mb-6">
+                <thead>
+                    <tr class="bg-blue-50 text-blue-900">
+                        <th class="border border-gray-300 p-2 w-1/2">الملاحظات</th>
+                        <th class="border border-gray-300 p-2 w-1/2">التوصيات</th>
+                    </tr>
+                </thead>
+                <tbody id="arc-res-table-body">
+                    <!-- Failures go here -->
+                </tbody>
+            </table>
+            
+            <div class="mt-4 pt-2 border-t border-gray-400 text-xs text-gray-800 avoid-break">
+                <div class="text-left font-bold pl-4">
+                    <p id="arc-res-team-sig">مشرف مكافحة العدوى</p>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center no-print">
+                <button onclick="window.print()" class="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition"><i class="fas fa-print"></i> طباعة PDF</button>
+                <button onclick="exportToWord('archive-detail-view', 'ArchiveReport.doc')" class="bg-blue-700 text-white px-6 py-2 rounded ml-2 hover:bg-blue-600 transition"><i class="fas fa-file-word"></i> تصدير Word</button>
+            </div>
+        </div>
+
+        <!-- Archive Batch Print View (Hidden initially) -->
+        <div id="archive-batch-view" class="hidden print-only-container">
+            <div class="no-print mb-4 border-b pb-4 flex justify-between items-center bg-gray-100 p-4 rounded">
+                <button onclick="closeBatchView()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition flex items-center gap-2">
+                    <i class="fas fa-arrow-right"></i> عودة للقائمة
+                </button>
+                <div class="text-sm text-gray-600 font-bold">معاينة الطباعة المجمعة</div>
+                <div class="flex gap-2">
+                     <button onclick="window.print()" class="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition flex items-center gap-2">
+                        <i class="fas fa-print"></i> طباعة الكل (PDF)
+                    </button>
+                    <button onclick="exportToWord('archive-batch-content', 'BatchReports.doc')" class="bg-blue-700 text-white px-6 py-2 rounded hover:bg-blue-600 transition flex items-center gap-2">
+                        <i class="fas fa-file-word"></i> تصدير Word
+                    </button>
+                </div>
+            </div>
+            <div id="archive-batch-content">
+                <!-- Dynamic Reports go here -->
+            </div>
+        </div>
+
+      </section>
+
+      <!-- 7. CENTERS MANAGEMENT PAGE -->
+      <section id="centersPage" class="page-section hidden p-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b border-gray-200 pb-4">
+          <div>
+            <h2 class="text-2xl font-bold text-blue-900 flex items-center gap-2.5">
+              <i class="fas fa-hospital text-blue-600"></i> إدارة المراكز الصحية
+            </h2>
+            <p class="text-xs text-gray-500 mt-1">عرض وإضافة وتبديل وحذف المراكز الصحية في المنظومة (عزل كامل لتقارير وبيانات كل مركز)</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="openTursoMigrationModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow transition flex items-center gap-2">
+              <i class="fas fa-database"></i> استيراد من قاعدة Turso سابقة
+            </button>
+            <button onclick="openAddCenterModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow transition flex items-center gap-2">
+              <i class="fas fa-plus-circle"></i> إضافة مركز جديد
+            </button>
+            <button onclick="renderCentersPageUI()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-bold border transition" title="تحديث القائمة">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Banner for Feedback -->
+        <div id="centers-page-banner" class="hidden mb-6 p-3 rounded-lg text-sm font-bold text-center"></div>
+
+        <!-- Centers Cards Grid -->
+        <div id="centers-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Dynamic Center Cards -->
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="mt-auto py-4 text-center text-gray-500 text-sm no-print border-t border-gray-200">
+        &copy; 2026 Dr. Fady Ezzat. All Rights Reserved
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- JS Logic -->
+  <script>
+    // --- Setup Environment Variables / API URL ---
+    let API_URL = "/api";
+    const USE_SERVER_API = (typeof google === 'undefined');
+    
+    if (USE_SERVER_API) {
+       console.info("Using Full-Stack API at: " + API_URL);
+       
+       // --- Fetch-based Proxy for External Deployment ---
+       const fetchRunner = new Proxy({}, {
+         get: function(target, prop) {
+           if (prop === 'withSuccessHandler') {
+             return function(successCallback) {
+               return new Proxy({}, {
+                 get: function(t, p) {
+                   if (p === 'withFailureHandler') {
+                     return function(failureCallback) {
+                       return new Proxy({}, {
+                         get: function(tt, pp) {
+                           return (...args) => externalApiCall(pp, args, successCallback, failureCallback);
+                         }
+                       });
+                     }
+                   }
+                   return (...args) => externalApiCall(p, args, successCallback, console.error);
+                 }
+               });
+             }
+           }
+           return (...args) => externalApiCall(prop, args, console.log, console.error);
+         }
+       });
+       window.google = { script: { run: fetchRunner } };
+
+       async function externalApiCall(method, args, onSuccess, onFailure, retryCount = 0) {
+          try {
+              const response = await fetch(API_URL, {
+                  method: 'POST',
+                  headers: { 
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json'
+                  },
+                  body: JSON.stringify({ method: method, args: args })
+              });
+              if (!response.ok) {
+                  throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+              }
+              const json = await response.json();
+              if (json.success) {
+                  if (onSuccess) onSuccess(json.data);
+              } else {
+                  throw new Error(json.error || "Unknown server error");
+              }
+          } catch (err) {
+              if (retryCount < 2) {
+                  await new Promise(res => setTimeout(res, 500 * (retryCount + 1)));
+                  return externalApiCall(method, args, onSuccess, onFailure, retryCount + 1);
+              }
+              console.error("External API Error:", err);
+              if (onFailure) onFailure(err);
+          }
+       }
+    }
+
+    // --- Global State ---
+    let settingsData = {};
+    let currentAdminPassword = null;
+    let currentArchiveReports = []; // Store processed archive reports for view details
+    let allCenters = []; // List of all registered centers
+    let currentCenter = null; // Currently selected/active center object
+    let pendingDeleteCenterName = null; // Target center when delete modal is open
+
+    // --- Utility: Get Local YYYY-MM-DD ---
+    function getLocalYMD(date) {
+        const offset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - offset).toISOString().split('T')[0];
+    }
+
+    // --- Google Drive Logo Helpers ---
+    function extractGoogleDriveFileId(rawUrl) {
+        if (!rawUrl || typeof rawUrl !== 'string') return null;
+        const trimmed = rawUrl.trim();
+        if (!trimmed) return null;
+
+        if (trimmed.includes('drive.google.com') || trimmed.includes('googleusercontent.com') || trimmed.includes('docs.google.com')) {
+            const pathMatch = trimmed.match(/\/(?:file\/)?d\/([a-zA-Z0-9_-]{10,})/);
+            if (pathMatch && pathMatch[1]) return pathMatch[1];
+
+            const queryMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+            if (queryMatch && queryMatch[1]) return queryMatch[1];
+        }
+        return null;
+    }
+
+    function resolveLogoSources(rawUrl) {
+        if (!rawUrl || typeof rawUrl !== 'string' || !rawUrl.trim()) {
+            return null;
+        }
+        const trimmed = rawUrl.trim();
+        const fileId = extractGoogleDriveFileId(trimmed);
+
+        if (fileId) {
+            const thumbUrl = `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w400`;
+            const lh3Url = `https://lh3.googleusercontent.com/d/${encodeURIComponent(fileId)}=w400`;
+            if (USE_SERVER_API) {
+                return {
+                    primary: `${API_URL}/drive-image?id=${encodeURIComponent(fileId)}`,
+                    fb1: thumbUrl,
+                    fb2: lh3Url,
+                    externalUrl: thumbUrl
+                };
+            }
+            return {
+                primary: thumbUrl,
+                fb1: lh3Url,
+                fb2: '',
+                externalUrl: thumbUrl
+            };
+        }
+
+        return {
+            primary: trimmed,
+            fb1: '',
+            fb2: '',
+            externalUrl: trimmed
+        };
+    }
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function escapeHtmlAttr(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function handleLogoImgError(imgEl) {
+        const step = Number(imgEl.dataset.fallbackStep || '0');
+        const fb1 = imgEl.dataset.fb1 || '';
+        const fb2 = imgEl.dataset.fb2 || '';
+        if (step === 0 && fb1 && imgEl.src !== fb1) {
+            imgEl.dataset.fallbackStep = '1';
+            imgEl.src = fb1;
+        } else if (step <= 1 && fb2 && imgEl.src !== fb2) {
+            imgEl.dataset.fallbackStep = '2';
+            imgEl.src = fb2;
+        } else {
+            imgEl.style.display = 'none';
+        }
+    }
+
+    function buildLogoImgHtml(rawUrl, altText) {
+        const sources = resolveLogoSources(rawUrl);
+        if (!sources) return '';
+        return `<img src="${escapeHtmlAttr(sources.primary)}" data-fb1="${escapeHtmlAttr(sources.fb1)}" data-fb2="${escapeHtmlAttr(sources.fb2)}" data-external-url="${escapeHtmlAttr(sources.externalUrl)}" alt="${escapeHtmlAttr(altText)}" class="report-header-logo" onerror="handleLogoImgError(this)">`;
+    }
+
+    function getReportLogoSlotHtml(side) {
+        const rawUrl = side === 'right' ? (settingsData?.rightLogoUrl || '') : (settingsData?.leftLogoUrl || '');
+        const alignClass = side === 'right' ? 'report-logo-slot-right' : 'report-logo-slot-left';
+        const alt = side === 'right' ? 'شعار يمين التقرير' : 'شعار يسار التقرير';
+        return `<div class="report-logo-slot ${alignClass}">${buildLogoImgHtml(rawUrl, alt)}</div>`;
+    }
+
+    function populateReportLogoSlots(rightSlotId, leftSlotId) {
+        const rightSlot = document.getElementById(rightSlotId);
+        const leftSlot = document.getElementById(leftSlotId);
+        if (rightSlot) rightSlot.innerHTML = buildLogoImgHtml(settingsData?.rightLogoUrl || '', 'شعار يمين التقرير');
+        if (leftSlot) leftSlot.innerHTML = buildLogoImgHtml(settingsData?.leftLogoUrl || '', 'شعار يسار التقرير');
+    }
+
+    // --- Export to Word ---
+    function exportToWord(elementId, filename) {
+        const el = document.getElementById(elementId);
+        if(!el) return;
+        
+        // Clone to modify without affecting UI
+        const clone = el.cloneNode(true);
+        
+        // Remove no-print elements from the clone
+        const noPrints = clone.querySelectorAll('.no-print');
+        noPrints.forEach(n => n.remove());
+
+        // Convert flex report-header-bar into Word-friendly 3-column borderless table with bounded logo dimensions
+        clone.querySelectorAll('.report-header-bar').forEach(bar => {
+            const children = Array.from(bar.children);
+            if (children.length === 3) {
+                children.forEach(col => {
+                    col.querySelectorAll('img.report-header-logo').forEach(img => {
+                        const extUrl = img.getAttribute('data-external-url') || img.getAttribute('src') || '';
+                        if (extUrl.startsWith('/')) {
+                            img.setAttribute('src', window.location.origin + extUrl);
+                        } else if (extUrl) {
+                            img.setAttribute('src', extUrl);
+                        }
+                        img.setAttribute('width', '60');
+                        img.setAttribute('height', '60');
+                        img.style.width = '60px';
+                        img.style.height = '60px';
+                        img.style.objectFit = 'contain';
+                    });
+                });
+                const layoutTable = document.createElement('table');
+                layoutTable.className = 'header-layout-table';
+                layoutTable.setAttribute('dir', 'rtl');
+                layoutTable.style.width = '100%';
+                layoutTable.style.border = 'none';
+                layoutTable.style.marginBottom = '8px';
+                layoutTable.style.borderBottom = '2px solid #1e3a8a';
+                layoutTable.innerHTML = `
+                    <tr>
+                        <td style="border:none; width:75px; text-align:right; vertical-align:middle;">${children[0].innerHTML}</td>
+                        <td style="border:none; text-align:center; vertical-align:middle;">${children[1].innerHTML}</td>
+                        <td style="border:none; width:75px; text-align:left; vertical-align:middle;">${children[2].innerHTML}</td>
+                    </tr>
+                `;
+                bar.replaceWith(layoutTable);
+            }
+        });
+        
+        // Build Word-compatible HTML
+        const htmlContent = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40' dir='rtl'>
+            <head>
+                <meta charset='utf-8'>
+                <title>${filename}</title>
+                <style>
+                    body { font-family: 'Tajawal', 'Arial', sans-serif; text-align: right; direction: rtl; }
+                    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+                    th, td { border: 1px solid #000; padding: 5px; text-align: center; }
+                    table.header-layout-table, table.header-layout-table td { border: none !important; }
+                    th { background-color: #f3f4f6; }
+                    .text-right { text-align: right; }
+                    .text-center { text-align: center; }
+                    .font-bold { font-weight: bold; }
+                    .text-red-700 { color: #b91c1c; }
+                    .text-green-700 { color: #15803d; }
+                    .bg-gray-50 { background-color: #f9fafb; }
+                    .text-blue-900 { color: #1e3a8a; }
+                    /* Header styling emulation */
+                    h1, h2, h3 { margin: 5px 0; text-align: center; color: #1e3a8a; }
+                </style>
+            </head>
+            <body>
+                ${clone.innerHTML}
+            </body>
+            </html>
+        `;
+        
+        const blob = new Blob(['\ufeff', htmlContent], {
+            type: 'application/msword'
+        });
+        
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // --- Navigation ---
+    let currentPageId = 'dashboard';
+
+    function nav(pageId) {
+      currentPageId = pageId;
+      document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
+      const page = document.getElementById(pageId);
+      if (page) {
+          page.classList.remove('hidden');
+      } else {
+          console.error("Page not found: " + pageId);
+      }
+      
+      // Close mobile menu if open
+      document.getElementById('mobileMenu').classList.add('hidden');
+
+      if (pageId === 'dashboard') loadDashboard();
+      if (pageId === 'settings') {
+          const banner = document.getElementById('settings-save-banner');
+          if (banner) banner.classList.add('hidden');
+          renderSettingsUI();
+          applyRoleRestrictions();
+      }
+      if (pageId === 'dailyReport') initDailyForm();
+      if (pageId === 'monthlyReport') initMonthly();
+      if (pageId === 'annualReport') initAnnual();
+      if (pageId === 'archive') initArchive();
+      if (pageId === 'centersPage') renderCentersPageUI();
+    }
+
+    // --- Centers Management & Portal Logic ---
+
+    function initCentersPortal() {
+      loading(true);
+      google.script.run.withSuccessHandler(centers => {
+        allCenters = Array.isArray(centers) ? centers : [];
+        if (allCenters.length === 0) {
+          allCenters = [
+            { id: 'center-1', name: 'مستشفى المنيا الجامعى للعيون', hospital_name: 'مستشفى المنيا الجامعى للعيون' },
+            { id: 'center-2', name: 'مركز صحة الأسرة بالمنيا', hospital_name: 'مركز صحة الأسرة بالمنيا' }
+          ];
+        }
+
+        // Restore previously remembered center or pick first center
+        const rememberedName = localStorage.getItem('last_selected_center');
+        const activeCenter = (rememberedName && allCenters.find(c => c.name === rememberedName)) || allCenters[0];
+        
+        if (activeCenter) {
+          currentCenter = activeCenter;
+          localStorage.setItem('last_selected_center', activeCenter.name);
+          google.script.run.withSuccessHandler(data => {
+            loading(false);
+            settingsData = data || {};
+            updateAllCenterLabels();
+            applyRoleRestrictions();
+            nav('dashboard');
+          }).withFailureHandler(err => {
+            loading(false);
+            console.error("Failed to load settings:", err);
+            updateAllCenterLabels();
+            applyRoleRestrictions();
+            nav('dashboard');
+          }).getSettings(activeCenter.name);
+        } else {
+          loading(false);
+          openAddCenterModal();
+        }
+      }).withFailureHandler(err => {
+        loading(false);
+        console.error("Failed to load centers:", err);
+        allCenters = [
+          { id: 'center-1', name: 'مستشفى المنيا الجامعى للعيون', hospital_name: 'مستشفى المنيا الجامعى للعيون' },
+          { id: 'center-2', name: 'مركز صحة الأسرة بالمنيا', hospital_name: 'مركز صحة الأسرة بالمنيا' }
+        ];
+        currentCenter = allCenters[0];
+        updateAllCenterLabels();
+        applyRoleRestrictions();
+        nav('dashboard');
+      }).getCenters();
+    }
+
+    function populateCenterDropdowns() {
+      // Helper for center selection if needed
+    }
+
+    function onLoginCenterChange() {
+      // Kept for backward compatibility
+    }
+
+    function updateAllCenterLabels() {
+      if (!currentCenter) return;
+      const centerName = currentCenter.name || 'المركز الصحي';
+      const hospName = currentCenter.hospital_name || settingsData.hospitalName || centerName;
+
+      // Sidebar
+      const sbName = document.getElementById('sidebar-center-name');
+      const sbHosp = document.getElementById('sidebar-center-hospital');
+      if (sbName) sbName.innerText = centerName;
+      if (sbHosp) sbHosp.innerText = hospName;
+
+      // Topbar
+      const tbName = document.getElementById('topbar-center-name');
+      const tbHosp = document.getElementById('topbar-center-hospital');
+      if (tbName) tbName.innerText = centerName;
+      if (tbHosp) tbHosp.innerText = hospName;
+
+      // Mobile
+      const mbBadge = document.getElementById('mobile-badge-center');
+      if (mbBadge) mbBadge.innerText = centerName.length > 14 ? centerName.substring(0, 12) + '...' : centerName;
+      const mbTitle = document.getElementById('mobile-header-title');
+      if (mbTitle) mbTitle.innerText = centerName;
+
+      // Report preview header names
+      const dailyHosp = document.getElementById('daily-hosp-name');
+      if (dailyHosp) dailyHosp.innerText = hospName;
+      const monthHosp = document.getElementById('month-res-hosp-name');
+      if (monthHosp) monthHosp.innerText = hospName;
+      const annHosp = document.getElementById('ann-res-hosp-name');
+      if (annHosp) annHosp.innerText = hospName;
+      const arcHosp = document.getElementById('arc-res-hosp-name');
+      if (arcHosp) arcHosp.innerText = hospName;
+    }
+
+    // --- Switch Center Modal ---
+    function openCenterSwitcherModal() {
+      const container = document.getElementById('switcher-centers-list');
+      if (!container) return;
+
+      if (allCenters.length === 0) {
+        container.innerHTML = '<div class="text-center p-4 text-gray-500 text-xs">لا توجد مراكز مسجلة</div>';
+      } else {
+        container.innerHTML = allCenters.map(c => {
+          const isActive = currentCenter && currentCenter.name === c.name;
+          return `
+            <div onclick="switchCenter('${escapeHtmlAttr(c.name)}')" class="flex items-center justify-between p-3 rounded-xl border transition cursor-pointer ${isActive ? 'bg-blue-50 border-blue-500 shadow-sm' : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-blue-300'}">
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg ${isActive ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'} flex items-center justify-center text-sm font-bold">
+                  <i class="fas fa-hospital"></i>
+                </span>
+                <div>
+                  <div class="font-bold text-sm ${isActive ? 'text-blue-900' : 'text-gray-800'}">${escapeHtmlAttr(c.name)}</div>
+                  <div class="text-[11px] text-gray-500">${escapeHtmlAttr(c.hospital_name || c.name)}</div>
+                </div>
+              </div>
+              <div>
+                ${isActive 
+                  ? '<span class="bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1"><i class="fas fa-check"></i> الحالي</span>'
+                  : '<span class="text-xs text-blue-600 font-bold hover:underline">اختيار وتفعيل</span>'}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('center-switcher-modal').classList.remove('hidden');
+    }
+
+    function closeCenterSwitcherModal() {
+      document.getElementById('center-switcher-modal').classList.add('hidden');
+    }
+
+    function switchCenter(centerName) {
+      const center = allCenters.find(c => c.name === centerName);
+      if (!center) return;
+
+      currentCenter = center;
+      localStorage.setItem('last_selected_center', center.name);
+      closeCenterSwitcherModal();
+      loading(true);
+
+      // Load settings and data for the newly active center
+      google.script.run.withSuccessHandler(data => {
+        loading(false);
+        settingsData = data || {};
+        updateAllCenterLabels();
+        
+        // Invalidate cached dashboard data to force clean fetch for this center
+        cachedDashboardData = null;
+        lastDashboardFetch = 0;
+
+        // Refresh currently viewed page
+        refreshCurrentPageData();
+
+        // Render centers page if that's the open page
+        if (currentPageId === 'centersPage') {
+          renderCentersPageUI();
+        }
+
+        showCenterFeedbackBanner(`تم التبديل بنجاح إلى مركز: (${center.name}) — يتم الآن عرض كل ما يختص بهذا المركز`, false);
+      }).withFailureHandler(err => {
+        loading(false);
+        console.error("Failed to load settings on center switch:", err);
+      }).getSettings(center.name);
+    }
+
+    function refreshCurrentPageData() {
+      if (currentPageId === 'dashboard') {
+        loadDashboard(true);
+      } else if (currentPageId === 'dailyReport') {
+        initDailyForm();
+      } else if (currentPageId === 'monthlyReport') {
+        initMonthly();
+      } else if (currentPageId === 'annualReport') {
+        initAnnual();
+      } else if (currentPageId === 'archive') {
+        initArchive();
+      } else if (currentPageId === 'settings') {
+        renderSettingsUI();
+        applyRoleRestrictions();
+      }
+    }
+
+    // --- Add Center Modal & Action ---
+    function openAddCenterModal() {
+      const nameInput = document.getElementById('add-center-name-input');
+      if (nameInput) nameInput.value = '';
+      const errBox = document.getElementById('add-center-error-msg');
+      if (errBox) errBox.classList.add('hidden');
+      document.getElementById('add-center-modal').classList.remove('hidden');
+      setTimeout(() => {
+        if (nameInput) nameInput.focus();
+      }, 100);
+    }
+
+    function closeAddCenterModal() {
+      document.getElementById('add-center-modal').classList.add('hidden');
+    }
+
+    function confirmAddCenter() {
+      const nameInput = document.getElementById('add-center-name-input');
+      const name = nameInput ? nameInput.value.trim() : '';
+      const hosp = name; // Only center / hospital name
+      const errBox = document.getElementById('add-center-error-msg');
+
+      if (!name) {
+        if (errBox) {
+          errBox.innerText = 'يرجى إدخال اسم المركز / المستشفى أولاً';
+          errBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      if (allCenters.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+        if (errBox) {
+          errBox.innerText = 'يوجد مركز مسجل بنفس هذا الاسم مسبقاً، يرجى اختيار اسم مختلف';
+          errBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      loading(true);
+      google.script.run.withSuccessHandler(newCenter => {
+        loading(false);
+        closeAddCenterModal();
+        const centerObj = newCenter || { id: `center-${Date.now()}`, name: name, hospital_name: hosp };
+        allCenters.push(centerObj);
+
+        // Switch to the newly created center immediately
+        switchCenter(centerObj.name);
+
+        if (currentPageId === 'centersPage') {
+          renderCentersPageUI();
+        }
+        showCenterFeedbackBanner(`تم إضافة مركز (${name}) بنجاح!`, false);
+      }).withFailureHandler(err => {
+        loading(false);
+        if (errBox) {
+          errBox.innerText = 'خطأ أثناء إضافة المركز: ' + (err.message || err);
+          errBox.classList.remove('hidden');
+        }
+      }).addCenter(name, hosp);
+    }
+
+    const addCenterInputEl = document.getElementById('add-center-name-input');
+    if (addCenterInputEl) {
+      addCenterInputEl.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') confirmAddCenter();
+      });
+    }
+
+    // --- Delete Center Modal & Action ---
+    function openDeleteCenterModal(centerName) {
+      pendingDeleteCenterName = centerName;
+      const displayEl = document.getElementById('delete-center-name-display');
+      if (displayEl) displayEl.innerText = centerName;
+
+      const errBox = document.getElementById('delete-center-error-msg');
+      if (errBox) errBox.classList.add('hidden');
+
+      document.getElementById('delete-center-modal').classList.remove('hidden');
+    }
+
+    function closeDeleteCenterModal() {
+      pendingDeleteCenterName = null;
+      document.getElementById('delete-center-modal').classList.add('hidden');
+    }
+
+    function executeDeleteCenter() {
+      if (!pendingDeleteCenterName) return;
+      const centerToDelete = pendingDeleteCenterName;
+
+      loading(true);
+      google.script.run.withSuccessHandler(() => {
+        loading(false);
+        closeDeleteCenterModal();
+
+        // Remove from local list
+        allCenters = allCenters.filter(c => c.name !== centerToDelete);
+
+        showCenterFeedbackBanner(`تم حذف مركز (${centerToDelete}) وجميع بياناته وتقاريره بنجاح`, false);
+
+        // If the deleted center was active
+        if (currentCenter && currentCenter.name === centerToDelete) {
+          if (allCenters.length > 0) {
+            // Automatically switch to first remaining center
+            switchCenter(allCenters[0].name);
+          } else {
+            // No centers remain
+            currentCenter = null;
+            openAddCenterModal();
+          }
+        } else if (currentPageId === 'centersPage') {
+          renderCentersPageUI();
+        }
+      }).withFailureHandler(err => {
+        loading(false);
+        const errBox = document.getElementById('delete-center-error-msg');
+        if (errBox) {
+          errBox.innerText = 'خطأ أثناء حذف المركز: ' + (err.message || err);
+          errBox.classList.remove('hidden');
+        }
+      }).deleteCenter(centerToDelete);
+    }
+
+    // --- Centers Management Page Rendering ---
+    function renderCentersPageUI() {
+      const grid = document.getElementById('centers-cards-grid');
+      if (!grid) return;
+
+      if (allCenters.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-white p-8 rounded-xl shadow-sm border border-gray-200 text-center">
+            <div class="w-16 h-16 mx-auto mb-3 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center text-2xl">
+              <i class="fas fa-hospital"></i>
+            </div>
+            <h4 class="font-bold text-gray-700 text-base mb-1">لا توجد مراكز صحية مسجلة</h4>
+            <p class="text-xs text-gray-500 mb-4">قم بإضافة المركز الأول لبدء تسجيل التقارير والتقييمات</p>
+            <button onclick="openAddCenterModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition">
+              <i class="fas fa-plus ml-1"></i> إضافة أول مركز
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = allCenters.map(c => {
+        const isActive = currentCenter && currentCenter.name === c.name;
+        return `
+          <div class="bg-white rounded-xl shadow-sm border transition duration-200 hover:shadow-md flex flex-col justify-between ${isActive ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-200'}">
+            <div class="p-5">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl ${isActive ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-700'} flex items-center justify-center font-bold text-lg shadow-sm flex-shrink-0">
+                  <i class="fas fa-hospital"></i>
+                </div>
+                ${isActive 
+                  ? '<span class="bg-blue-100 text-blue-800 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1"><i class="fas fa-check-circle text-blue-600"></i> المركز النشط</span>'
+                  : '<span class="bg-gray-100 text-gray-600 text-[11px] font-bold px-2 py-0.5 rounded-full">مركز مسجل</span>'}
+              </div>
+              <h3 class="font-bold text-gray-900 text-base mb-1">${escapeHtmlAttr(c.name)}</h3>
+              <p class="text-xs text-gray-500 mb-3"><i class="fas fa-building text-gray-400 ml-1"></i> ${escapeHtmlAttr(c.hospital_name || c.name)}</p>
+              <div class="text-[11px] text-gray-400 bg-gray-50 p-2 rounded-lg border border-gray-100 flex items-center justify-between">
+                <span>تاريخ التسجيل:</span>
+                <span class="font-semibold text-gray-600">${c.created_at ? c.created_at.split('T')[0] : 'سابقاً'}</span>
+              </div>
+            </div>
+
+            <div class="p-4 bg-gray-50 border-t border-gray-100 rounded-b-xl flex items-center justify-between gap-2">
+              ${isActive ? `
+                <button disabled class="bg-gray-200 text-gray-500 text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-1.5 cursor-default">
+                  <i class="fas fa-check"></i> قيد الاستخدام حالياً
+                </button>
+              ` : `
+                <button onclick="switchCenter('${escapeHtmlAttr(c.name)}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition shadow-sm flex items-center gap-1.5">
+                  <i class="fas fa-sign-in-alt"></i> تنشيط والدخول
+                </button>
+              `}
+
+              <button onclick="openDeleteCenterModal('${escapeHtmlAttr(c.name)}')" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold px-3 py-2 rounded-lg transition flex items-center gap-1" title="حذف المركز وجميع بياناته">
+                <i class="fas fa-trash-alt"></i> حذف
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showCenterFeedbackBanner(msg, isError = false) {
+      const banner = document.getElementById('centers-page-banner');
+      if (banner) {
+        banner.className = `mb-6 p-3 rounded-lg text-sm font-bold text-center ${isError ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}`;
+        banner.innerText = msg;
+        banner.classList.remove('hidden');
+        setTimeout(() => banner.classList.add('hidden'), 5000);
+      }
+    }
+
+    // --- Turso Previous Database Migration & Import Logic ---
+    function openTursoMigrationModal() {
+      const curLabel = document.getElementById('turso-mig-current-center-label');
+      if (curLabel) {
+        curLabel.innerText = currentCenter ? currentCenter.name : 'غير محدد';
+      }
+      const previewBox = document.getElementById('turso-mig-preview-box');
+      if (previewBox) {
+        previewBox.classList.add('hidden');
+        previewBox.innerHTML = '';
+      }
+      const errBox = document.getElementById('turso-mig-error-box');
+      if (errBox) {
+        errBox.classList.add('hidden');
+        errBox.innerText = '';
+      }
+      const testLoading = document.getElementById('turso-test-loading');
+      if (testLoading) testLoading.classList.add('hidden');
+      const testBtn = document.getElementById('btn-test-turso-conn');
+      if (testBtn) testBtn.disabled = false;
+
+      document.getElementById('turso-migration-modal').classList.remove('hidden');
+    }
+
+    function closeTursoMigrationModal() {
+      document.getElementById('turso-migration-modal').classList.add('hidden');
+    }
+
+    function toggleTursoTokenVisibility() {
+      const tokenInput = document.getElementById('turso-mig-token');
+      const icon = document.getElementById('turso-token-eye');
+      if (!tokenInput) return;
+      if (tokenInput.type === 'password') {
+        tokenInput.type = 'text';
+        if (icon) {
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+        }
+      } else {
+        tokenInput.type = 'password';
+        if (icon) {
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+        }
+      }
+    }
+
+    function onTursoTargetCenterChange() {
+      const selected = document.querySelector('input[name="turso_mig_target"]:checked');
+      const val = selected ? selected.value : 'current';
+      const wrap = document.getElementById('turso-mig-new-center-wrap');
+      if (wrap) {
+        if (val === 'new') {
+          wrap.classList.remove('hidden');
+          const input = document.getElementById('turso-mig-new-center-input');
+          if (input) input.focus();
+        } else {
+          wrap.classList.add('hidden');
+        }
+      }
+    }
+
+    function testTursoMigrationConnection() {
+      const urlInput = document.getElementById('turso-mig-url');
+      const tokenInput = document.getElementById('turso-mig-token');
+      const previewBox = document.getElementById('turso-mig-preview-box');
+      const testBtn = document.getElementById('btn-test-turso-conn');
+      const testLoading = document.getElementById('turso-test-loading');
+
+      const url = urlInput ? urlInput.value.trim() : '';
+      const token = tokenInput ? tokenInput.value.trim() : '';
+
+      if (!url) {
+        if (previewBox) {
+          previewBox.className = 'mb-4 p-3 rounded-xl border border-red-300 bg-red-50 text-xs text-red-700 leading-relaxed';
+          previewBox.innerHTML = '<i class="fas fa-exclamation-triangle ml-1"></i> يرجى إدخال رابط قاعدة بيانات Turso السابقة أولاً (مثال: libsql://your-db.turso.io)';
+          previewBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      if (testBtn) testBtn.disabled = true;
+      if (testLoading) testLoading.classList.remove('hidden');
+      if (previewBox) previewBox.classList.add('hidden');
+
+      google.script.run.withSuccessHandler(res => {
+        if (testBtn) testBtn.disabled = false;
+        if (testLoading) testLoading.classList.add('hidden');
+
+        if (!previewBox) return;
+        previewBox.classList.remove('hidden');
+
+        if (res && res.connected) {
+          previewBox.className = 'mb-4 p-4 rounded-xl border border-emerald-300 bg-emerald-50 text-xs text-emerald-900 leading-relaxed shadow-sm';
+          const detectedCenters = (res.centersFound && res.centersFound.length > 0)
+            ? res.centersFound.map(c => `<span class="bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded font-bold">${c}</span>`).join(' ')
+            : (res.detectedHospitalName ? `<span class="bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded font-bold">${res.detectedHospitalName}</span>` : 'لا يوجد (سيتم استخدام الاسم المختار)');
+
+          previewBox.innerHTML = `
+            <div class="flex items-center gap-2 font-bold text-emerald-800 text-sm mb-2 pb-2 border-b border-emerald-200">
+              <i class="fas fa-check-circle text-emerald-600 text-base"></i>
+              <span>تم الاتصال بقاعدة بيانات Turso السابقة بنجاح!</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2 text-[11px]">
+              <div class="bg-white/80 p-2 rounded border border-emerald-200">
+                <span class="text-gray-500 block">إجمالي سجلات التقارير:</span>
+                <strong class="text-indigo-700 text-sm font-bold">${res.reportsCount || 0} تقييم</strong>
+              </div>
+              <div class="bg-white/80 p-2 rounded border border-emerald-200">
+                <span class="text-gray-500 block">الإجراءات المكتشفة:</span>
+                <strong class="text-gray-800 font-bold">${res.proceduresCount || 0} إجراء</strong>
+              </div>
+              <div class="bg-white/80 p-2 rounded border border-emerald-200">
+                <span class="text-gray-500 block">الأقسام:</span>
+                <strong class="text-gray-800 font-bold">${res.departmentsCount || 0} قسم</strong>
+              </div>
+            </div>
+            <div class="mt-2.5 pt-2 border-t border-emerald-200 text-[11px]">
+              <strong class="text-gray-700">المراكز المكتشفة في القاعدة السابقة:</strong>
+              <div class="mt-1 flex flex-wrap gap-1">${detectedCenters}</div>
+            </div>
+          `;
+
+          // If new center input is currently empty and we detected a center/hospital name, prefill it as suggestion
+          const newCenterInput = document.getElementById('turso-mig-new-center-input');
+          if (newCenterInput && !newCenterInput.value) {
+            if (res.centersFound && res.centersFound.length > 0) {
+              newCenterInput.value = res.centersFound[0];
+            } else if (res.detectedHospitalName) {
+              newCenterInput.value = res.detectedHospitalName;
+            }
+          }
+        } else {
+          previewBox.className = 'mb-4 p-3 rounded-xl border border-red-300 bg-red-50 text-xs text-red-700 leading-relaxed';
+          previewBox.innerHTML = '<i class="fas fa-times-circle ml-1"></i> تعذر الاتصال أو لم يتم العثور على جداول في قاعدة البيانات.';
+        }
+      }).withFailureHandler(err => {
+        if (testBtn) testBtn.disabled = false;
+        if (testLoading) testLoading.classList.add('hidden');
+        if (previewBox) {
+          previewBox.className = 'mb-4 p-3.5 rounded-xl border border-red-300 bg-red-50 text-xs text-red-800 leading-relaxed';
+          previewBox.innerHTML = `
+            <div class="font-bold text-red-700 mb-1 flex items-center gap-1.5">
+              <i class="fas fa-exclamation-triangle"></i> فشل الاتصال بقاعدة بيانات Turso السابقة
+            </div>
+            <div>${err.message || err}</div>
+            <div class="mt-1 text-[11px] text-gray-600">تأكد من صحة الرابط (libsql://...) ورمز المصادقة وصلاحيته.</div>
+          `;
+          previewBox.classList.remove('hidden');
+        }
+      }).testTursoConnection(url, token);
+    }
+
+    function executeTursoMigration() {
+      const urlInput = document.getElementById('turso-mig-url');
+      const tokenInput = document.getElementById('turso-mig-token');
+      const errBox = document.getElementById('turso-mig-error-box');
+      const startBtn = document.getElementById('btn-start-turso-migration');
+
+      const url = urlInput ? urlInput.value.trim() : '';
+      const token = tokenInput ? tokenInput.value.trim() : '';
+
+      if (errBox) {
+        errBox.classList.add('hidden');
+        errBox.innerText = '';
+      }
+
+      if (!url) {
+        if (errBox) {
+          errBox.innerText = 'يرجى إدخال رابط قاعدة بيانات Turso السابقة';
+          errBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      const targetRadio = document.querySelector('input[name="turso_mig_target"]:checked');
+      const targetMode = targetRadio ? targetRadio.value : 'current';
+      let targetCenterName = '';
+
+      if (targetMode === 'current') {
+        targetCenterName = currentCenter ? currentCenter.name : 'المركز الافتراضي';
+      } else if (targetMode === 'new') {
+        const newCenterInput = document.getElementById('turso-mig-new-center-input');
+        targetCenterName = newCenterInput ? newCenterInput.value.trim() : '';
+        if (!targetCenterName) {
+          if (errBox) {
+            errBox.innerText = 'يرجى إدخال اسم المركز الجديد المراد إنشاؤه';
+            errBox.classList.remove('hidden');
+          }
+          return;
+        }
+      } else if (targetMode === 'auto') {
+        targetCenterName = 'auto';
+      }
+
+      const importSettings = !!document.getElementById('turso-mig-import-settings')?.checked;
+      const replaceExisting = !!document.getElementById('turso-mig-replace-existing')?.checked;
+
+      if (replaceExisting) {
+        const confirmMsg = `تنبيه هام: لقد اخترت استبدال السجلات السابقة. سيتم حذف جميع السجلات الحالية للمركز (${targetCenterName}) قبل استيراد السجلات الجديدة! هل تريد الاستمرار بالتأكيد؟`;
+        if (!window.confirm(confirmMsg)) {
+          return;
+        }
+      }
+
+      if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري استيراد السجلات السابقة...';
+      }
+      loading(true);
+
+      const migrationOptions = {
+        sourceUrl: url,
+        sourceToken: token,
+        targetCenterName: targetCenterName,
+        targetHospitalName: targetCenterName,
+        importSettings: importSettings,
+        replaceExisting: replaceExisting
+      };
+
+      google.script.run.withSuccessHandler(result => {
+        loading(false);
+        if (startBtn) {
+          startBtn.disabled = false;
+          startBtn.innerHTML = '<i class="fas fa-file-import"></i> بدء استيراد ونقل السجلات';
+        }
+
+        closeTursoMigrationModal();
+
+        // Refresh centers list and switch to target center
+        google.script.run.withSuccessHandler(centers => {
+          allCenters = centers || [];
+          const effectiveTarget = (result && result.targetCenter && result.targetCenter !== 'auto') 
+            ? result.targetCenter 
+            : (allCenters[0] ? allCenters[0].name : '');
+
+          if (effectiveTarget) {
+            switchCenter(effectiveTarget);
+          } else {
+            initApp();
+          }
+
+          const successMsg = (result && result.message) 
+            ? result.message 
+            : `تم استيراد ${result.importedReports || 0} سجل من قاعدة Turso السابقة بنجاح!`;
+
+          showCenterFeedbackBanner(successMsg, false);
+          if (currentPageId === 'centersPage') {
+            renderCentersPageUI();
+          }
+        }).getCenters();
+
+      }).withFailureHandler(err => {
+        loading(false);
+        if (startBtn) {
+          startBtn.disabled = false;
+          startBtn.innerHTML = '<i class="fas fa-file-import"></i> بدء استيراد ونقل السجلات';
+        }
+        if (errBox) {
+          errBox.innerText = 'فشلت عملية الاستيراد: ' + (err.message || err);
+          errBox.classList.remove('hidden');
+        }
+      }).migrateFromTurso(migrationOptions);
+    }
+
+    // Role restrictions helper - all features unlocked
+    function applyRoleRestrictions() {
+      document.querySelectorAll('.nav-settings, .nav-daily, .manger-hide, .admin-only').forEach(el => el.classList.remove('hidden'));
+      document.querySelectorAll('.user-only').forEach(el => el.classList.add('hidden'));
+    }
+
+    function logout() {
+      openCenterSwitcherModal();
+    }
+
+    function loading(show) {
+      document.getElementById('loading').classList.toggle('hidden', !show);
+    }
+
+    // --- Settings Logic ---
+    function loadSettings() {
+      loading(true);
+      const cName = currentCenter ? currentCenter.name : '';
+      google.script.run.withSuccessHandler(data => {
+        settingsData = data;
+        renderSettingsUI();
+        loading(false);
+      }).withFailureHandler(err => {
+        loading(false);
+        alert("فشل تحميل الإعدادات: " + err);
+      }).getSettings(cName);
+    }
+
+    function updateLiveHeaderTitlePreview() {
+      const hospInput = document.getElementById('set-hospital-name');
+      const liveTitle = document.getElementById('live-header-hosp-name');
+      if (hospInput && liveTitle) {
+        liveTitle.innerText = hospInput.value.trim() || 'مستشفى المنيا الجامعى للعيون';
+      }
+    }
+
+    function clearLogoInput(side) {
+      const input = document.getElementById(`set-${side}-logo`);
+      if (input) {
+        input.value = '';
+        updateSettingsLogoPreview(side);
+      }
+    }
+
+    function updateSettingsLogoPreview(side) {
+      const input = document.getElementById(`set-${side}-logo`);
+      const img = document.getElementById(`preview-${side}-logo`);
+      const placeholder = document.getElementById(`placeholder-${side}-logo`);
+      const status = document.getElementById(`status-${side}-logo`);
+      const liveSlot = document.getElementById(`live-header-${side}-slot`);
+      if (!input || !img || !placeholder || !status) return;
+
+      const rawVal = input.value.trim();
+      if (!rawVal) {
+        img.removeAttribute('src');
+        img.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+        status.className = 'text-[11px] text-gray-500 mt-1';
+        status.innerText = side === 'right' ? 'اختياري — يظهر أقصى يمين الترويسة' : 'اختياري — يظهر أقصى يسار الترويسة';
+        if (liveSlot) liveSlot.innerHTML = '';
+        return;
+      }
+
+      const sources = resolveLogoSources(rawVal);
+      if (!sources) return;
+
+      status.className = 'text-[11px] text-blue-600 mt-1';
+      status.innerText = 'جاري معاينة الشعار...';
+
+      img.dataset.fallbackStep = '0';
+      img.dataset.fb1 = sources.fb1 || '';
+      img.dataset.fb2 = sources.fb2 || '';
+      img.src = sources.primary;
+
+      if (liveSlot) {
+        liveSlot.innerHTML = buildLogoImgHtml(rawVal, side === 'right' ? 'شعار يمين التقرير' : 'شعار يسار التقرير');
+      }
+    }
+
+    function onPreviewLogoLoad(side) {
+      const img = document.getElementById(`preview-${side}-logo`);
+      const placeholder = document.getElementById(`placeholder-${side}-logo`);
+      const status = document.getElementById(`status-${side}-logo`);
+      if (img) img.classList.remove('hidden');
+      if (placeholder) placeholder.classList.add('hidden');
+      if (status) {
+        status.className = 'text-[11px] text-emerald-700 font-bold mt-1';
+        status.innerText = 'تم تحميل الشعار بنجاح وملائمته للترويسة';
+      }
+    }
+
+    function onPreviewLogoError(side) {
+      const img = document.getElementById(`preview-${side}-logo`);
+      const placeholder = document.getElementById(`placeholder-${side}-logo`);
+      const status = document.getElementById(`status-${side}-logo`);
+      if (!img) return;
+
+      const step = Number(img.dataset.fallbackStep || '0');
+      const fb1 = img.dataset.fb1 || '';
+      const fb2 = img.dataset.fb2 || '';
+      if (step === 0 && fb1 && img.src !== fb1) {
+        img.dataset.fallbackStep = '1';
+        img.src = fb1;
+        return;
+      }
+      if (step <= 1 && fb2 && img.src !== fb2) {
+        img.dataset.fallbackStep = '2';
+        img.src = fb2;
+        return;
+      }
+
+      img.classList.add('hidden');
+      if (placeholder) placeholder.classList.remove('hidden');
+      if (status) {
+        status.className = 'text-[11px] text-red-600 font-bold mt-1';
+        status.innerText = 'تعذر تحميل الصورة — تأكد أن صلاحية الملف في جوجل درايف (أي شخص لديه الرابط)';
+      }
+    }
+
+    function showSettingsSaveBanner(msg, isError = false) {
+      const banner = document.getElementById('settings-save-banner');
+      const icon = document.getElementById('settings-save-banner-icon');
+      const text = document.getElementById('settings-save-banner-text');
+      if (!banner || !icon || !text) return;
+      banner.className = isError
+        ? 'mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-800 text-sm font-bold flex items-center justify-between'
+        : 'mb-4 p-3 rounded border border-emerald-200 bg-emerald-50 text-emerald-800 text-sm font-bold flex items-center justify-between';
+      icon.className = isError ? 'fas fa-exclamation-circle text-red-600' : 'fas fa-check-circle text-emerald-600';
+      text.innerText = msg;
+      banner.classList.remove('hidden');
+    }
+
+
+    function renderSettingsUI() {
+      const badge = document.getElementById('settings-center-badge');
+      if (badge) badge.innerText = currentCenter ? currentCenter.name : (settingsData.hospitalName || 'المركز الافتراضي');
+      document.getElementById('set-hospital-name').value = settingsData.hospitalName || (currentCenter ? currentCenter.name : 'مستشفى المنيا الجامعى للعيون');
+      document.getElementById('set-team-signature').value = settingsData.teamSignature || 'مشرف مكافحة العدوى';
+      document.getElementById('set-manager-signature').value = settingsData.managerSignature || 'مدير عام المستشفى';
+      document.getElementById('set-right-logo').value = settingsData.rightLogoUrl || '';
+      document.getElementById('set-left-logo').value = settingsData.leftLogoUrl || '';
+      updateLiveHeaderTitlePreview();
+      updateSettingsLogoPreview('right');
+      updateSettingsLogoPreview('left');
+      
+      document.getElementById('set-depts').value = (settingsData.departments || []).join('\n');
+      document.getElementById('set-periods').value = (settingsData.periods || []).join('\n');
+      document.getElementById('set-inspectors').value = (settingsData.inspectors || []).join('\n');
+      const setImp = document.getElementById('set-implementers');
+      if (setImp) setImp.value = (settingsData.implementers || []).join('\n');
+      
+      const tbody = document.getElementById('proc-table-body');
+      tbody.innerHTML = '';
+      (settingsData.procedures || []).forEach((proc) => {
+        addProcRow(proc.note || proc.name, proc.rec, true);
+      });
+    }
+
+    function removeProcedureRow(btn) {
+      const tr = btn.closest('tr');
+      if (!tr) return;
+      tr.remove();
+    }
+
+    function addProcRow(note='', rec='', isExisting=false) {
+      const tbody = document.getElementById('proc-table-body');
+      const tr = document.createElement('tr');
+      tr.className = "hover:bg-gray-50 transition";
+      tr.dataset.existing = isExisting ? 'true' : 'false';
+
+      tr.innerHTML = `
+        <td class="p-2 border border-gray-200 align-top">
+          <input type="text" class="w-full border border-gray-500 p-2 rounded proc-note bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400 text-xs md:text-sm" placeholder="نص الملاحظة">
+        </td>
+        <td class="p-2 border border-gray-200 align-top">
+          <div class="flex items-center gap-2">
+            <input type="text" class="flex-1 border border-gray-500 p-2 rounded proc-rec bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400 text-xs md:text-sm" placeholder="التوصية المقترحة">
+            <button type="button" onclick="removeProcedureRow(this)" class="text-gray-400 hover:text-red-600 p-1.5 rounded transition shrink-0" title="حذف هذه الملاحظة">
+              <i class="fas fa-trash-alt text-sm"></i>
+            </button>
+          </div>
+        </td>
+      `;
+      tr.querySelector('.proc-note').value = note || '';
+      tr.querySelector('.proc-rec').value = rec || '';
+      tbody.appendChild(tr);
+    }
+    
+    function importBulkProcedures() {
+      const raw = document.getElementById('bulk-proc-input').value;
+      if (!raw.trim()) {
+        showSettingsSaveBanner("الرجاء لصق البيانات أولاً", true);
+        return;
+      }
+      
+      const rows = raw.split('\n');
+      let count = 0;
+      
+      rows.forEach(row => {
+          if (!row.trim()) return;
+          // Excel copy-paste creates Tab separated values
+          const cols = row.split('\t'); 
+          
+          // Col 0: Note, Col 1: Recommendation
+          const note = cols[0] ? cols[0].trim() : '';
+          const rec  = cols[1] ? cols[1].trim() : '';
+          
+          if (note || rec) {
+              addProcRow(note, rec, false);
+              count++;
+          }
+      });
+      
+      document.getElementById('bulk-proc-input').value = '';
+      showSettingsSaveBanner(`تم إضافة ${count} ملاحظة بنجاح. راجع القائمة ثم اضغط 'حفظ التغييرات'.`);
+    }
+
+    function saveSettings() {
+      const newDepts = document.getElementById('set-depts').value.split('\n').map(x => x.trim()).filter(Boolean);
+      const newPeriods = document.getElementById('set-periods').value.split('\n').map(x => x.trim()).filter(Boolean);
+      const newInspectors = document.getElementById('set-inspectors').value.split('\n').map(x => x.trim()).filter(Boolean);
+      const newImplementers = document.getElementById('set-implementers')
+        ? document.getElementById('set-implementers').value.split('\n').map(x => x.trim()).filter(Boolean)
+        : (settingsData.implementers || []);
+      const rightLogoVal = document.getElementById('set-right-logo').value.trim();
+      const leftLogoVal = document.getElementById('set-left-logo').value.trim();
+
+      const newSettings = {
+        hospitalName: document.getElementById('set-hospital-name').value.trim() || settingsData.hospitalName || 'مستشفى المنيا الجامعى للعيون',
+        teamSignature: document.getElementById('set-team-signature').value.trim() || settingsData.teamSignature || 'مشرف مكافحة العدوى',
+        managerSignature: document.getElementById('set-manager-signature').value.trim() || settingsData.managerSignature || 'مدير عام المستشفى',
+        rightLogoUrl: rightLogoVal,
+        leftLogoUrl: leftLogoVal,
+        passwords: settingsData.passwords || { admin: 'admin', manger: 'manger', user: 'user' },
+        departments: newDepts,
+        periods: newPeriods,
+        inspectors: newInspectors,
+        implementers: newImplementers,
+        procedures: []
+      };
+
+      document.querySelectorAll('#proc-table-body tr').forEach(tr => {
+        const note = tr.querySelector('.proc-note')?.value.trim();
+        const rec = tr.querySelector('.proc-rec')?.value.trim() || '';
+        if (!note && !rec) return;
+        newSettings.procedures.push({
+          name: note || 'ملاحظة',
+          note: note,
+          rec: rec,
+          depts: []
+        });
+      });
+
+      loading(true);
+      google.script.run.withSuccessHandler(() => {
+        loading(false);
+        settingsData = newSettings;
+        renderSettingsUI();
+        applyRoleRestrictions();
+        showSettingsSaveBanner('تم حفظ الإعدادات بنجاح');
+      }).withFailureHandler(e => {
+        loading(false);
+        showSettingsSaveBanner('خطأ أثناء حفظ الإعدادات: ' + (e.message || e), true);
+      }).saveSettingsData(newSettings, '', currentCenter ? currentCenter.name : '');
+    }
+
+    // --- Weekly Report Logic & Implementer Checkboxes ---
+    function renderWeeklyImplementersCheckboxes() {
+      const container = document.getElementById('weekly-implementers-container');
+      if (!container) return;
+      const implementers = settingsData.implementers || [];
+      if (implementers.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-xs text-gray-500 py-3 text-center">
+            لا يوجد مسؤولين مدخلين في الإعدادات حالياً. يمكنك إضافتهم من 
+            <button type="button" onclick="nav('settings')" class="text-blue-600 font-bold underline mr-1">صفحة الإعدادات</button>.
+          </div>
+        `;
+        return;
+      }
+      container.innerHTML = implementers.map((name) => `
+        <label class="flex items-center gap-2 p-2 rounded-lg bg-gray-50 hover:bg-blue-50 text-xs font-semibold text-gray-800 cursor-pointer transition border border-gray-200 select-none">
+          <input type="checkbox" value="${escapeHtmlAttr(name)}" class="implementer-chk accent-blue-600 rounded w-4 h-4">
+          <span class="truncate">${escapeHtml(name)}</span>
+        </label>
+      `).join('');
+    }
+
+    function initDailyForm() {
+      const cName = currentCenter ? currentCenter.name : '';
+      if (!settingsData.departments) {
+        google.script.run.withSuccessHandler(data => {
+            settingsData = data;
+            populateDailyDropdowns();
+        }).withFailureHandler(err => console.error(err)).getSettings(cName);
+      } else {
+        populateDailyDropdowns();
+      }
+      // Set default to today
+      document.getElementById('daily-date').value = getLocalYMD(new Date());
+    }
+
+    function populateDailyDropdowns() {
+        const fill = (id, arr) => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '<option value="">-- اختر --</option>' + (arr || []).map(x => `<option value="${x}">${x}</option>`).join('');
+        };
+        fill('daily-period', settingsData.periods);
+        fill('daily-dept', settingsData.departments);
+        fill('daily-inspector', settingsData.inspectors);
+        renderWeeklyImplementersCheckboxes();
+        renderDailyProcedures();
+    }
+
+    function renderDailyProcedures(preserveChecks = null) {
+        const list = document.getElementById('procedures-list');
+        if (!list) return;
+
+        // Preserve currently checked observations if not explicitly passed
+        const checkedIndices = preserveChecks instanceof Set ? preserveChecks : new Set();
+        if (!preserveChecks) {
+            document.querySelectorAll('.obs-checkbox:checked').forEach(cb => {
+                const id = parseInt(cb.id.replace('obs_chk_', ''));
+                if (!isNaN(id)) checkedIndices.add(id);
+            });
+        }
+
+        list.innerHTML = '';
+        
+        const procedures = settingsData.procedures || [];
+        if (procedures.length === 0) {
+            list.innerHTML = `
+                <div class="text-center p-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                    <i class="fas fa-clipboard-list text-3xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-600 text-xs font-bold mb-3">لا توجد ملاحظات مسجلة في القائمة حالياً.</p>
+                    <button type="button" onclick="toggleQuickAddObsModal(true)" class="text-xs bg-blue-700 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-800 transition">
+                        <i class="fas fa-plus ml-1"></i> إضافة أول ملاحظة الآن
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        procedures.forEach((proc, idx) => {
+            const noteText = proc.note || proc.name || '';
+            const recText = proc.rec || '';
+            const isChecked = checkedIndices.has(idx);
+
+            const div = document.createElement('div');
+            div.id = `obs_card_${idx}`;
+            div.className = `p-3.5 rounded-xl border transition shadow-sm ${isChecked ? 'bg-red-50/70 border-red-300' : 'bg-white hover:bg-blue-50/30 border-gray-200'}`;
+            div.innerHTML = `
+                <label class="flex items-start gap-3 cursor-pointer select-none">
+                    <input type="checkbox" id="obs_chk_${idx}" onchange="toggleObservationItem(${idx})" class="obs-checkbox mt-1 w-4 h-4 accent-red-600 rounded cursor-pointer" ${isChecked ? 'checked' : ''}>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="font-bold text-xs sm:text-sm text-gray-800 leading-snug block">${escapeHtml(noteText)}</span>
+                            <span id="obs_badge_${idx}" class="${isChecked ? 'inline-flex' : 'hidden'} items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 shrink-0">
+                                مخالفة مرصودة
+                            </span>
+                        </div>
+                        <div class="text-[11px] text-gray-600 mt-1.5 flex items-start gap-1.5 bg-gray-50/80 p-2 rounded-lg border border-gray-100">
+                            <i class="fas fa-lightbulb text-amber-500 shrink-0 mt-0.5"></i>
+                            <div class="leading-relaxed">
+                                <span class="font-bold text-gray-700 ml-1">التوصية المعتمدة:</span>
+                                <span class="text-gray-800">${escapeHtml(recText || 'لا توجد توصية محددة')}</span>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function toggleObservationItem(idx) {
+        const chk = document.getElementById(`obs_chk_${idx}`);
+        const card = document.getElementById(`obs_card_${idx}`);
+        const badge = document.getElementById(`obs_badge_${idx}`);
+        if (!chk || !card) return;
+        if (chk.checked) {
+            card.classList.remove('bg-white', 'border-gray-200', 'hover:bg-blue-50/30');
+            card.classList.add('bg-red-50/70', 'border-red-300');
+            if (badge) badge.classList.remove('hidden');
+        } else {
+            card.classList.remove('bg-red-50/70', 'border-red-300');
+            card.classList.add('bg-white', 'border-gray-200', 'hover:bg-blue-50/30');
+            if (badge) badge.classList.add('hidden');
+        }
+    }
+
+    function clearAllViolationCheckboxes() {
+        document.querySelectorAll('.obs-checkbox').forEach((cb, idx) => {
+            cb.checked = false;
+            toggleObservationItem(idx);
+        });
+    }
+
+    function toggleQuickAddObsModal(show) {
+        const panel = document.getElementById('quick-add-obs-panel');
+        if (!panel) return;
+        if (show) {
+            panel.classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('quick-obs-note')?.focus();
+            }, 50);
+        } else {
+            panel.classList.add('hidden');
+            const noteInput = document.getElementById('quick-obs-note');
+            const recInput = document.getElementById('quick-obs-rec');
+            if (noteInput) noteInput.value = '';
+            if (recInput) recInput.value = '';
+        }
+    }
+
+    function saveQuickObservation() {
+        const noteInput = document.getElementById('quick-obs-note');
+        const recInput = document.getElementById('quick-obs-rec');
+        const autoCheck = document.getElementById('quick-obs-auto-check')?.checked;
+
+        const note = noteInput ? noteInput.value.trim() : '';
+        const rec = recInput ? recInput.value.trim() : '';
+
+        if (!note) {
+            alert('يرجى كتابة نص الملاحظة أولاً');
+            noteInput?.focus();
+            return;
+        }
+
+        if (!settingsData.procedures) {
+            settingsData.procedures = [];
+        }
+
+        // Check if observation already exists in list
+        const existingIdx = settingsData.procedures.findIndex(p => (p.note || p.name || '').trim().toLowerCase() === note.toLowerCase());
+        if (existingIdx !== -1) {
+            alert('هذه الملاحظة موجودة بالفعل في القائمة');
+            if (autoCheck) {
+                const chk = document.getElementById(`obs_chk_${existingIdx}`);
+                if (chk) {
+                    chk.checked = true;
+                    toggleObservationItem(existingIdx);
+                }
+            }
+            toggleQuickAddObsModal(false);
+            return;
+        }
+
+        const newProc = {
+            name: note,
+            note: note,
+            rec: rec || 'متابعة الإجراء التصحيحي اللازم',
+            depts: []
+        };
+        settingsData.procedures.push(newProc);
+
+        // Keep current checked selections
+        const currentlyChecked = new Set();
+        document.querySelectorAll('.obs-checkbox:checked').forEach(cb => {
+            const id = parseInt(cb.id.replace('obs_chk_', ''));
+            if (!isNaN(id)) currentlyChecked.add(id);
+        });
+
+        // If autoCheck requested, check the new item
+        const newIdx = settingsData.procedures.length - 1;
+        if (autoCheck) {
+            currentlyChecked.add(newIdx);
+        }
+
+        // Re-render checklist with saved checked states
+        renderDailyProcedures(currentlyChecked);
+        toggleQuickAddObsModal(false);
+
+        // Keep settings table in sync if open or present
+        if (typeof addProcRow === 'function' && document.getElementById('proc-table-body')) {
+            addProcRow(newProc.note, newProc.rec, false);
+        }
+
+        // Save immediately to persistent settings database for this center
+        const centerName = currentCenter ? currentCenter.name : '';
+        google.script.run.withSuccessHandler(() => {
+            console.log('Observation saved to center settings permanently.');
+        }).withFailureHandler(err => {
+            console.error('Error auto-saving new observation to settings:', err);
+        }).saveSettingsData(settingsData, '', centerName);
+    }
+
+    function formatSupervisorListHtml(supervisorStr) {
+        if (!supervisorStr || supervisorStr === '-') return 'غير محدد';
+        const names = Array.from(new Set(
+            supervisorStr.split(/[،,\/\n]/).map(s => s.trim()).filter(Boolean)
+        ));
+        if (names.length === 0) return 'غير محدد';
+        if (names.length === 1) return escapeHtml(names[0]);
+        return names.map(n => `<div class="py-0.5 leading-snug">${escapeHtml(n)}</div>`).join('');
+    }
+
+    function submitDailyReport() {
+        const checkedImplementers = Array.from(document.querySelectorAll('.implementer-chk:checked'))
+            .map(cb => cb.value.trim())
+            .filter(Boolean);
+        const supervisorValue = checkedImplementers.length > 0 
+            ? checkedImplementers.join('، ') 
+            : (document.getElementById('daily-supervisor')?.value.trim() || '');
+
+        const formData = {
+            centerName: currentCenter ? currentCenter.name : '',
+            date: document.getElementById('daily-date').value,
+            period: document.getElementById('daily-period').value,
+            department: document.getElementById('daily-dept').value,
+            inspector: document.getElementById('daily-inspector').value,
+            supervisor: supervisorValue,
+            evaluations: []
+        };
+
+        if(!formData.date || !formData.department) { 
+            alert('يرجى استكمال البيانات الأساسية (التاريخ والقسم)'); 
+            return; 
+        }
+
+        if(!formData.supervisor) {
+            alert('يرجى اختيار المسؤول عن التنفيذ من القائمة');
+            return;
+        }
+
+        const procedures = settingsData.procedures || [];
+        const totalItems = procedures.length;
+        let violationsCount = 0;
+
+        procedures.forEach((proc, idx) => {
+            const isChecked = document.getElementById(`obs_chk_${idx}`)?.checked;
+            const noteText = proc.note || proc.name || '';
+            const recText = proc.rec || '';
+
+            if (isChecked) {
+                violationsCount++;
+                formData.evaluations.push({
+                    procedure: noteText,
+                    status: 'No',
+                    note: noteText,
+                    rec: recText
+                });
+            } else {
+                formData.evaluations.push({
+                    procedure: noteText,
+                    status: 'Yes',
+                    note: '',
+                    rec: ''
+                });
+            }
+        });
+
+        loading(true);
+        google.script.run.withSuccessHandler(() => {
+            loading(false);
+            cachedDashboardData = null;
+            showDailyResult(formData);
+        }).withFailureHandler(err => {
+            loading(false);
+            alert('خطأ في حفظ التقرير: ' + err);
+        }).saveDailyReport(formData);
+    }
+
+    function showDailyResult(data) {
+        document.getElementById('daily-form-container').classList.add('hidden');
+        document.getElementById('daily-result-view').classList.remove('hidden');
+
+        populateReportLogoSlots('daily-right-logo-slot', 'daily-left-logo-slot');
+        document.getElementById('daily-hosp-name').innerText = settingsData.hospitalName || 'مستشفى المنيا الجامعى للعيون';
+        document.getElementById('daily-team-sig').innerText = settingsData.teamSignature || 'مشرف مكافحة العدوى';
+        document.getElementById('res-date').innerText = data.date;
+        document.getElementById('res-dept').innerText = data.department;
+        document.getElementById('res-period').innerText = data.period;
+        document.getElementById('res-inspector').innerText = data.inspector;
+        document.getElementById('res-supervisor').innerHTML = formatSupervisorListHtml(data.supervisor);
+        
+        const tbody = document.getElementById('res-table-body');
+        tbody.innerHTML = '';
+        data.evaluations.filter(e => e.status === 'No').forEach(e => {
+            tbody.innerHTML += `<tr><td class="border border-gray-300 p-2 text-red-700 font-medium">${e.note}</td><td class="border border-gray-300 p-2">${e.rec}</td></tr>`;
+        });
+    }
+
+    function resetDailyForm() {
+        document.getElementById('daily-form-container').classList.remove('hidden');
+        document.getElementById('daily-result-view').classList.add('hidden');
+        document.getElementById('daily-date').value = getLocalYMD(new Date());
+        document.querySelectorAll('.implementer-chk').forEach(cb => cb.checked = false);
+        initDailyForm();
+    }
+
+    // --- Periodic Reports (Monthly / Annual) ---
+    function initMonthly() {
+        hideMonthlyBanner();
+        const picker = document.getElementById('month-picker');
+        if (!picker.value) {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            picker.value = `${y}-${m}`;
+        }
+    }
+
+    function initAnnual() {
+        const select = document.getElementById('year-picker');
+        const currentYear = new Date().getFullYear();
+        select.innerHTML = '';
+        
+        // Populate 2 years before and 2 years after
+        for(let i = currentYear - 2; i <= currentYear + 2; i++) {
+             const opt = document.createElement('option');
+             opt.value = i;
+             opt.innerText = i;
+             if(i === currentYear) opt.selected = true;
+             select.appendChild(opt);
+        }
+    }
+
+    function generatePeriodicReport(type, preserveBanner = false) {
+        const val = type === 'monthly' ? document.getElementById('month-picker').value : document.getElementById('year-picker').value;
+        if (!val) {
+            if (type === 'monthly') showMonthlyBanner('يرجى اختيار الشهر أولاً لعرض التقرير.', true);
+            else alert('اختر التاريخ');
+            return;
+        }
+        if (type === 'monthly' && !preserveBanner) hideMonthlyBanner();
+
+        loading(true);
+        google.script.run.withSuccessHandler(dataRows => {
+            loading(false);
+            processPeriodicData(dataRows, type, val);
+        }).withFailureHandler(err => {
+            loading(false);
+            if (type === 'monthly') showMonthlyBanner('خطأ في جلب التقرير: ' + err, true);
+            else alert('خطأ في جلب التقرير: ' + err);
+        }).getReportData(type, val, currentCenter ? currentCenter.name : '');
+    }
+
+    function processPeriodicData(rows, type, dateVal) {
+        if(rows.length === 0) {
+            if (type === 'monthly') {
+                document.getElementById('monthly-result').classList.add('hidden');
+                showMonthlyBanner(`لا توجد بيانات مسجلة لشهر (${dateVal}).`, true);
+            } else {
+                alert('لا توجد بيانات لهذه الفترة');
+            }
+            return;
+        }
+
+        const depts = {}; 
+        rows.forEach(r => {
+            const d = r[4];
+            const status = r[8];
+            const note = r[9];
+            const rec = r[10];
+
+            if(!depts[d]) depts[d] = {yes:0, no:0, notes:{}};
+            if(status === 'Yes') depts[d].yes++;
+            if(status === 'No') {
+                depts[d].no++;
+                if(note) {
+                    if(!depts[d].notes[note]) depts[d].notes[note] = {count:0, rec:rec};
+                    depts[d].notes[note].count++;
+                }
+            }
+        });
+
+        const container = type === 'monthly' ? document.getElementById('monthly-result') : document.getElementById('yearly-result');
+        container.classList.remove('hidden');
+        const title = type === 'monthly' ? `تقرير شهر: ${dateVal}` : `تقرير عام: ${dateVal}`;
+        const threshold = type === 'monthly' ? 5 : 15;
+
+        const hospName = settingsData?.hospitalName || 'مستشفى المنيا الجامعى للعيون';
+        const teamSig = settingsData?.teamSignature || 'مشرف مكافحة العدوى';
+        const managerSig = settingsData?.managerSignature || 'مدير عام المستشفى';
+        
+        let html = `
+            <div class="report-header-bar mb-2 border-b-2 border-gray-800 pb-2 avoid-break">
+                ${getReportLogoSlotHtml('right')}
+                <div class="text-center flex-1 px-2">
+                    <h1 class="text-lg font-bold text-gray-900">${hospName}</h1>
+                    <h2 class="text-base font-bold text-gray-800">وحدة مكافحة العدوى</h2>
+                    <p class="text-sm text-gray-700 mt-1">${title}</p>
+                </div>
+                ${getReportLogoSlotHtml('left')}
+            </div>
+            <div class="mb-4 text-left no-print flex flex-wrap gap-2">
+                <button onclick="window.print()" class="bg-gray-800 text-white px-5 py-2 rounded hover:bg-gray-700 shadow flex items-center gap-2 transition">
+                    <i class="fas fa-print"></i> طباعة PDF
+                </button>
+                <button onclick="exportToWord('${type === 'monthly' ? 'monthly-result' : 'yearly-result'}', '${type}-Report.doc')" class="bg-blue-700 text-white px-5 py-2 rounded hover:bg-blue-600 shadow flex items-center gap-2 transition">
+                    <i class="fas fa-file-word"></i> تصدير Word
+                </button>
+                ${type === 'monthly' ? `
+                <button onclick="openCopyMonthModal('${dateVal}')" class="bg-emerald-700 text-white px-5 py-2 rounded hover:bg-emerald-800 shadow flex items-center gap-2 transition">
+                    <i class="fas fa-copy"></i> نسخ هذا الشهر إلى شهر آخر
+                </button>
+                ` : ''}
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs border-collapse border border-gray-800 shadow-sm bg-white" dir="rtl">
+                    <thead class="bg-gray-200 text-gray-900">
+                        <tr>
+                            <th class="border border-gray-600 p-2 text-right font-bold w-1/5 text-sm">القسم</th>
+                            <th class="border border-gray-600 p-2 text-right font-bold w-2/5 text-sm">الملاحظات</th>
+                            <th class="border border-gray-600 p-2 text-right font-bold text-sm">التوصيات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-900">
+        `;
+
+        Object.keys(depts).forEach(dName => {
+            const d = depts[dName];
+            const freqNotes = [];
+            Object.keys(d.notes).forEach(nTxt => {
+                if(d.notes[nTxt].count > threshold) freqNotes.push({txt: nTxt, rec: d.notes[nTxt].rec});
+            });
+
+            if (freqNotes.length > 0) {
+                 html += `<tr class="hover:bg-gray-50 group"><td class="border border-gray-600 p-2 font-bold align-top bg-gray-50 text-sm" rowspan="${freqNotes.length}">${dName}</td><td class="border border-gray-600 p-2 text-red-700 align-top font-medium">${freqNotes[0].txt}</td><td class="border border-gray-600 p-2 align-top font-medium">${freqNotes[0].rec}</td></tr>`;
+                 for(let i=1; i<freqNotes.length; i++) {
+                     html += `<tr class="hover:bg-gray-50 group"><td class="border border-gray-600 p-2 text-red-700 align-top font-medium">${freqNotes[i].txt}</td><td class="border border-gray-600 p-2 align-top font-medium">${freqNotes[i].rec}</td></tr>`;
+                 }
+            } else {
+                html += `<tr class="hover:bg-gray-50"><td class="border border-gray-600 p-2 font-bold bg-gray-50 text-sm">${dName}</td><td class="border border-gray-600 p-2 text-gray-400 text-center">-</td><td class="border border-gray-600 p-2 text-gray-400 text-center">-</td></tr>`;
+            }
+        });
+
+        html += `</tbody></table></div>`;
+        html += `
+            <div class="mt-6 flex justify-between items-end text-center text-sm font-bold text-gray-900 page-break-inside-avoid print-only avoid-break px-10">
+                <div class="flex flex-col items-center">
+                    <div class="mb-4">${teamSig}</div>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="mb-4">${managerSig}</div>
+                </div>
+            </div>
+        `;
+        container.innerHTML = html;
+        applyRoleRestrictions();
+    }
+
+    // --- Copy Monthly Report Modal & Logic ---
+    function getNextMonthStr(ymStr) {
+        if (!ymStr || !ymStr.includes('-')) {
+            const now = new Date();
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        }
+        const [y, m] = ymStr.split('-').map(Number);
+        const nextDate = new Date(y, m, 1); // m is 1-based, so month index m is next month
+        return `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function showMonthlyBanner(message, isError = false) {
+        const banner = document.getElementById('monthly-copy-banner');
+        const icon = document.getElementById('monthly-copy-banner-icon');
+        const text = document.getElementById('monthly-copy-banner-text');
+        if (!banner || !icon || !text) return;
+
+        banner.className = isError
+            ? 'mb-6 p-4 rounded border border-red-200 bg-red-50 text-red-800 flex items-center justify-between no-print'
+            : 'mb-6 p-4 rounded border border-emerald-200 bg-emerald-50 text-emerald-800 flex items-center justify-between no-print';
+        icon.className = isError ? 'fas fa-exclamation-circle text-lg text-red-600' : 'fas fa-check-circle text-lg text-emerald-600';
+        text.innerText = message;
+        banner.classList.remove('hidden');
+    }
+
+    function hideMonthlyBanner() {
+        const banner = document.getElementById('monthly-copy-banner');
+        if (banner) banner.classList.add('hidden');
+    }
+
+    function openCopyMonthModal(prefillSource) {
+        const currentPicked = prefillSource || document.getElementById('month-picker').value;
+        const srcInput = document.getElementById('copy-source-month');
+        const tgtInput = document.getElementById('copy-target-month');
+        const errBox = document.getElementById('copy-month-error');
+
+        srcInput.value = currentPicked || '';
+        tgtInput.value = getNextMonthStr(currentPicked);
+        document.getElementById('copy-replace-existing').checked = true;
+        errBox.classList.add('hidden');
+
+        document.getElementById('copy-month-modal').classList.remove('hidden');
+    }
+
+    function closeCopyMonthModal() {
+        document.getElementById('copy-month-modal').classList.add('hidden');
+    }
+
+    function showCopyModalError(msg) {
+        const errBox = document.getElementById('copy-month-error');
+        const errText = document.getElementById('copy-month-error-text');
+        errText.innerText = msg;
+        errBox.classList.remove('hidden');
+    }
+
+    function submitCopyMonthlyReport() {
+        const sourceMonth = document.getElementById('copy-source-month').value;
+        const targetMonth = document.getElementById('copy-target-month').value;
+        const replaceExisting = document.getElementById('copy-replace-existing').checked;
+        const submitBtn = document.getElementById('copy-month-submit-btn');
+
+        if (!sourceMonth || !targetMonth) {
+            showCopyModalError('يرجى تحديد كلٍ من الشهر المصدر والشهر الهدف.');
+            return;
+        }
+
+        if (sourceMonth === targetMonth) {
+            showCopyModalError('لا يمكن نسخ التقرير إلى نفس الشهر المصدر، اختر شهراً مختلفاً.');
+            return;
+        }
+
+        document.getElementById('copy-month-error').classList.add('hidden');
+        submitBtn.disabled = true;
+        const origBtnHtml = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري النسخ...';
+
+        loading(true);
+        google.script.run.withSuccessHandler(res => {
+            loading(false);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origBtnHtml;
+            closeCopyMonthModal();
+
+            // Invalidate client-side dashboard cache so next dashboard visit reflects copied records
+            cachedDashboardData = null;
+
+            // Switch month picker to the target month and render optimistically with 0 follow-up queries
+            document.getElementById('month-picker').value = targetMonth;
+            const count = res && res.copiedCount ? res.copiedCount : '';
+            showMonthlyBanner(`تم نسخ التقرير الشهري بنجاح من (${sourceMonth}) إلى (${targetMonth}) — إجمالي التقييمات المنسوخة: ${count}`);
+            if (res && Array.isArray(res.rows) && res.rows.length > 0 && replaceExisting) {
+                processPeriodicData(res.rows, 'monthly', targetMonth);
+            } else {
+                generatePeriodicReport('monthly', true);
+            }
+        }).withFailureHandler(err => {
+            loading(false);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origBtnHtml;
+            const errMsg = err && err.message ? err.message : String(err);
+            showCopyModalError(errMsg);
+        }).copyMonthlyReport(sourceMonth, targetMonth, replaceExisting, '', currentCenter ? currentCenter.name : '');
+    }
+
+    // --- Archive Logic ---
+    function initArchive() {
+       // Auto set "This Month"
+       quickSetDate('month', false);
+
+       const cName = currentCenter ? currentCenter.name : '';
+       if (!settingsData.departments) {
+         google.script.run.withSuccessHandler(data => {
+            settingsData = data;
+            populateArchiveDropdowns();
+            generateArchive();
+         }).withFailureHandler(err => console.error(err)).getSettings(cName);
+       } else {
+         populateArchiveDropdowns();
+         generateArchive();
+       }
+    }
+    
+    function quickSetDate(type, triggerSearch = true) {
+        const now = new Date();
+        const startEl = document.getElementById('arch-start');
+        const endEl = document.getElementById('arch-end');
+        
+        const toLocalYMD = (date) => {
+            const offset = date.getTimezoneOffset() * 60000;
+            return new Date(date.getTime() - offset).toISOString().split('T')[0];
+        };
+
+        if (type === 'today') {
+            const str = toLocalYMD(now);
+            startEl.value = str;
+            endEl.value = str;
+        } else if (type === 'month') {
+            const start = new Date(now.getFullYear(), now.getMonth(), 1);
+            startEl.value = toLocalYMD(start);
+            endEl.value = toLocalYMD(now);
+        } else if (type === 'year') {
+            const start = new Date(now.getFullYear(), 0, 1);
+            startEl.value = toLocalYMD(start);
+            endEl.value = toLocalYMD(now);
+        }
+        
+        if (triggerSearch) generateArchive();
+    }
+
+    function populateArchiveDropdowns() {
+        const fill = (id, arr) => {
+            document.getElementById(id).innerHTML = '<option value="">الكل</option>' + arr.map(x => `<option value="${x}">${x}</option>`).join('');
+        };
+        fill('arch-dept', settingsData.departments);
+        fill('arch-inspector', settingsData.inspectors);
+    }
+
+    function generateArchive() {
+        const start = document.getElementById('arch-start').value;
+        const end = document.getElementById('arch-end').value;
+        const dept = document.getElementById('arch-dept').value;
+        const insp = document.getElementById('arch-inspector').value;
+
+        if(!start || !end) { alert('حدد الفترة'); return; }
+
+        loading(true);
+        google.script.run.withSuccessHandler(rows => {
+            loading(false);
+            const filtered = rows.filter(r => {
+                const matchDept = dept ? r[4] === dept : true;
+                const matchInsp = insp ? r[5] === insp : true;
+                return matchDept && matchInsp;
+            });
+            renderArchive(filtered, {start, end, dept, insp});
+        }).withFailureHandler(err => {
+            loading(false);
+            alert('خطأ في الأرشيف: ' + err);
+        }).getReportData('range', {start, end}, currentCenter ? currentCenter.name : '');
+    }
+
+    function renderArchive(rows, filters) {
+        const container = document.getElementById('archive-result');
+        const detailContainer = document.getElementById('archive-detail-view');
+        const batchContainer = document.getElementById('archive-batch-view');
+        
+        container.classList.remove('hidden');
+        detailContainer.classList.add('hidden');
+        batchContainer.classList.add('hidden');
+        container.innerHTML = '';
+
+        if (rows.length === 0) {
+             container.innerHTML = '<div class="text-center text-gray-500 py-10 bg-gray-50 border border-dashed border-gray-300 rounded">لا توجد بيانات مطابقة للبحث</div>';
+             return;
+        }
+
+        const reports = {};
+        rows.forEach(r => {
+            const dateStr = r[0] || 'Unknown Date';
+            const key = `${dateStr}_${r[3]}_${r[4]}_${r[5]}`;
+
+            if (!reports[key]) {
+                reports[key] = { date: dateStr, period: r[3], dept: r[4], inspector: r[5], supervisor: r[6], yesCount: 0, noCount: 0, rows: [] };
+            }
+            if (r[8] === 'Yes') reports[key].yesCount++;
+            if (r[8] === 'No') reports[key].noCount++;
+            reports[key].rows.push(r);
+        });
+
+        currentArchiveReports = Object.values(reports);
+        currentArchiveReports.sort((a, b) => b.date.localeCompare(a.date));
+
+        const hospName = settingsData?.hospitalName || 'مستشفى المنيا الجامعى للعيون';
+        const printHeader = `
+            <div class="hidden print-only mb-2 border-b-2 border-black pb-2 avoid-break">
+                <div class="report-header-bar">
+                    ${getReportLogoSlotHtml('right')}
+                    <div class="text-center flex-1 px-2">
+                        <h1 class="text-lg font-bold mb-1">${hospName}</h1>
+                        <h2 class="text-base font-bold mb-1">وحدة مكافحة العدوى</h2>
+                        <div class="flex flex-wrap justify-center gap-6 text-xs font-bold mt-2">
+                            <span>من تاريخ: ${filters?.start || '-'}</span>
+                            <span>إلى تاريخ: ${filters?.end || '-'}</span>
+                            <span>القسم: ${filters?.dept || 'الكل'}</span>
+                        </div>
+                    </div>
+                    ${getReportLogoSlotHtml('left')}
+                </div>
+            </div>
+        `;
+
+        let html = `
+            ${printHeader}
+            <div class="flex justify-between items-center mb-4 no-print">
+                <h3 class="font-bold text-xl text-blue-900"><i class="fas fa-list-ul ml-2"></i> نتائج البحث (${currentArchiveReports.length} تقرير)</h3>
+                <div class="flex gap-2">
+                    <button onclick="printSelectedReports()" class="bg-emerald-600 text-white px-4 py-2 rounded shadow hover:bg-emerald-700 transition flex items-center text-sm">
+                        <i class="fas fa-print ml-2"></i> طباعة المحدد
+                    </button>
+                </div>
+            </div>
+            <div class="mb-6 no-print relative">
+                <input type="text" id="archive-filter-input" onkeyup="filterArchiveTable()" placeholder="تصفية النتائج (ابحث عن قسم، تاريخ، أو قائم بالمرور...)" 
+                       class="w-full border border-gray-300 p-3 pr-10 rounded shadow-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                <i class="fas fa-search absolute left-3 top-4 text-gray-400"></i>
+            </div>
+            <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+                <table id="archive-table" class="w-full text-sm text-right bg-white">
+                    <thead class="bg-blue-900 text-white">
+                        <tr>
+                            <th class="p-4 font-bold border-b border-blue-800 w-10 text-center no-print">
+                                <input type="checkbox" id="archive-select-all" onclick="toggleSelectAllArchive(this)" class="w-4 h-4 accent-blue-300">
+                            </th>
+                            <th class="p-4 font-bold border-b border-blue-800">التاريخ</th>
+                            <th class="p-4 font-bold border-b border-blue-800">الفترة</th>
+                            <th class="p-4 font-bold border-b border-blue-800">القسم</th>
+                            <th class="p-4 font-bold border-b border-blue-800">القائم بالمرور</th>
+                            <th class="p-4 font-bold border-b border-blue-800 w-24 no-print">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+        `;
+
+        currentArchiveReports.forEach((rep, index) => {
+            html += `
+                <tr class="hover:bg-blue-50 transition text-gray-700">
+                    <td class="p-4 text-center no-print">
+                        <input type="checkbox" class="archive-chk w-4 h-4 accent-blue-600" value="${index}">
+                    </td>
+                    <td class="p-4 font-medium">${rep.date}</td>
+                    <td class="p-4">${rep.period}</td>
+                    <td class="p-4 font-bold text-gray-900">${rep.dept}</td>
+                    <td class="p-4">${rep.inspector}</td>
+                    <td class="p-4 text-center no-print">
+                         <button onclick="viewArchiveReport(${index})" class="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition">عرض التفاصيل</button>
+                    </td>
+                </tr>
+            `;
+        });
+        html += `</tbody></table></div>`;
+        
+        // Print Footer for List View
+        const teamSig = settingsData?.teamSignature || 'مشرف مكافحة العدوى';
+        const managerSig = settingsData?.managerSignature || 'مدير عام المستشفى';
+        html += `
+            <div class="mt-4 hidden print-only text-center text-sm font-bold pt-4 border-t border-gray-400">
+                <div class="flex justify-around">
+                    <span>${teamSig}</span>
+                    <span>يعتمد، ${managerSig}</span>
+                </div>
+            </div>
+        `;
+        
+        container.innerHTML = html;
+    }
+
+    function toggleSelectAllArchive(source) {
+        const checkboxes = document.querySelectorAll('.archive-chk');
+        checkboxes.forEach(cb => {
+            if(cb.closest('tr').style.display !== 'none') {
+                cb.checked = source.checked;
+            }
+        });
+    }
+
+    function printSelectedReports() {
+        const checkboxes = document.querySelectorAll('.archive-chk:checked');
+        if (checkboxes.length === 0) {
+            alert("الرجاء تحديد تقرير واحد على الأقل للطباعة");
+            return;
+        }
+
+        const batchContainer = document.getElementById('archive-batch-view');
+        const contentDiv = document.getElementById('archive-batch-content');
+        
+        // Hide list, show batch
+        document.getElementById('archive-result').classList.add('hidden');
+        batchContainer.classList.remove('hidden');
+
+        // Group selected reports by Date
+        const groupedByDate = {};
+        
+        checkboxes.forEach((cb) => {
+            const index = parseInt(cb.value);
+            const report = currentArchiveReports[index];
+            if (report) {
+                if (!groupedByDate[report.date]) {
+                    groupedByDate[report.date] = [];
+                }
+                groupedByDate[report.date].push(report);
+            }
+        });
+
+        let htmlAccumulator = '';
+        const dates = Object.keys(groupedByDate).sort().reverse(); // Show newest dates first
+
+        dates.forEach((date, idx) => {
+            const reports = groupedByDate[date];
+            htmlAccumulator += buildCombinedDailyReport(date, reports);
+            
+            // Add page break if it's not the last date
+            if (idx < dates.length - 1) {
+                htmlAccumulator += '<div class="page-break"></div>';
+            }
+        });
+
+        contentDiv.innerHTML = htmlAccumulator;
+    }
+
+    function buildCombinedDailyReport(date, reports) {
+        // Build merged unique supervisors list without duplicates
+        const allSupervisorsSet = new Set();
+        reports.forEach(rep => {
+            if (rep.supervisor && rep.supervisor !== '-') {
+                rep.supervisor.split(/[،,\/\n]/).forEach(name => {
+                    const trimmed = name.trim();
+                    if (trimmed && trimmed !== '-') {
+                        allSupervisorsSet.add(trimmed);
+                    }
+                });
+            }
+        });
+        const uniqueSupervisors = Array.from(allSupervisorsSet);
+        let mergedSupervisorHtml = '';
+        if (uniqueSupervisors.length === 0) {
+            mergedSupervisorHtml = '<span class="text-gray-500">-</span>';
+        } else {
+            mergedSupervisorHtml = uniqueSupervisors.map(name => 
+                `<div class="py-1 px-1 font-medium border-b border-gray-200 last:border-b-0 leading-snug">${escapeHtml(name)}</div>`
+            ).join('');
+        }
+
+        // Build Summary Table Rows
+        let summaryRows = '';
+        
+        // Data structure to group violations by Department across all reports for this day
+        // Key: Department Name, Value: Array of {note, rec}
+        const deptViolationsMap = {};
+
+        reports.forEach((rep, idx) => {
+            const supervisorCell = idx === 0 
+                ? `<td class="border border-gray-400 p-1 text-center align-middle bg-gray-50/50" rowspan="${reports.length}">${mergedSupervisorHtml}</td>` 
+                : '';
+
+            summaryRows += `
+                <tr class="hover:bg-gray-50">
+                    <td class="border border-gray-400 p-2 font-bold">${escapeHtml(rep.dept)}</td>
+                    <td class="border border-gray-400 p-2 text-center">${escapeHtml(rep.period)}</td>
+                    <td class="border border-gray-400 p-2 text-center">${escapeHtml(rep.inspector)}</td>
+                    ${supervisorCell}
+                </tr>
+            `;
+
+            // Aggregate Violations
+            const failures = rep.rows.filter(r => r[8] === 'No');
+            if (failures.length > 0) {
+                if (!deptViolationsMap[rep.dept]) {
+                    deptViolationsMap[rep.dept] = [];
+                }
+                failures.forEach(f => {
+                    deptViolationsMap[rep.dept].push({
+                        note: f[9] || '-',
+                        rec: f[10] || '-'
+                    });
+                });
+            }
+        });
+
+        // Build Details Table Rows (Grouped by Dept)
+        let violationRows = '';
+        const affectedDepts = Object.keys(deptViolationsMap);
+
+        if (affectedDepts.length === 0) {
+            violationRows = '<tr><td colspan="3" class="p-4 text-center text-gray-500 border border-gray-400">لا توجد ملاحظات مسجلة لهذا اليوم في الأقسام المختارة</td></tr>';
+        } else {
+            affectedDepts.forEach(dept => {
+                const items = deptViolationsMap[dept];
+                items.forEach((item, idx) => {
+                    violationRows += `<tr class="hover:bg-gray-50">`;
+                    // Rowspan for Department Name (Merge cells if dept is repeated)
+                    if (idx === 0) {
+                        violationRows += `<td class="border border-gray-400 p-2 font-bold bg-gray-50 align-top" rowspan="${items.length}">${escapeHtml(dept)}</td>`;
+                    }
+                    violationRows += `
+                        <td class="border border-gray-400 p-2 text-red-700 align-top">${escapeHtml(item.note)}</td>
+                        <td class="border border-gray-400 p-2 align-top">${escapeHtml(item.rec)}</td>
+                    </tr>`;
+                });
+            });
+        }
+
+        const hospName = settingsData?.hospitalName || 'مستشفى المنيا الجامعى للعيون';
+        const teamSig = settingsData?.teamSignature || 'مشرف مكافحة العدوى';
+        return `
+        <div class="bg-white p-8 border border-gray-200 shadow-sm mb-4 relative print-container">
+            
+            <!-- Header -->
+            <div class="avoid-break border-b-2 border-blue-900 pb-2 mb-3">
+                <div class="report-header-bar">
+                    ${getReportLogoSlotHtml('right')}
+                    <div class="text-center flex-1 px-2">
+                        <h1 class="text-xl font-bold text-blue-900 mb-1">${escapeHtml(hospName)}</h1>
+                        <h2 class="text-lg font-bold text-blue-800">وحدة مكافحة العدوى</h2>
+                    </div>
+                    ${getReportLogoSlotHtml('left')}
+                </div>
+                <div class="flex flex-wrap justify-between items-end mt-3 px-4 md:px-10 gap-2">
+                    <p class="text-sm font-bold">تقرير مرور أسبوعي مجمع</p>
+                    <div class="text-sm border border-gray-400 px-4 py-1 rounded bg-gray-50">
+                        <span class="font-bold text-blue-900 ml-2">التاريخ:</span> 
+                        <span class="font-bold text-gray-800">${escapeHtml(date)}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table 1: Summary -->
+            <div class="mb-6">
+                <h3 class="font-bold text-blue-900 mb-2 border-r-4 border-blue-900 pr-2">ملخص المرور الأسبوعي</h3>
+                <table class="w-full text-xs border-collapse border border-gray-400">
+                    <thead class="bg-blue-100 text-blue-900">
+                        <tr>
+                            <th class="border border-gray-400 p-2">القسم</th>
+                            <th class="border border-gray-400 p-2">الفترة</th>
+                            <th class="border border-gray-400 p-2">القائم بالمرور</th>
+                            <th class="border border-gray-400 p-2">المسؤول عن التنفيذ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${summaryRows}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table 2: Details -->
+            <div>
+                <h3 class="font-bold text-blue-900 mb-2 border-r-4 border-red-600 pr-2">تفاصيل الملاحظات والتوصيات</h3>
+                <table class="w-full text-xs border-collapse border border-gray-400">
+                    <thead class="bg-gray-100 text-gray-900">
+                        <tr>
+                            <th class="border border-gray-400 p-2 w-1/5">القسم</th>
+                            <th class="border border-gray-400 p-2 w-2/5">الملاحظات</th>
+                            <th class="border border-gray-400 p-2 w-2/5">التوصيات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${violationRows}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Footer -->
+            <div class="mt-4 pt-2 border-t border-gray-400 text-sm text-gray-900 avoid-break page-break-inside-avoid">
+                <div class="text-left font-bold pl-4">
+                    <p>${escapeHtml(teamSig)}</p>
+                </div>
+            </div>
+        </div>
+        `;
+    }
+
+    function closeBatchView() {
+        document.getElementById('archive-batch-view').classList.add('hidden');
+        document.getElementById('archive-result').classList.remove('hidden');
+    }
+
+    function filterArchiveTable() {
+        const input = document.getElementById('archive-filter-input');
+        const filter = input.value.toLowerCase();
+        const trs = document.getElementById('archive-table').getElementsByTagName('tr');
+        for (let i = 1; i < trs.length; i++) {
+            const tr = trs[i];
+            const tds = tr.getElementsByTagName('td');
+            let txtValue = "";
+            for(let j=0; j < tds.length; j++) txtValue += (tds[j].textContent || tds[j].innerText) + " ";
+            tr.style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+        }
+    }
+    
+    function viewArchiveReport(index) {
+        const report = currentArchiveReports[index];
+        if(!report) return;
+
+        document.getElementById('archive-result').classList.add('hidden');
+        document.getElementById('archive-detail-view').classList.remove('hidden');
+
+        populateReportLogoSlots('arc-right-logo-slot', 'arc-left-logo-slot');
+        document.getElementById('arc-res-hosp-name').innerText = settingsData.hospitalName || 'مستشفى المنيا الجامعى للعيون';
+        document.getElementById('arc-res-team-sig').innerText = settingsData.teamSignature || 'مشرف مكافحة العدوى';
+        document.getElementById('arc-res-date').innerText = report.date;
+        document.getElementById('arc-res-dept').innerText = report.dept;
+        document.getElementById('arc-res-period').innerText = report.period;
+        document.getElementById('arc-res-inspector').innerText = report.inspector;
+        document.getElementById('arc-res-supervisor').innerHTML = formatSupervisorListHtml(report.supervisor);
+
+        const tbody = document.getElementById('arc-res-table-body');
+        tbody.innerHTML = '';
+        const failures = report.rows.filter(r => r[8] === 'No');
+
+        if(failures.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-gray-500">لا توجد مخالفات مسجلة</td></tr>';
+        } else {
+            failures.forEach(r => {
+                tbody.innerHTML += `<tr><td class="border border-gray-300 p-2 text-red-700">${r[9] || '-'}</td><td class="border border-gray-300 p-2">${r[10] || '-'}</td></tr>`;
+            });
+        }
+    }
+    
+    function closeArchiveDetail() {
+        document.getElementById('archive-detail-view').classList.add('hidden');
+        document.getElementById('archive-result').classList.remove('hidden');
+    }
+
+    // --- Client In-Memory Caching for Dashboard ---
+    let cachedDashboardData = null;
+    let lastDashboardFetch = 0;
+
+    // --- Dashboard Charts ---
+    function loadDashboard(force = false) {
+      const now = Date.now();
+      // Reuse local memory cache if less than 60 seconds old to completely eliminate unnecessary roundtrips
+      if (!force && cachedDashboardData && (now - lastDashboardFetch < 60000)) {
+        processDashboardMetrics(cachedDashboardData);
+        return;
+      }
+
+      google.script.run.withSuccessHandler(data => {
+         cachedDashboardData = data || [];
+         lastDashboardFetch = Date.now();
+         processDashboardMetrics(cachedDashboardData);
+      }).withFailureHandler(err => console.error("Dashboard Load Error: ", err)).getDashboardMetrics(currentCenter ? currentCenter.name : '');
+    }
+
+    function processDashboardMetrics(data) {
+       let totalYes=0, totalNo=0, dayYes=0, dayNo=0, monYes=0, monNo=0;
+       const deptStats = {}, dailyTrend = {};
+       const today = new Date().toISOString().split('T')[0];
+       const thisMonth = new Date().getMonth();
+       
+       data.forEach(r => {
+          const dStr = r.date;
+          const dObj = new Date(dStr);
+          const status = r.status;
+          
+          if(status === 'Yes') totalYes++;
+          if(status === 'No') totalNo++;
+
+          // Current week check (last 7 days)
+          const diffDays = Math.round((new Date().getTime() - dObj.getTime()) / (1000 * 3600 * 24));
+          if(diffDays >= 0 && diffDays <= 7) {
+              if(status === 'Yes') dayYes++;
+              if(status === 'No') dayNo++;
+          }
+          if(dObj.getMonth() === thisMonth && dObj.getFullYear() === new Date().getFullYear()) {
+              if(status === 'Yes') monYes++;
+              if(status === 'No') monNo++;
+              if(!deptStats[r.dept]) deptStats[r.dept] = {yes:0, no:0};
+              if(status === 'Yes') deptStats[r.dept].yes++;
+              if(status === 'No') deptStats[r.dept].no++;
+          }
+
+          if(!dailyTrend[dStr]) dailyTrend[dStr] = {yes:0, no:0};
+          if(status === 'Yes') dailyTrend[dStr].yes++;
+          if(status === 'No') dailyTrend[dStr].no++;
+       });
+
+       const calc = (y, n) => (y+n)===0 ? 0 : Math.round((y/(y+n))*100);
+       document.getElementById('dash-daily-val').innerText = calc(dayYes, dayNo) + '%';
+       document.getElementById('dash-monthly-val').innerText = calc(monYes, monNo) + '%';
+       document.getElementById('dash-yearly-val').innerText = calc(totalYes, totalNo) + '%';
+
+       renderCharts(deptStats, dailyTrend);
+    }
+
+    function refreshCacheMetricsUI() {
+      google.script.run.withSuccessHandler(metrics => {
+        if (!metrics) return;
+        const hitRateEl = document.getElementById('cache-hit-rate');
+        const savedReadsEl = document.getElementById('cache-saved-reads');
+        if (hitRateEl) hitRateEl.innerText = `نسبة النجاح: ${metrics.hitRate || '100%'}`;
+        if (savedReadsEl) savedReadsEl.innerText = `${metrics.savedCloudReads || 0} استعلام موفر`;
+      }).withFailureHandler(err => console.warn(err)).getCacheMetrics();
+    }
+
+    let deptChartInst = null;
+    let trendChartInst = null;
+
+    function renderCharts(deptStats, dailyTrend) {
+        const deptLabels = Object.keys(deptStats);
+        const deptScores = deptLabels.map(d => {
+            const s = deptStats[d];
+            return s.yes + s.no === 0 ? 0 : Math.round((s.yes/(s.yes+s.no))*100);
+        });
+
+        const ctx1 = document.getElementById('deptChart').getContext('2d');
+        if(deptChartInst) deptChartInst.destroy();
+        deptChartInst = new Chart(ctx1, {
+            type: 'bar',
+            data: { labels: deptLabels, datasets: [{ label: 'نسبة الالتزام %', data: deptScores, backgroundColor: '#1e3a8a', borderRadius: 4 }] },
+            options: { responsive: true }
+        });
+
+        const trendDates = Object.keys(dailyTrend).sort();
+        const trendScores = trendDates.map(d => {
+             const s = dailyTrend[d];
+             return s.yes + s.no === 0 ? 0 : Math.round((s.yes/(s.yes+s.no))*100);
+        });
+
+        const ctx2 = document.getElementById('trendChart').getContext('2d');
+        if(trendChartInst) trendChartInst.destroy();
+        trendChartInst = new Chart(ctx2, {
+            type: 'line',
+            data: { labels: trendDates, datasets: [{ label: 'الالتزام اليومي', data: trendScores, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', tension: 0.1, fill: true }] },
+            options: { responsive: true }
+        });
+    }
+
+    function initCentersLoginPortal() {
+        initCentersPortal();
+    }
+
+    window.onload = function() { 
+        initCentersPortal();
+    };
+  </script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
