@@ -185,7 +185,14 @@ export async function testRemoteTursoConnection(
 export async function migrateRemoteTursoData(
   options: TursoMigrationOptions
 ): Promise<TursoMigrationResult> {
-  const { sourceUrl, sourceToken, importSettings = true, replaceExisting = false } = options;
+  const {
+    sourceUrl,
+    sourceToken,
+    targetCenterName,
+    targetHospitalName,
+    importSettings = true,
+    replaceExisting = false
+  } = options;
 
   const testResult = await testRemoteTursoConnection(sourceUrl, sourceToken);
   if (!testResult.connected) {
@@ -200,12 +207,38 @@ export async function migrateRemoteTursoData(
     throw new Error("لم يتم العثور على جداول تقارير مكافحة العدوى أو الإعدادات في قاعدة البيانات المحددة");
   }
 
-  // 1. Migrate Settings if requested (Store globally as key-value pairs)
+  const rawTarget = String(targetCenterName || "").trim();
+  const isAutoMode = rawTarget === "auto";
+  const resolvedDefaultCenter = !isAutoMode && rawTarget
+    ? rawTarget
+    : (testResult.centersFound[0] || testResult.detectedHospitalName || "المركز المستورد");
+
+  const ensureCenterExists = async (cName: string, hospName?: string) => {
+    const clean = String(cName || "").trim();
+    if (!clean) return;
+    const existing = await db.execute({
+      sql: 'SELECT id FROM "Centers" WHERE name = ?',
+      args: [clean]
+    });
+    if (!existing.rows || existing.rows.length === 0) {
+      await db.execute({
+        sql: 'INSERT INTO "Centers" (id, name, hospital_name, created_at) VALUES (?, ?, ?, ?)',
+        args: [`center-${Date.now()}-${Math.floor(Math.random() * 1000)}`, clean, hospName || clean, new Date().toISOString()]
+      });
+    }
+  };
+
+  if (!isAutoMode && resolvedDefaultCenter) {
+    await ensureCenterExists(resolvedDefaultCenter, targetHospitalName || resolvedDefaultCenter);
+  }
+
+  // 1. Migrate Settings if requested
   let settingsImported = false;
   if (importSettings && settingsTable) {
     try {
       const sRes = await remote.execute(`SELECT key, value FROM "${settingsTable}"`);
       let bestSettingsObj: any = null;
+      const perCenterSettings: Record<string, any> = {};
       const primitiveSettings: Record<string, any> = {};
 
       for (const row of sRes.rows as any[]) {
@@ -218,6 +251,8 @@ export async function migrateRemoteTursoData(
         }
 
         if (k.startsWith("settings:") && parsed && typeof parsed === "object") {
+          const cKey = k.slice("settings:".length).trim();
+          if (cKey) perCenterSettings[cKey] = parsed;
           if (!bestSettingsObj) bestSettingsObj = parsed;
         } else if (k === "settings" && parsed && typeof parsed === "object") {
           if (!bestSettingsObj) bestSettingsObj = parsed;
@@ -226,15 +261,37 @@ export async function migrateRemoteTursoData(
         }
       }
 
-      const finalSettingsToSave = bestSettingsObj || (Object.keys(primitiveSettings).length > 0 ? primitiveSettings : null);
-      if (finalSettingsToSave) {
-        for (const [key, val] of Object.entries(finalSettingsToSave)) {
+      if (isAutoMode && Object.keys(perCenterSettings).length > 0) {
+        for (const [cName, sObj] of Object.entries(perCenterSettings)) {
+          await ensureCenterExists(cName, sObj.hospitalName || cName);
           await db.execute({
             sql: 'INSERT OR REPLACE INTO "Reports Settings" (key, value) VALUES (?, ?)',
-            args: [key, typeof val === "object" ? JSON.stringify(val) : String(val)]
+            args: [`settings:${cName}`, JSON.stringify(sObj)]
           });
+          settingsImported = true;
         }
-        settingsImported = true;
+      } else {
+        const finalSettingsToSave = bestSettingsObj || (Object.keys(primitiveSettings).length > 0 ? primitiveSettings : null);
+        if (finalSettingsToSave) {
+          const targetObj = {
+            ...finalSettingsToSave,
+            hospitalName: finalSettingsToSave.hospitalName || targetHospitalName || resolvedDefaultCenter
+          };
+          if (resolvedDefaultCenter) {
+            await db.execute({
+              sql: 'INSERT OR REPLACE INTO "Reports Settings" (key, value) VALUES (?, ?)',
+              args: [`settings:${resolvedDefaultCenter}`, JSON.stringify(targetObj)]
+            });
+          } else {
+            for (const [key, val] of Object.entries(targetObj)) {
+              await db.execute({
+                sql: 'INSERT OR REPLACE INTO "Reports Settings" (key, value) VALUES (?, ?)',
+                args: [key, typeof val === "object" ? JSON.stringify(val) : String(val)]
+              });
+            }
+          }
+          settingsImported = true;
+        }
       }
     } catch (e) {
       console.warn("Could not migrate settings:", e);
@@ -244,20 +301,28 @@ export async function migrateRemoteTursoData(
   // 2. Migrate Reports Data
   let importedCount = 0;
   let skippedDuplicates = 0;
+  const createdCenters = new Set<string>();
 
   if (reportsTable) {
     if (replaceExisting) {
-      await db.execute('DELETE FROM "Reports Data"');
+      if (!isAutoMode && resolvedDefaultCenter) {
+        await db.execute({
+          sql: 'DELETE FROM "Reports Data" WHERE center_name = ?',
+          args: [resolvedDefaultCenter]
+        });
+      } else {
+        await db.execute('DELETE FROM "Reports Data"');
+      }
     }
 
     const existingSignatures = new Set<string>();
     if (!replaceExisting) {
       try {
         const currentRows = await db.execute(
-          'SELECT report_date, department, procedure, period, timestamp FROM "Reports Data"'
+          'SELECT report_date, department, procedure, period, timestamp, center_name FROM "Reports Data"'
         );
         currentRows.rows.forEach((r: any) => {
-          const sig = `${r.report_date}|${r.department}|${r.procedure}|${r.period || ''}|${r.timestamp || ''}`;
+          const sig = `${r.center_name || ''}|${r.report_date}|${r.department}|${r.procedure}|${r.period || ''}|${r.timestamp || ''}`;
           existingSignatures.add(sig);
         });
       } catch (e) {
@@ -291,8 +356,17 @@ export async function migrateRemoteTursoData(
           continue;
         }
 
+        const rowCenter = isAutoMode
+          ? (String(row.center_name || "").trim() || resolvedDefaultCenter)
+          : resolvedDefaultCenter;
+
+        if (rowCenter && !createdCenters.has(rowCenter)) {
+          await ensureCenterExists(rowCenter, rowCenter);
+          createdCenters.add(rowCenter);
+        }
+
         if (!replaceExisting) {
-          const sig = `${reportDate}|${dept}|${proc}|${period}|${ts}`;
+          const sig = `${rowCenter}|${reportDate}|${dept}|${proc}|${period}|${ts}`;
           if (existingSignatures.has(sig)) {
             skippedDuplicates++;
             continue;
@@ -320,7 +394,7 @@ export async function migrateRemoteTursoData(
             String(row.note || ""),
             String(row.rec || ""),
             ts || new Date().toISOString(),
-            ""
+            rowCenter
           ]
         });
       }
@@ -347,7 +421,7 @@ export async function migrateRemoteTursoData(
     success: true,
     importedReports: importedCount,
     skippedDuplicates: skippedDuplicates,
-    targetCenter: "",
+    targetCenter: isAutoMode ? 'auto' : resolvedDefaultCenter,
     settingsImported: settingsImported,
     message: `تم استيراد ${importedCount.toLocaleString('ar-EG')} سجلاً بنجاح!` +
              (skippedDuplicates > 0 ? ` (تم تخطي ${skippedDuplicates.toLocaleString('ar-EG')} سجلاً مكرراً)` : '') +

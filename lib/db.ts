@@ -116,6 +116,22 @@ const localDbExecutor = {
       return { rows: [] };
     }
 
+    // 4b. Update Center hospital_name
+    if (normalizedSql.includes('UPDATE "Centers"')) {
+      const data = loadLocalData();
+      const newHospName = queryArgs[0] || "";
+      const targetName = queryArgs[1] || "";
+      data["Centers"] = (data["Centers"] || []).map((c: any) =>
+        c.name === targetName ? { ...c, hospital_name: newHospName } : c
+      );
+      if (localDbExecutor._isBatching) {
+        inMemoryDb = data;
+      } else {
+        saveLocalData(data);
+      }
+      return { rows: [] };
+    }
+
     // 5. Delete Center
     if (normalizedSql.includes('DELETE FROM "Centers"')) {
       const data = loadLocalData();
@@ -203,26 +219,33 @@ const localDbExecutor = {
       return { rows: [] };
     }
 
-    // 11. Delete reports (supports WHERE center_name = ?, or WHERE year = ? AND month = ? [AND center_name = ?])
+    // 11. Delete reports (most specific WHERE clauses first!)
     if (normalizedSql.includes('DELETE FROM "Reports Data"')) {
       const data = loadLocalData();
-      if (normalizedSql.includes("WHERE center_name = ?")) {
-        const cName = String(queryArgs[0] || "");
-        data["Reports Data"] = (data["Reports Data"] || []).filter(
-          (r: any) => (r.center_name || "") !== cName
-        );
-      } else if (normalizedSql.includes("WHERE year = ? AND month = ? AND center_name = ?")) {
+      if (normalizedSql.includes("WHERE year = ? AND month = ? AND center_name = ?")) {
         const y = Number(queryArgs[0]);
         const m = Number(queryArgs[1]);
         const cName = String(queryArgs[2] || "");
         data["Reports Data"] = (data["Reports Data"] || []).filter(
           (r: any) => !(Number(r.year) === y && Number(r.month) === m && (r.center_name || "") === cName)
         );
+      } else if (normalizedSql.includes("WHERE center_name = ? AND year = ? AND month = ?")) {
+        const cName = String(queryArgs[0] || "");
+        const y = Number(queryArgs[1]);
+        const m = Number(queryArgs[2]);
+        data["Reports Data"] = (data["Reports Data"] || []).filter(
+          (r: any) => !((r.center_name || "") === cName && Number(r.year) === y && Number(r.month) === m)
+        );
       } else if (normalizedSql.includes("WHERE year = ? AND month = ?")) {
         const y = Number(queryArgs[0]);
         const m = Number(queryArgs[1]);
         data["Reports Data"] = (data["Reports Data"] || []).filter(
           (r: any) => !(Number(r.year) === y && Number(r.month) === m)
+        );
+      } else if (normalizedSql.includes("WHERE center_name = ?")) {
+        const cName = String(queryArgs[0] || "");
+        data["Reports Data"] = (data["Reports Data"] || []).filter(
+          (r: any) => (r.center_name || "") !== cName
         );
       } else {
         data["Reports Data"] = [];
@@ -268,16 +291,31 @@ const localDbExecutor = {
       return { rows: [] };
     }
 
+    // Helper to extract positional ? arg index for a clause
+    const getArgForClause = (clause: string) => {
+      const idx = normalizedSql.indexOf(clause);
+      if (idx === -1) return undefined;
+      const prefix = normalizedSql.slice(0, idx);
+      const qCount = (prefix.match(/\?/g) || []).length;
+      return queryArgs[qCount];
+    };
+
     // 13. Select dashboard metrics
     if (normalizedSql.includes('SELECT report_date, department, status FROM "Reports Data"')) {
       const data = loadLocalData();
-      let list = data["Reports Data"] || [];
-      if (normalizedSql.includes("WHERE center_name = ?")) {
-        const cName = String(queryArgs[0] || "");
+      let list = [...(data["Reports Data"] || [])];
+      if (normalizedSql.includes("center_name = ?")) {
+        const cName = String(getArgForClause("center_name = ?") || "");
         list = list.filter((r: any) => (r.center_name || "") === cName);
-      } else if (normalizedSql.includes("WHERE year =")) {
-        const y = queryArgs[0];
-        list = list.filter((r: any) => Number(r.year) === Number(y));
+      }
+      if (normalizedSql.includes("year = ?")) {
+        const y = Number(getArgForClause("year = ?"));
+        list = list.filter((r: any) => Number(r.year) === y);
+      }
+      list.sort((a: any, b: any) => String(b.report_date || "").localeCompare(String(a.report_date || "")));
+      if (normalizedSql.includes("LIMIT ?")) {
+        const lim = Number(getArgForClause("LIMIT ?") || 5000);
+        list = list.slice(0, lim);
       }
       const rows = list.map((r: any) => ({
         report_date: r.report_date,
@@ -293,28 +331,35 @@ const localDbExecutor = {
       const data = loadLocalData();
       let list = [...(data["Reports Data"] || [])];
 
-      // Check center filter
-      const centerIndex = queryArgs.findIndex((_, idx) => normalizedSql.includes("center_name = ?"));
-      let targetCenter = "";
-      if (centerIndex >= 0) {
-        targetCenter = String(queryArgs[centerIndex] || "");
+      if (normalizedSql.includes("center_name = ?")) {
+        const targetCenter = String(getArgForClause("center_name = ?") || "");
         list = list.filter((r: any) => (r.center_name || "") === targetCenter);
       }
-
-      if (normalizedSql.includes("WHERE report_date =")) {
-        const filterVal = queryArgs[0];
+      if (normalizedSql.includes("report_date = ?")) {
+        const filterVal = String(getArgForClause("report_date = ?") || "");
         list = list.filter((r: any) => r.report_date === filterVal);
-      } else if (normalizedSql.includes("WHERE year = ? AND month = ?")) {
-        const y = queryArgs[0];
-        const m = queryArgs[1];
-        list = list.filter((r: any) => Number(r.year) === Number(y) && Number(r.month) === Number(m));
-      } else if (normalizedSql.includes("WHERE year = ?")) {
-        const y = queryArgs[0];
-        list = list.filter((r: any) => Number(r.year) === Number(y));
-      } else if (normalizedSql.includes("WHERE report_date >= ? AND report_date <= ?")) {
-        const start = queryArgs[0];
-        const end = queryArgs[1];
-        list = list.filter((r: any) => r.report_date >= start && r.report_date <= end);
+      }
+      if (normalizedSql.includes("year = ?")) {
+        const y = Number(getArgForClause("year = ?"));
+        list = list.filter((r: any) => Number(r.year) === y);
+      }
+      if (normalizedSql.includes("month = ?")) {
+        const m = Number(getArgForClause("month = ?"));
+        list = list.filter((r: any) => Number(r.month) === m);
+      }
+      if (normalizedSql.includes("report_date >= ?")) {
+        const start = String(getArgForClause("report_date >= ?") || "");
+        list = list.filter((r: any) => r.report_date >= start);
+      }
+      if (normalizedSql.includes("report_date <= ?")) {
+        const end = String(getArgForClause("report_date <= ?") || "");
+        list = list.filter((r: any) => r.report_date <= end);
+      }
+
+      list.sort((a: any, b: any) => String(b.report_date || "").localeCompare(String(a.report_date || "")));
+      if (normalizedSql.includes("LIMIT ?")) {
+        const lim = Number(getArgForClause("LIMIT ?") || 2500);
+        list = list.slice(0, lim);
       }
 
       return { rows: list };
@@ -423,7 +468,7 @@ export async function createInfectionTable() {
       // Column might already exist
     }
 
-    // 3. Create mandatory indexes to eliminate Full Table Scans and protect Cloud Row Reads
+    // 3. Create mandatory & covering indexes to eliminate Full Table Scans and minimize Cloud Row Reads in Turso
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_reports_date ON "Reports Data"(report_date);`);
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_reports_year_month ON "Reports Data"(year, month);`);
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_reports_year ON "Reports Data"(year);`);
@@ -433,7 +478,9 @@ export async function createInfectionTable() {
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_reports_status ON "Reports Data"(status);`);
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_reports_center ON "Reports Data"(center_name);`);
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_reports_center_date ON "Reports Data"(center_name, report_date);`);
-    console.log("تم التأكد من بناء الفهارس الإلزامية (Mandatory Indexes) بنجاح لترشيد استهلاك القراءات السحابية!");
+    await db.execute(`CREATE INDEX IF NOT EXISTS idx_reports_center_year_month ON "Reports Data"(center_name, year, month, report_date DESC);`);
+    await db.execute(`CREATE INDEX IF NOT EXISTS idx_reports_dashboard_cover ON "Reports Data"(center_name, report_date DESC, department, status);`);
+    console.log("تم التأكد من بناء الفهارس المركبة والمغطية (Composite & Covering Indexes) بنجاح لترشيد استهلاك القراءات السحابية!");
 
   } catch (error) {
     console.error("Error creating tables:", error);
