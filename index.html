@@ -887,23 +887,36 @@
                 <div id="daily-left-logo-slot" class="report-logo-slot report-logo-slot-left"></div>
             </div>
             
-            <div class="grid grid-cols-2 gap-y-1 gap-x-8 mb-4 text-xs avoid-break">
-                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">تاريخ التقرير الأسبوعي:</span> <span id="res-date" class="text-gray-800"></span></p>
-                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">القسم:</span> <span id="res-dept" class="text-gray-800"></span></p>
-                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">الفترة:</span> <span id="res-period" class="text-gray-800"></span></p>
-                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">القائم بالمرور:</span> <span id="res-inspector" class="text-gray-800"></span></p>
-                <div class="border-b border-gray-100 py-1 col-span-2 flex items-start gap-2">
-                    <span class="font-bold text-blue-900 shrink-0">المسؤول عن التنفيذ:</span>
-                    <div id="res-supervisor" class="text-gray-800 flex-1"></div>
-                </div>
+            <div class="mb-5 avoid-break">
+                <h3 class="font-bold text-sm mb-2 text-blue-900 border-r-4 border-blue-900 pr-2">ملخص التقرير الأسبوعي</h3>
+                <table class="w-full text-xs border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-blue-100 text-blue-900">
+                            <th class="border border-gray-300 p-2 text-center">اليوم</th>
+                            <th class="border border-gray-300 p-2 text-center">التاريخ</th>
+                            <th class="border border-gray-300 p-2 text-center">الفترة</th>
+                            <th class="border border-gray-300 p-2 text-center">القائم بالمرور</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="res-day" class="border border-gray-300 p-2 text-center font-bold text-gray-800"></td>
+                            <td id="res-date" class="border border-gray-300 p-2 text-center font-bold text-gray-800"></td>
+                            <td id="res-period" class="border border-gray-300 p-2 text-center text-gray-800"></td>
+                            <td id="res-inspector" class="border border-gray-300 p-2 text-center text-gray-800"></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <h3 class="font-bold text-base mb-2 text-blue-900 border-b border-gray-300 pb-1 avoid-break">المخالفات والتوصيات</h3>
+            <h3 class="font-bold text-sm mb-2 text-blue-900 border-r-4 border-red-600 pr-2 avoid-break">الملاحظات والتوصيات</h3>
             <table class="w-full text-xs border-collapse border border-gray-300 mb-6">
                 <thead>
                     <tr class="bg-blue-50 text-blue-900">
-                        <th class="border border-gray-300 p-2 w-1/2">الملاحظات</th>
-                        <th class="border border-gray-300 p-2 w-1/2">التوصيات</th>
+                        <th class="border border-gray-300 p-2 w-1/6">القسم</th>
+                        <th class="border border-gray-300 p-2 w-1/3">الملاحظات</th>
+                        <th class="border border-gray-300 p-2 w-1/3">التوصيات</th>
+                        <th class="border border-gray-300 p-2 w-1/6">المسؤول عن التنفيذ</th>
                     </tr>
                 </thead>
                 <tbody id="res-table-body">
@@ -1077,23 +1090,36 @@
                 <div id="arc-left-logo-slot" class="report-logo-slot report-logo-slot-left"></div>
             </div>
             
-            <div class="grid grid-cols-2 gap-y-1 gap-x-8 mb-4 text-xs avoid-break">
-                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">تاريخ التقرير الأسبوعي:</span> <span id="arc-res-date" class="text-gray-800"></span></p>
-                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">القسم:</span> <span id="arc-res-dept" class="text-gray-800"></span></p>
-                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">الفترة:</span> <span id="arc-res-period" class="text-gray-800"></span></p>
-                <p class="border-b border-gray-100 py-1"><span class="font-bold text-blue-900">القائم بالمرور:</span> <span id="arc-res-inspector" class="text-gray-800"></span></p>
-                <div class="border-b border-gray-100 py-1 col-span-2 flex items-start gap-2">
-                    <span class="font-bold text-blue-900 shrink-0">المسؤول عن التنفيذ:</span>
-                    <div id="arc-res-supervisor" class="text-gray-800 flex-1"></div>
-                </div>
+            <div class="mb-5 avoid-break">
+                <h3 class="font-bold text-sm mb-2 text-blue-900 border-r-4 border-blue-900 pr-2">ملخص التقرير الأسبوعي</h3>
+                <table class="w-full text-xs border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-blue-100 text-blue-900">
+                            <th class="border border-gray-300 p-2 text-center">اليوم</th>
+                            <th class="border border-gray-300 p-2 text-center">التاريخ</th>
+                            <th class="border border-gray-300 p-2 text-center">الفترة</th>
+                            <th class="border border-gray-300 p-2 text-center">القائم بالمرور</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="arc-res-day" class="border border-gray-300 p-2 text-center font-bold text-gray-800"></td>
+                            <td id="arc-res-date" class="border border-gray-300 p-2 text-center font-bold text-gray-800"></td>
+                            <td id="arc-res-period" class="border border-gray-300 p-2 text-center text-gray-800"></td>
+                            <td id="arc-res-inspector" class="border border-gray-300 p-2 text-center text-gray-800"></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <h3 class="font-bold text-base mb-2 text-blue-900 border-b border-gray-300 pb-1 avoid-break">المخالفات والتوصيات</h3>
+            <h3 class="font-bold text-sm mb-2 text-blue-900 border-r-4 border-red-600 pr-2 avoid-break">الملاحظات والتوصيات</h3>
             <table class="w-full text-xs border-collapse border border-gray-300 mb-6">
                 <thead>
                     <tr class="bg-blue-50 text-blue-900">
-                        <th class="border border-gray-300 p-2 w-1/2">الملاحظات</th>
-                        <th class="border border-gray-300 p-2 w-1/2">التوصيات</th>
+                        <th class="border border-gray-300 p-2 w-1/6">القسم</th>
+                        <th class="border border-gray-300 p-2 w-1/3">الملاحظات</th>
+                        <th class="border border-gray-300 p-2 w-1/3">التوصيات</th>
+                        <th class="border border-gray-300 p-2 w-1/6">المسؤول عن التنفيذ</th>
                     </tr>
                 </thead>
                 <tbody id="arc-res-table-body">
@@ -2681,6 +2707,50 @@
         }).saveDailyReport(formData);
     }
 
+    function getArabicDayName(dateStr) {
+        if (!dateStr) return '-';
+        const parts = String(dateStr).trim().split('-');
+        let d;
+        if (parts.length === 3 && !isNaN(Number(parts[0])) && !isNaN(Number(parts[1])) && !isNaN(Number(parts[2]))) {
+            d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        } else {
+            d = new Date(dateStr);
+        }
+        if (isNaN(d.getTime())) return '-';
+        const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        return days[d.getDay()] || '-';
+    }
+
+    function buildSingleWeeklyObsRows(dept, items, supervisorStr) {
+        const supervisorHtml = formatSupervisorListHtml(supervisorStr);
+        if (!items || items.length === 0) {
+            return `
+                <tr>
+                    <td class="border border-gray-300 p-2 font-bold bg-gray-50 align-middle">${escapeHtml(dept || '-')}</td>
+                    <td class="border border-gray-300 p-2 text-gray-500 text-center">لا توجد مخالفات مسجلة</td>
+                    <td class="border border-gray-300 p-2 text-gray-400 text-center">-</td>
+                    <td class="border border-gray-300 p-2 text-center align-middle bg-gray-50/50">${supervisorHtml}</td>
+                </tr>
+            `;
+        }
+        return items.map((item, idx) => {
+            const deptCell = idx === 0
+                ? `<td class="border border-gray-300 p-2 font-bold bg-gray-50 align-middle" rowspan="${items.length}">${escapeHtml(dept || '-')}</td>`
+                : '';
+            const supCell = idx === 0
+                ? `<td class="border border-gray-300 p-2 text-center align-middle bg-gray-50/50" rowspan="${items.length}">${supervisorHtml}</td>`
+                : '';
+            return `
+                <tr>
+                    ${deptCell}
+                    <td class="border border-gray-300 p-2 text-red-700 font-medium align-top">${escapeHtml(item.note || '-')}</td>
+                    <td class="border border-gray-300 p-2 align-top">${escapeHtml(item.rec || '-')}</td>
+                    ${supCell}
+                </tr>
+            `;
+        }).join('');
+    }
+
     function showDailyResult(data) {
         document.getElementById('daily-form-container').classList.add('hidden');
         document.getElementById('daily-result-view').classList.remove('hidden');
@@ -2688,17 +2758,17 @@
         populateReportLogoSlots('daily-right-logo-slot', 'daily-left-logo-slot');
         document.getElementById('daily-hosp-name').innerText = settingsData.hospitalName || 'مستشفى المنيا الجامعى للعيون';
         document.getElementById('daily-team-sig').innerText = settingsData.teamSignature || 'مشرف مكافحة العدوى';
-        document.getElementById('res-date').innerText = data.date;
-        document.getElementById('res-dept').innerText = data.department;
-        document.getElementById('res-period').innerText = data.period;
-        document.getElementById('res-inspector').innerText = data.inspector;
-        document.getElementById('res-supervisor').innerHTML = formatSupervisorListHtml(data.supervisor);
+        document.getElementById('res-day').innerText = getArabicDayName(data.date);
+        document.getElementById('res-date').innerText = data.date || '-';
+        document.getElementById('res-period').innerText = data.period || '-';
+        document.getElementById('res-inspector').innerText = data.inspector || '-';
         
         const tbody = document.getElementById('res-table-body');
-        tbody.innerHTML = '';
-        data.evaluations.filter(e => e.status === 'No').forEach(e => {
-            tbody.innerHTML += `<tr><td class="border border-gray-300 p-2 text-red-700 font-medium">${e.note}</td><td class="border border-gray-300 p-2">${e.rec}</td></tr>`;
-        });
+        const failures = (data.evaluations || []).filter(e => e.status === 'No').map(e => ({
+            note: e.note || '-',
+            rec: e.rec || '-'
+        }));
+        tbody.innerHTML = buildSingleWeeklyObsRows(data.department, failures, data.supervisor);
     }
 
     function resetDailyForm() {
@@ -3232,26 +3302,24 @@
             ).join('');
         }
 
-        // Build Summary Table Rows
-        let summaryRows = '';
-        
-        // Data structure to group violations by Department across all reports for this day
-        // Key: Department Name, Value: Array of {note, rec}
+        // Build unique (period, inspector) pairs for Weekly Report Summary
+        const summaryPairs = [];
+        const seenSummaryPairs = new Set();
         const deptViolationsMap = {};
+        const allInspectedDepts = [];
 
-        reports.forEach((rep, idx) => {
-            const supervisorCell = idx === 0 
-                ? `<td class="border border-gray-400 p-1 text-center align-middle bg-gray-50/50" rowspan="${reports.length}">${mergedSupervisorHtml}</td>` 
-                : '';
+        reports.forEach(rep => {
+            const p = (rep.period || '-').trim();
+            const insp = (rep.inspector || '-').trim();
+            const pairKey = `${p}|||${insp}`;
+            if (!seenSummaryPairs.has(pairKey)) {
+                seenSummaryPairs.add(pairKey);
+                summaryPairs.push({ period: p, inspector: insp });
+            }
 
-            summaryRows += `
-                <tr class="hover:bg-gray-50">
-                    <td class="border border-gray-400 p-2 font-bold">${escapeHtml(rep.dept)}</td>
-                    <td class="border border-gray-400 p-2 text-center">${escapeHtml(rep.period)}</td>
-                    <td class="border border-gray-400 p-2 text-center">${escapeHtml(rep.inspector)}</td>
-                    ${supervisorCell}
-                </tr>
-            `;
+            if (rep.dept && !allInspectedDepts.includes(rep.dept)) {
+                allInspectedDepts.push(rep.dept);
+            }
 
             // Aggregate Violations
             const failures = rep.rows.filter(r => r[8] === 'No');
@@ -3268,25 +3336,57 @@
             }
         });
 
-        // Build Details Table Rows (Grouped by Dept)
+        if (summaryPairs.length === 0) {
+            summaryPairs.push({ period: '-', inspector: '-' });
+        }
+
+        const dayName = getArabicDayName(date);
+        let summaryRows = '';
+        summaryPairs.forEach((pair, idx) => {
+            summaryRows += `<tr class="hover:bg-gray-50">`;
+            if (idx === 0) {
+                summaryRows += `<td class="border border-gray-400 p-2 text-center font-bold bg-gray-50/50 align-middle" rowspan="${summaryPairs.length}">${escapeHtml(dayName)}</td>`;
+                summaryRows += `<td class="border border-gray-400 p-2 text-center font-bold bg-gray-50/50 align-middle" rowspan="${summaryPairs.length}">${escapeHtml(date)}</td>`;
+            }
+            summaryRows += `
+                <td class="border border-gray-400 p-2 text-center">${escapeHtml(pair.period)}</td>
+                <td class="border border-gray-400 p-2 text-center">${escapeHtml(pair.inspector)}</td>
+            </tr>`;
+        });
+
+        // Build Details Table Rows (Grouped by Dept, with merged Person Responsible column)
         let violationRows = '';
         const affectedDepts = Object.keys(deptViolationsMap);
+        const totalViolationRows = affectedDepts.reduce((sum, d) => sum + deptViolationsMap[d].length, 0);
 
         if (affectedDepts.length === 0) {
-            violationRows = '<tr><td colspan="3" class="p-4 text-center text-gray-500 border border-gray-400">لا توجد ملاحظات مسجلة لهذا اليوم في الأقسام المختارة</td></tr>';
+            const deptsLabel = allInspectedDepts.length > 0 ? allInspectedDepts.join('، ') : '-';
+            violationRows = `
+                <tr>
+                    <td class="border border-gray-400 p-2 font-bold bg-gray-50 align-middle">${escapeHtml(deptsLabel)}</td>
+                    <td class="border border-gray-400 p-4 text-center text-gray-500">لا توجد ملاحظات مسجلة لهذا اليوم في الأقسام المختارة</td>
+                    <td class="border border-gray-400 p-2 text-center text-gray-400">-</td>
+                    <td class="border border-gray-400 p-1 text-center align-middle bg-gray-50/50">${mergedSupervisorHtml}</td>
+                </tr>
+            `;
         } else {
+            let globalRowIdx = 0;
             affectedDepts.forEach(dept => {
                 const items = deptViolationsMap[dept];
                 items.forEach((item, idx) => {
                     violationRows += `<tr class="hover:bg-gray-50">`;
-                    // Rowspan for Department Name (Merge cells if dept is repeated)
                     if (idx === 0) {
                         violationRows += `<td class="border border-gray-400 p-2 font-bold bg-gray-50 align-top" rowspan="${items.length}">${escapeHtml(dept)}</td>`;
                     }
                     violationRows += `
                         <td class="border border-gray-400 p-2 text-red-700 align-top">${escapeHtml(item.note)}</td>
                         <td class="border border-gray-400 p-2 align-top">${escapeHtml(item.rec)}</td>
-                    </tr>`;
+                    `;
+                    if (globalRowIdx === 0) {
+                        violationRows += `<td class="border border-gray-400 p-1 text-center align-middle bg-gray-50/50" rowspan="${totalViolationRows}">${mergedSupervisorHtml}</td>`;
+                    }
+                    violationRows += `</tr>`;
+                    globalRowIdx++;
                 });
             });
         }
@@ -3303,28 +3403,22 @@
                     <div class="text-center flex-1 px-2">
                         <h1 class="text-xl font-bold text-blue-900 mb-1">${escapeHtml(hospName)}</h1>
                         <h2 class="text-lg font-bold text-blue-800">وحدة مكافحة العدوى</h2>
+                        <p class="text-xs font-bold text-gray-700 mt-1">تقرير مرور أسبوعي مجمع</p>
                     </div>
                     ${getReportLogoSlotHtml('left')}
-                </div>
-                <div class="flex flex-wrap justify-between items-end mt-3 px-4 md:px-10 gap-2">
-                    <p class="text-sm font-bold">تقرير مرور أسبوعي مجمع</p>
-                    <div class="text-sm border border-gray-400 px-4 py-1 rounded bg-gray-50">
-                        <span class="font-bold text-blue-900 ml-2">التاريخ:</span> 
-                        <span class="font-bold text-gray-800">${escapeHtml(date)}</span>
-                    </div>
                 </div>
             </div>
 
             <!-- Table 1: Summary -->
             <div class="mb-6">
-                <h3 class="font-bold text-blue-900 mb-2 border-r-4 border-blue-900 pr-2">ملخص المرور الأسبوعي</h3>
+                <h3 class="font-bold text-blue-900 mb-2 border-r-4 border-blue-900 pr-2">ملخص التقرير الأسبوعي</h3>
                 <table class="w-full text-xs border-collapse border border-gray-400">
                     <thead class="bg-blue-100 text-blue-900">
                         <tr>
-                            <th class="border border-gray-400 p-2">القسم</th>
-                            <th class="border border-gray-400 p-2">الفترة</th>
-                            <th class="border border-gray-400 p-2">القائم بالمرور</th>
-                            <th class="border border-gray-400 p-2">المسؤول عن التنفيذ</th>
+                            <th class="border border-gray-400 p-2 text-center">اليوم</th>
+                            <th class="border border-gray-400 p-2 text-center">التاريخ</th>
+                            <th class="border border-gray-400 p-2 text-center">الفترة</th>
+                            <th class="border border-gray-400 p-2 text-center">القائم بالمرور</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -3335,13 +3429,14 @@
 
             <!-- Table 2: Details -->
             <div>
-                <h3 class="font-bold text-blue-900 mb-2 border-r-4 border-red-600 pr-2">تفاصيل الملاحظات والتوصيات</h3>
+                <h3 class="font-bold text-blue-900 mb-2 border-r-4 border-red-600 pr-2">الملاحظات والتوصيات</h3>
                 <table class="w-full text-xs border-collapse border border-gray-400">
                     <thead class="bg-gray-100 text-gray-900">
                         <tr>
-                            <th class="border border-gray-400 p-2 w-1/5">القسم</th>
-                            <th class="border border-gray-400 p-2 w-2/5">الملاحظات</th>
-                            <th class="border border-gray-400 p-2 w-2/5">التوصيات</th>
+                            <th class="border border-gray-400 p-2 w-1/6">القسم</th>
+                            <th class="border border-gray-400 p-2 w-1/3">الملاحظات</th>
+                            <th class="border border-gray-400 p-2 w-1/3">التوصيات</th>
+                            <th class="border border-gray-400 p-2 w-1/6">المسؤول عن التنفيذ</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -3388,23 +3483,17 @@
         populateReportLogoSlots('arc-right-logo-slot', 'arc-left-logo-slot');
         document.getElementById('arc-res-hosp-name').innerText = settingsData.hospitalName || 'مستشفى المنيا الجامعى للعيون';
         document.getElementById('arc-res-team-sig').innerText = settingsData.teamSignature || 'مشرف مكافحة العدوى';
-        document.getElementById('arc-res-date').innerText = report.date;
-        document.getElementById('arc-res-dept').innerText = report.dept;
-        document.getElementById('arc-res-period').innerText = report.period;
-        document.getElementById('arc-res-inspector').innerText = report.inspector;
-        document.getElementById('arc-res-supervisor').innerHTML = formatSupervisorListHtml(report.supervisor);
+        document.getElementById('arc-res-day').innerText = getArabicDayName(report.date);
+        document.getElementById('arc-res-date').innerText = report.date || '-';
+        document.getElementById('arc-res-period').innerText = report.period || '-';
+        document.getElementById('arc-res-inspector').innerText = report.inspector || '-';
 
         const tbody = document.getElementById('arc-res-table-body');
-        tbody.innerHTML = '';
-        const failures = report.rows.filter(r => r[8] === 'No');
-
-        if(failures.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-gray-500">لا توجد مخالفات مسجلة</td></tr>';
-        } else {
-            failures.forEach(r => {
-                tbody.innerHTML += `<tr><td class="border border-gray-300 p-2 text-red-700">${r[9] || '-'}</td><td class="border border-gray-300 p-2">${r[10] || '-'}</td></tr>`;
-            });
-        }
+        const failures = report.rows.filter(r => r[8] === 'No').map(r => ({
+            note: r[9] || '-',
+            rec: r[10] || '-'
+        }));
+        tbody.innerHTML = buildSingleWeeklyObsRows(report.dept, failures, report.supervisor);
     }
     
     function closeArchiveDetail() {

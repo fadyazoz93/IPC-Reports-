@@ -11,9 +11,9 @@ async function start() {
   const isProduction = process.env.NODE_ENV === 'production';
   
   if (!isProduction) {
-    // Integrate Vite's dev server middleware
+    // Integrate Vite's dev server middleware (HMR disabled to avoid WebSocket port 24678 conflicts)
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { middlewareMode: true, hmr: false },
       appType: 'spa'
     });
     app.use(vite.middlewares);
