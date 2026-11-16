@@ -65,6 +65,15 @@ const localDbExecutor = {
 
     const normalizedSql = sql.replace(/\s+/g, " ").trim();
 
+    // Helper to extract positional ? arg index for a clause
+    const getArgForClause = (clause: string) => {
+      const idx = normalizedSql.indexOf(clause);
+      if (idx === -1) return undefined;
+      const prefix = normalizedSql.slice(0, idx);
+      const qCount = (prefix.match(/\?/g) || []).length;
+      return queryArgs[qCount];
+    };
+
     // 1. Create table, alter table and index no-ops
     if (
       normalizedSql.toUpperCase().startsWith("CREATE TABLE") ||
@@ -222,7 +231,21 @@ const localDbExecutor = {
     // 11. Delete reports (most specific WHERE clauses first!)
     if (normalizedSql.includes('DELETE FROM "Reports Data"')) {
       const data = loadLocalData();
-      if (normalizedSql.includes("WHERE year = ? AND month = ? AND center_name = ?")) {
+      if (normalizedSql.includes("report_date = ?")) {
+        const rDate = String(getArgForClause("report_date = ?") || "");
+        const rPeriod = normalizedSql.includes("period = ?") ? String(getArgForClause("period = ?") || "") : null;
+        const rDept = normalizedSql.includes("department = ?") ? String(getArgForClause("department = ?") || "") : null;
+        const rInsp = normalizedSql.includes("inspector = ?") ? String(getArgForClause("inspector = ?") || "") : null;
+        const cName = normalizedSql.includes("center_name = ?") ? String(getArgForClause("center_name = ?") || "") : null;
+        data["Reports Data"] = (data["Reports Data"] || []).filter((r: any) => {
+          const matchDate = String(r.report_date || "") === rDate;
+          const matchPeriod = rPeriod === null || String(r.period || "") === rPeriod;
+          const matchDept = rDept === null || String(r.department || "") === rDept;
+          const matchInsp = rInsp === null || String(r.inspector || "") === rInsp;
+          const matchCenter = cName === null || String(r.center_name || "") === cName;
+          return !(matchDate && matchPeriod && matchDept && matchInsp && matchCenter);
+        });
+      } else if (normalizedSql.includes("WHERE year = ? AND month = ? AND center_name = ?")) {
         const y = Number(queryArgs[0]);
         const m = Number(queryArgs[1]);
         const cName = String(queryArgs[2] || "");
@@ -290,15 +313,6 @@ const localDbExecutor = {
       }
       return { rows: [] };
     }
-
-    // Helper to extract positional ? arg index for a clause
-    const getArgForClause = (clause: string) => {
-      const idx = normalizedSql.indexOf(clause);
-      if (idx === -1) return undefined;
-      const prefix = normalizedSql.slice(0, idx);
-      const qCount = (prefix.match(/\?/g) || []).length;
-      return queryArgs[qCount];
-    };
 
     // 13. Select dashboard metrics
     if (normalizedSql.includes('SELECT report_date, department, status FROM "Reports Data"')) {

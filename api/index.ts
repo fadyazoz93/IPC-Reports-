@@ -421,47 +421,172 @@ app.post('/api', async (req: Request, res: Response) => {
       }
 
       // ----------------------------------------------------
-      // 3. Save Weekly Report (Per-Center support)
+      // 3. Save Weekly Report (Single or Multi-Department on Same Day)
       // ----------------------------------------------------
       case 'saveDailyReport': {
         const [form] = args || [];
-        if (!form) {
-          throw new Error("Missing form parameter");
+        if (!form || !form.date) {
+          throw new Error("Missing form or date parameter");
         }
-        const dateObj = new Date(form.date);
-        const month = dateObj.getMonth() + 1;
-        const year = dateObj.getFullYear();
+        const reportDate = String(form.date).trim();
+        const dateParts = reportDate.split('-');
+        const year = dateParts.length === 3 ? Number(dateParts[0]) : new Date(reportDate).getFullYear();
+        const month = dateParts.length === 3 ? Number(dateParts[1]) : new Date(reportDate).getMonth() + 1;
         const timestamp = new Date().toISOString();
         const cleanCenter = String(form.centerName || '').trim();
 
-        const statements = (form.evaluations || []).map((e: any) => ({
-          sql: `INSERT INTO "Reports Data" (
-            report_date, month, year, period, department, inspector, supervisor, procedure, status, note, rec, timestamp, center_name
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          args: [
-            form.date,
-            month,
-            year,
-            form.period || "",
-            form.department || "",
-            form.inspector || "",
-            form.supervisor || "",
-            e.procedure || "",
-            e.status || "Yes",
-            e.note || "",
-            e.rec || "",
-            timestamp,
-            cleanCenter
-          ]
-        }));
+        const reportsList = Array.isArray(form.reports) && form.reports.length > 0
+          ? form.reports
+          : [form];
 
-        if (statements.length > 0) {
-          await db.batch(statements, "write");
+        const statements: any[] = [];
+        for (const rep of reportsList) {
+          const evals = Array.isArray(rep.evaluations) && rep.evaluations.length > 0
+            ? rep.evaluations
+            : [{ procedure: 'مرور عام', status: 'Yes', note: '', rec: '' }];
+
+          for (const e of evals) {
+            statements.push({
+              sql: `INSERT INTO "Reports Data" (
+                report_date, month, year, period, department, inspector, supervisor, procedure, status, note, rec, timestamp, center_name
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              args: [
+                reportDate,
+                month,
+                year,
+                rep.period || "",
+                rep.department || "",
+                rep.inspector || "",
+                rep.supervisor || "",
+                e.procedure || "",
+                e.status || "Yes",
+                e.note || "",
+                e.rec || "",
+                timestamp,
+                cleanCenter
+              ]
+            });
+          }
+        }
+
+        const chunkSize = 500;
+        for (let i = 0; i < statements.length; i += chunkSize) {
+          const chunk = statements.slice(i, i + chunkSize);
+          await db.batch(chunk, "write");
         }
 
         // Invalidate stale report caches
         memoryCache.invalidatePrefix('report:');
 
+        data = { success: true, savedReports: reportsList.length };
+        break;
+      }
+
+      // ----------------------------------------------------
+      // 3b. Update Archive Report (Atomic Replace)
+      // ----------------------------------------------------
+      case 'updateArchiveReport': {
+        const [payload] = args || [];
+        if (!payload || !payload.original || !payload.updated) {
+          throw new Error("بيانات تعديل التقرير غير مكتملة");
+        }
+        const cleanCenter = String(payload.centerName || '').trim();
+        const orig = payload.original;
+        const upd = payload.updated;
+
+        if (!upd.date || !upd.department) {
+          throw new Error("يرجى تحديد التاريخ والقسم");
+        }
+
+        const dateParts = String(upd.date).trim().split('-');
+        const year = dateParts.length === 3 ? Number(dateParts[0]) : new Date(upd.date).getFullYear();
+        const month = dateParts.length === 3 ? Number(dateParts[1]) : new Date(upd.date).getMonth() + 1;
+        const timestamp = new Date().toISOString();
+
+        const statements: any[] = [];
+        if (cleanCenter) {
+          statements.push({
+            sql: 'DELETE FROM "Reports Data" WHERE center_name = ? AND report_date = ? AND period = ? AND department = ? AND inspector = ?',
+            args: [
+              cleanCenter,
+              String(orig.date || '').trim(),
+              String(orig.period || ''),
+              String(orig.department || ''),
+              String(orig.inspector || '')
+            ]
+          });
+        } else {
+          statements.push({
+            sql: 'DELETE FROM "Reports Data" WHERE report_date = ? AND period = ? AND department = ? AND inspector = ?',
+            args: [
+              String(orig.date || '').trim(),
+              String(orig.period || ''),
+              String(orig.department || ''),
+              String(orig.inspector || '')
+            ]
+          });
+        }
+
+        const evals = Array.isArray(upd.evaluations) && upd.evaluations.length > 0
+          ? upd.evaluations
+          : [{ procedure: 'مرور عام', status: 'Yes', note: '', rec: '' }];
+
+        for (const e of evals) {
+          statements.push({
+            sql: `INSERT INTO "Reports Data" (
+              report_date, month, year, period, department, inspector, supervisor, procedure, status, note, rec, timestamp, center_name
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            args: [
+              String(upd.date).trim(),
+              month,
+              year,
+              upd.period || "",
+              upd.department || "",
+              upd.inspector || "",
+              upd.supervisor || "",
+              e.procedure || "",
+              e.status || "Yes",
+              e.note || "",
+              e.rec || "",
+              timestamp,
+              cleanCenter
+            ]
+          });
+        }
+
+        await db.batch(statements, "write");
+        memoryCache.invalidatePrefix('report:');
+        data = { success: true };
+        break;
+      }
+
+      // ----------------------------------------------------
+      // 3c. Delete Archive Report
+      // ----------------------------------------------------
+      case 'deleteArchiveReport': {
+        const [payload] = args || [];
+        if (!payload || !payload.date) {
+          throw new Error("بيانات التقرير المطلوب حذفه غير مكتملة");
+        }
+        const cleanCenter = String(payload.centerName || '').trim();
+        const rDate = String(payload.date || '').trim();
+        const rPeriod = String(payload.period || '');
+        const rDept = String(payload.department || '');
+        const rInsp = String(payload.inspector || '');
+
+        if (cleanCenter) {
+          await db.execute({
+            sql: 'DELETE FROM "Reports Data" WHERE center_name = ? AND report_date = ? AND period = ? AND department = ? AND inspector = ?',
+            args: [cleanCenter, rDate, rPeriod, rDept, rInsp]
+          });
+        } else {
+          await db.execute({
+            sql: 'DELETE FROM "Reports Data" WHERE report_date = ? AND period = ? AND department = ? AND inspector = ?',
+            args: [rDate, rPeriod, rDept, rInsp]
+          });
+        }
+
+        memoryCache.invalidatePrefix('report:');
         data = { success: true };
         break;
       }
