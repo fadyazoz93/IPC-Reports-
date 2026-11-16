@@ -11,8 +11,6 @@
   <link rel="apple-touch-icon" href="/favicon.png">
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
@@ -213,7 +211,6 @@
       </div>
 
       <nav class="flex-1 overflow-y-auto py-4 flex flex-col">
-        <button onclick="nav('dashboard')" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-chart-pie ml-3 w-6"></i> لوحة التحكم</button>
         <button onclick="nav('dailyReport')" class="nav-daily w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-calendar-week ml-3 w-6"></i> تقرير أسبوعي</button>
         <button onclick="nav('monthlyReport')" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-calendar-alt ml-3 w-6"></i> تقارير شهرية</button>
         <button onclick="nav('annualReport')" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-calendar ml-3 w-6"></i> تقرير سنوي</button>
@@ -240,7 +237,6 @@
        </div>
     </div>
     <div id="mobileMenu" class="hidden fixed top-14 left-0 w-full bg-blue-800 text-white z-40 no-print shadow-lg">
-        <button onclick="nav('dashboard')" class="block w-full text-right p-4 border-b border-blue-700">لوحة التحكم</button>
         <button onclick="nav('dailyReport')" class="nav-daily block w-full text-right p-4 border-b border-blue-700">تقرير أسبوعي</button>
         <button onclick="nav('monthlyReport')" class="block w-full text-right p-4 border-b border-blue-700">تقارير شهرية</button>
         <button onclick="nav('annualReport')" class="block w-full text-right p-4 border-b border-blue-700">تقرير سنوي</button>
@@ -494,44 +490,7 @@
 
       <!-- PAGES -->
 
-      <!-- 1. DASHBOARD -->
-      <section id="dashboard" class="page-section p-6">
-        <h2 class="text-2xl font-bold mb-6 text-blue-900 border-b border-gray-200 pb-2">لوحة التحكم (Dashboard)</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 border-r-4 border-r-blue-600">
-            <h3 class="text-gray-500 text-sm font-bold">متوسط الالتزام هذا الأسبوع</h3>
-            <p class="text-3xl font-bold text-blue-700 mt-2" id="dash-daily-val">--%</p>
-          </div>
-          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 border-r-4 border-r-emerald-500">
-            <h3 class="text-gray-500 text-sm font-bold">متوسط الالتزام هذا الشهر</h3>
-            <p class="text-3xl font-bold text-emerald-600 mt-2" id="dash-monthly-val">--%</p>
-          </div>
-          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 border-r-4 border-r-purple-500">
-            <h3 class="text-gray-500 text-sm font-bold">متوسط الالتزام السنوي</h3>
-            <p class="text-3xl font-bold text-purple-600 mt-2" id="dash-yearly-val">--%</p>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <h4 class="font-bold mb-4 text-blue-900">أداء الأقسام (شهري)</h4>
-            <canvas id="deptChart"></canvas>
-          </div>
-          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <h4 class="font-bold mb-4 text-blue-900">التطور الزمني للالتزام</h4>
-            <canvas id="trendChart"></canvas>
-          </div>
-        </div>
-        
-        <div class="mt-6 text-left no-print">
-          <button onclick="window.print()" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded shadow transition">
-            <i class="fas fa-print"></i> طباعة / حفظ PDF
-          </button>
-        </div>
-      </section>
-
-      <!-- 2. SETTINGS -->
+      <!-- 1. SETTINGS -->
       <section id="settings" class="page-section hidden p-6">
         <div class="flex flex-wrap justify-between items-center gap-3 mb-6 border-b border-gray-200 pb-2">
             <div>
@@ -679,6 +638,51 @@
            </div>
         </div>
 
+        <!-- Inspection Days Selection (أيام المرور من الشهر) -->
+        <div class="bg-white p-4 rounded shadow-sm border border-gray-200 border-r-4 border-r-emerald-600 mt-6">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <h3 class="font-bold text-blue-900 flex items-center gap-2">
+                    <i class="fas fa-calendar-check text-emerald-600"></i>
+                    <span>أيام المرور المعتمدة في الشهر</span>
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="toggleAllInspectionDays(true)" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-2.5 py-1 rounded border border-blue-200 font-bold transition">تحديد الكل</button>
+                    <button type="button" onclick="toggleAllInspectionDays(false)" class="text-xs bg-gray-50 hover:bg-gray-100 text-gray-700 px-2.5 py-1 rounded border border-gray-200 font-bold transition">إلغاء الكل</button>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mb-3">حدد أيام الأسبوع الخاصة بالمرور ليتم عرض التواريخ الموافقة لهذه الأيام فقط من الشهر في صفحة التقرير الأسبوعي.</p>
+            <div id="inspection-days-settings-container" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
+                    <input type="checkbox" value="6" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                    <span>السبت</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
+                    <input type="checkbox" value="0" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                    <span>الأحد</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
+                    <input type="checkbox" value="1" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                    <span>الإثنين</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
+                    <input type="checkbox" value="2" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                    <span>الثلاثاء</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
+                    <input type="checkbox" value="3" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                    <span>الأربعاء</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
+                    <input type="checkbox" value="4" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                    <span>الخميس</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
+                    <input type="checkbox" value="5" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                    <span>الجمعة</span>
+                </label>
+            </div>
+        </div>
+
         <div class="bg-white p-4 rounded shadow-sm border border-gray-200 mt-6 mb-6">
             <h3 class="font-bold mb-2 text-blue-900 flex items-center gap-2">
                 <i class="fas fa-clipboard-list text-blue-600"></i>
@@ -712,41 +716,6 @@
             </div>
         </div>
 
-        <!-- Database Optimization & Cloud Shielding Card -->
-        <div class="bg-gradient-to-r from-blue-900 to-indigo-950 text-white p-5 rounded-lg shadow-md mb-6 border border-blue-800">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2">
-                    <i class="fas fa-microchip text-emerald-400 text-lg"></i>
-                    <h3 class="font-bold text-base text-white">ترشيد استهلاك قاعدة البيانات (Database Optimization)</h3>
-                </div>
-                <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> درع الترشيد نشط
-                </span>
-            </div>
-            <p class="text-xs text-blue-200 mb-4 leading-relaxed">
-                النظام محمي بالكامل ضد استنزاف القراءات السحابية (Row Reads Exhaustion): فهارس إلزامية (Mandatory Indexes)، نمط الكاش العشوائي (In-Memory Cache-Aside)، حظر تام لاستعلامات SELECT *، وتقييد حجم الاستعلامات (Query Limits).
-            </p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div class="bg-white/10 p-2.5 rounded border border-white/10">
-                    <span class="text-blue-300 block mb-1">الفهارس الإلزامية</span>
-                    <strong class="text-emerald-300 font-bold">7 فهارس نشطة</strong>
-                </div>
-                <div class="bg-white/10 p-2.5 rounded border border-white/10">
-                    <span class="text-blue-300 block mb-1">طبقة الكاش السحابي</span>
-                    <strong class="text-white font-bold" id="cache-hit-rate">In-Memory (0 Reads)</strong>
-                </div>
-                <div class="bg-white/10 p-2.5 rounded border border-white/10">
-                    <span class="text-blue-300 block mb-1">القراءات الموفرة</span>
-                    <strong class="text-emerald-300 font-bold" id="cache-saved-reads">ترشيد لحظي</strong>
-                </div>
-                <div class="bg-white/10 p-2.5 rounded border border-white/10 flex items-center justify-center">
-                    <button onclick="refreshCacheMetricsUI()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition text-xs font-bold flex items-center gap-1">
-                        <i class="fas fa-sync-alt"></i> فحص الكاش
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <!-- Turso Migration Card -->
         <div class="bg-gradient-to-r from-indigo-900 to-blue-900 text-white p-6 rounded-lg shadow-sm border border-indigo-700 mb-8">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -774,10 +743,15 @@
         
         <!-- Input Form -->
         <div id="daily-form-container" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8 no-print">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <div>
-                    <label class="block text-sm font-bold mb-1 text-gray-700">تاريخ التقرير الأسبوعي</label>
-                    <input type="date" id="daily-date" class="w-full border border-gray-300 p-2 rounded bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition">
+                    <label class="block text-sm font-bold mb-1 text-gray-700">الشهر</label>
+                    <input type="month" id="daily-month" onchange="populateWeeklyMonthDates(false)" class="w-full border border-gray-300 p-2 rounded bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-700">يوم وتاريخ المرور</label>
+                    <select id="daily-date" class="w-full border border-gray-300 p-2 rounded bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition"></select>
+                    <p id="daily-date-hint" class="text-[11px] text-gray-500 mt-1"></p>
                 </div>
                 <div>
                     <label class="block text-sm font-bold mb-1 text-gray-700">الفترة</label>
@@ -1474,7 +1448,7 @@
     }
 
     // --- Navigation ---
-    let currentPageId = 'dashboard';
+    let currentPageId = 'dailyReport';
 
     function nav(pageId) {
       currentPageId = pageId;
@@ -1489,7 +1463,6 @@
       // Close mobile menu if open
       document.getElementById('mobileMenu').classList.add('hidden');
 
-      if (pageId === 'dashboard') loadDashboard();
       if (pageId === 'settings') {
           const banner = document.getElementById('settings-save-banner');
           if (banner) banner.classList.add('hidden');
@@ -1528,13 +1501,13 @@
             settingsData = data || {};
             updateAllCenterLabels();
             applyRoleRestrictions();
-            nav('dashboard');
+            nav('dailyReport');
           }).withFailureHandler(err => {
             loading(false);
             console.error("Failed to load settings:", err);
             updateAllCenterLabels();
             applyRoleRestrictions();
-            nav('dashboard');
+            nav('dailyReport');
           }).getSettings(activeCenter.name);
         } else {
           loading(false);
@@ -1550,7 +1523,7 @@
         currentCenter = allCenters[0];
         updateAllCenterLabels();
         applyRoleRestrictions();
-        nav('dashboard');
+        nav('dailyReport');
       }).getCenters();
     }
 
@@ -1643,15 +1616,11 @@
       closeCenterSwitcherModal();
       loading(true);
 
-      // Load settings and data for the newly active center
+        // Load settings and data for the newly active center
       google.script.run.withSuccessHandler(data => {
         loading(false);
         settingsData = data || {};
         updateAllCenterLabels();
-        
-        // Invalidate cached dashboard data to force clean fetch for this center
-        cachedDashboardData = null;
-        lastDashboardFetch = 0;
 
         // Refresh currently viewed page
         refreshCurrentPageData();
@@ -1669,9 +1638,7 @@
     }
 
     function refreshCurrentPageData() {
-      if (currentPageId === 'dashboard') {
-        loadDashboard(true);
-      } else if (currentPageId === 'dailyReport') {
+      if (currentPageId === 'dailyReport') {
         initDailyForm();
       } else if (currentPageId === 'monthlyReport') {
         initMonthly();
@@ -2294,11 +2261,25 @@
       document.getElementById('set-inspectors').value = (settingsData.inspectors || []).join('\n');
       const setImp = document.getElementById('set-implementers');
       if (setImp) setImp.value = (settingsData.implementers || []).join('\n');
+
+      // Render Inspection Days Checkboxes
+      const allowedDays = Array.isArray(settingsData.inspectionDays)
+        ? settingsData.inspectionDays.map(Number)
+        : [6, 0, 1, 2, 3, 4, 5];
+      document.querySelectorAll('.inspection-day-chk').forEach(cb => {
+        cb.checked = allowedDays.includes(Number(cb.value));
+      });
       
       const tbody = document.getElementById('proc-table-body');
       tbody.innerHTML = '';
       (settingsData.procedures || []).forEach((proc) => {
         addProcRow(proc.note || proc.name, proc.rec, true);
+      });
+    }
+
+    function toggleAllInspectionDays(checked) {
+      document.querySelectorAll('.inspection-day-chk').forEach(cb => {
+        cb.checked = Boolean(checked);
       });
     }
 
@@ -2368,6 +2349,15 @@
       const newImplementers = document.getElementById('set-implementers')
         ? document.getElementById('set-implementers').value.split('\n').map(x => x.trim()).filter(Boolean)
         : (settingsData.implementers || []);
+      const newInspectionDays = Array.from(document.querySelectorAll('.inspection-day-chk:checked'))
+        .map(cb => Number(cb.value))
+        .filter(n => !isNaN(n) && n >= 0 && n <= 6);
+
+      if (newInspectionDays.length === 0) {
+        showSettingsSaveBanner('يرجى تحديد يوم مرور واحد على الأقل من أيام الأسبوع', true);
+        return;
+      }
+
       const rightLogoVal = document.getElementById('set-right-logo').value.trim();
       const leftLogoVal = document.getElementById('set-left-logo').value.trim();
 
@@ -2382,6 +2372,7 @@
         periods: newPeriods,
         inspectors: newInspectors,
         implementers: newImplementers,
+        inspectionDays: newInspectionDays,
         procedures: []
       };
 
@@ -2432,8 +2423,78 @@
       `).join('');
     }
 
+    function populateWeeklyMonthDates(preferToday = true) {
+      const monthInput = document.getElementById('daily-month');
+      const dateSelect = document.getElementById('daily-date');
+      const hintEl = document.getElementById('daily-date-hint');
+      if (!monthInput || !dateSelect) return;
+
+      const todayYmd = getLocalYMD(new Date());
+      if (!monthInput.value || !/^\d{4}-\d{2}$/.test(monthInput.value)) {
+        monthInput.value = todayYmd.slice(0, 7);
+      }
+
+      const [yearStr, monthStr] = monthInput.value.split('-');
+      const year = Number(yearStr);
+      const month = Number(monthStr);
+      const daysInMonth = new Date(year, month, 0).getDate();
+
+      const allowedDays = Array.isArray(settingsData.inspectionDays)
+        ? settingsData.inspectionDays.map(Number)
+        : [6, 0, 1, 2, 3, 4, 5];
+
+      const arabicDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+      const matchingDates = [];
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const d = new Date(year, month - 1, day);
+        const dayOfWeek = d.getDay();
+        if (allowedDays.includes(dayOfWeek)) {
+          const ymd = `${yearStr}-${monthStr}-${String(day).padStart(2, '0')}`;
+          matchingDates.push({
+            ymd,
+            dayName: arabicDays[dayOfWeek],
+            label: `${arabicDays[dayOfWeek]} - ${ymd}`
+          });
+        }
+      }
+
+      const prevSelected = dateSelect.value;
+
+      if (matchingDates.length === 0) {
+        dateSelect.innerHTML = '<option value="">لا توجد أيام مرور محددة في الإعدادات</option>';
+        if (hintEl) {
+          hintEl.innerHTML = 'لم يتم تحديد أيام مرور. <button type="button" onclick="nav(\'settings\')" class="text-blue-600 font-bold underline">تحديد من الإعدادات</button>';
+        }
+        return;
+      }
+
+      dateSelect.innerHTML = matchingDates
+        .map(item => `<option value="${item.ymd}">${escapeHtml(item.label)}</option>`)
+        .join('');
+
+      let targetYmd = '';
+      if (!preferToday && prevSelected && matchingDates.some(m => m.ymd === prevSelected)) {
+        targetYmd = prevSelected;
+      } else if (matchingDates.some(m => m.ymd === todayYmd)) {
+        targetYmd = todayYmd;
+      } else {
+        const pastOrToday = matchingDates.filter(m => m.ymd <= todayYmd);
+        targetYmd = pastOrToday.length > 0 ? pastOrToday[pastOrToday.length - 1].ymd : matchingDates[0].ymd;
+      }
+      dateSelect.value = targetYmd;
+
+      if (hintEl) {
+        hintEl.innerText = `الأيام المتاحة للمرور هذا الشهر: ${matchingDates.length} يوم`;
+      }
+    }
+
     function initDailyForm() {
       const cName = currentCenter ? currentCenter.name : '';
+      const monthInput = document.getElementById('daily-month');
+      if (monthInput && !monthInput.value) {
+        monthInput.value = getLocalYMD(new Date()).slice(0, 7);
+      }
       if (!settingsData.departments) {
         google.script.run.withSuccessHandler(data => {
             settingsData = data;
@@ -2442,8 +2503,6 @@
       } else {
         populateDailyDropdowns();
       }
-      // Set default to today
-      document.getElementById('daily-date').value = getLocalYMD(new Date());
     }
 
     function populateDailyDropdowns() {
@@ -2454,6 +2513,7 @@
         fill('daily-period', settingsData.periods);
         fill('daily-dept', settingsData.departments);
         fill('daily-inspector', settingsData.inspectors);
+        populateWeeklyMonthDates(true);
         renderWeeklyImplementersCheckboxes();
         renderDailyProcedures();
     }
@@ -2699,7 +2759,6 @@
         loading(true);
         google.script.run.withSuccessHandler(() => {
             loading(false);
-            cachedDashboardData = null;
             showDailyResult(formData);
         }).withFailureHandler(err => {
             loading(false);
@@ -2774,7 +2833,8 @@
     function resetDailyForm() {
         document.getElementById('daily-form-container').classList.remove('hidden');
         document.getElementById('daily-result-view').classList.add('hidden');
-        document.getElementById('daily-date').value = getLocalYMD(new Date());
+        const monthInput = document.getElementById('daily-month');
+        if (monthInput) monthInput.value = getLocalYMD(new Date()).slice(0, 7);
         document.querySelectorAll('.implementer-chk').forEach(cb => cb.checked = false);
         initDailyForm();
     }
@@ -3013,9 +3073,6 @@
             submitBtn.disabled = false;
             submitBtn.innerHTML = origBtnHtml;
             closeCopyMonthModal();
-
-            // Invalidate client-side dashboard cache so next dashboard visit reflects copied records
-            cachedDashboardData = null;
 
             // Switch month picker to the target month and render optimistically with 0 follow-up queries
             document.getElementById('month-picker').value = targetMonth;
@@ -3499,110 +3556,6 @@
     function closeArchiveDetail() {
         document.getElementById('archive-detail-view').classList.add('hidden');
         document.getElementById('archive-result').classList.remove('hidden');
-    }
-
-    // --- Client In-Memory Caching for Dashboard ---
-    let cachedDashboardData = null;
-    let lastDashboardFetch = 0;
-
-    // --- Dashboard Charts ---
-    function loadDashboard(force = false) {
-      const now = Date.now();
-      // Reuse local memory cache if less than 60 seconds old to completely eliminate unnecessary roundtrips
-      if (!force && cachedDashboardData && (now - lastDashboardFetch < 60000)) {
-        processDashboardMetrics(cachedDashboardData);
-        return;
-      }
-
-      google.script.run.withSuccessHandler(data => {
-         cachedDashboardData = data || [];
-         lastDashboardFetch = Date.now();
-         processDashboardMetrics(cachedDashboardData);
-      }).withFailureHandler(err => console.error("Dashboard Load Error: ", err)).getDashboardMetrics(currentCenter ? currentCenter.name : '');
-    }
-
-    function processDashboardMetrics(data) {
-       let totalYes=0, totalNo=0, dayYes=0, dayNo=0, monYes=0, monNo=0;
-       const deptStats = {}, dailyTrend = {};
-       const today = new Date().toISOString().split('T')[0];
-       const thisMonth = new Date().getMonth();
-       
-       data.forEach(r => {
-          const dStr = r.date;
-          const dObj = new Date(dStr);
-          const status = r.status;
-          
-          if(status === 'Yes') totalYes++;
-          if(status === 'No') totalNo++;
-
-          // Current week check (last 7 days)
-          const diffDays = Math.round((new Date().getTime() - dObj.getTime()) / (1000 * 3600 * 24));
-          if(diffDays >= 0 && diffDays <= 7) {
-              if(status === 'Yes') dayYes++;
-              if(status === 'No') dayNo++;
-          }
-          if(dObj.getMonth() === thisMonth && dObj.getFullYear() === new Date().getFullYear()) {
-              if(status === 'Yes') monYes++;
-              if(status === 'No') monNo++;
-              if(!deptStats[r.dept]) deptStats[r.dept] = {yes:0, no:0};
-              if(status === 'Yes') deptStats[r.dept].yes++;
-              if(status === 'No') deptStats[r.dept].no++;
-          }
-
-          if(!dailyTrend[dStr]) dailyTrend[dStr] = {yes:0, no:0};
-          if(status === 'Yes') dailyTrend[dStr].yes++;
-          if(status === 'No') dailyTrend[dStr].no++;
-       });
-
-       const calc = (y, n) => (y+n)===0 ? 0 : Math.round((y/(y+n))*100);
-       document.getElementById('dash-daily-val').innerText = calc(dayYes, dayNo) + '%';
-       document.getElementById('dash-monthly-val').innerText = calc(monYes, monNo) + '%';
-       document.getElementById('dash-yearly-val').innerText = calc(totalYes, totalNo) + '%';
-
-       renderCharts(deptStats, dailyTrend);
-    }
-
-    function refreshCacheMetricsUI() {
-      google.script.run.withSuccessHandler(metrics => {
-        if (!metrics) return;
-        const hitRateEl = document.getElementById('cache-hit-rate');
-        const savedReadsEl = document.getElementById('cache-saved-reads');
-        if (hitRateEl) hitRateEl.innerText = `نسبة النجاح: ${metrics.hitRate || '100%'}`;
-        if (savedReadsEl) savedReadsEl.innerText = `${metrics.savedCloudReads || 0} استعلام موفر`;
-      }).withFailureHandler(err => console.warn(err)).getCacheMetrics();
-    }
-
-    let deptChartInst = null;
-    let trendChartInst = null;
-
-    function renderCharts(deptStats, dailyTrend) {
-        const deptLabels = Object.keys(deptStats);
-        const deptScores = deptLabels.map(d => {
-            const s = deptStats[d];
-            return s.yes + s.no === 0 ? 0 : Math.round((s.yes/(s.yes+s.no))*100);
-        });
-
-        const ctx1 = document.getElementById('deptChart').getContext('2d');
-        if(deptChartInst) deptChartInst.destroy();
-        deptChartInst = new Chart(ctx1, {
-            type: 'bar',
-            data: { labels: deptLabels, datasets: [{ label: 'نسبة الالتزام %', data: deptScores, backgroundColor: '#1e3a8a', borderRadius: 4 }] },
-            options: { responsive: true }
-        });
-
-        const trendDates = Object.keys(dailyTrend).sort();
-        const trendScores = trendDates.map(d => {
-             const s = dailyTrend[d];
-             return s.yes + s.no === 0 ? 0 : Math.round((s.yes/(s.yes+s.no))*100);
-        });
-
-        const ctx2 = document.getElementById('trendChart').getContext('2d');
-        if(trendChartInst) trendChartInst.destroy();
-        trendChartInst = new Chart(ctx2, {
-            type: 'line',
-            data: { labels: trendDates, datasets: [{ label: 'الالتزام اليومي', data: trendScores, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', tension: 0.1, fill: true }] },
-            options: { responsive: true }
-        });
     }
 
     function initCentersLoginPortal() {

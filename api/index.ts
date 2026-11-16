@@ -210,6 +210,7 @@ app.post('/api', async (req: Request, res: Response) => {
           periods: ['صباحية', 'مسائية', 'سهر'],
           inspectors: ['د. تجريبي', 'م. مكافحة'],
           implementers: ['مشرف مكافحة العدوى', 'رئيس التمريض', 'مسؤول الجودة', 'مشرف السلامة والصحة المهنية'],
+          inspectionDays: [6, 0, 1, 2, 3, 4, 5],
           procedures: [
             { name: 'غسل الأيدي', note: 'عدم الالتزام باللحظات الخمس', rec: 'إعادة التدريب', depts: [] },
             { name: 'ارتداء الواقيات', note: 'عدم ارتداء الماسك', rec: 'توفير المستلزمات', depts: ['عناية مركزة'] },
@@ -304,6 +305,7 @@ app.post('/api', async (req: Request, res: Response) => {
               periods: ['صباحية', 'مسائية', 'سهر'],
               inspectors: ['د. تجريبي', 'م. مكافحة'],
               implementers: ['مشرف مكافحة العدوى', 'رئيس التمريض', 'مسؤول الجودة', 'مشرف السلامة والصحة المهنية'],
+              inspectionDays: [6, 0, 1, 2, 3, 4, 5],
               procedures: [
                 { name: 'غسل الأيدي', note: 'عدم الالتزام باللحظات الخمس', rec: 'إعادة التدريب', depts: [] },
                 { name: 'ارتداء الواقيات', note: 'عدم ارتداء الماسك', rec: 'توفير المستلزمات', depts: ['عناية مركزة'] },
@@ -353,6 +355,7 @@ app.post('/api', async (req: Request, res: Response) => {
               periods: ['صباحية', 'مسائية', 'سهر'],
               inspectors: ['د. تجريبي', 'م. مكافحة'],
               implementers: ['مشرف مكافحة العدوى', 'رئيس التمريض', 'مسؤول الجودة', 'مشرف السلامة والصحة المهنية'],
+              inspectionDays: [6, 0, 1, 2, 3, 4, 5],
               procedures: [
                 { name: 'غسل الأيدي', note: 'عدم الالتزام باللحظات الخمس', rec: 'إعادة التدريب', depts: [] },
                 { name: 'ارتداء الواقيات', note: 'عدم ارتداء الماسك', rec: 'توفير المستلزمات', depts: ['عناية مركزة'] },
@@ -365,6 +368,9 @@ app.post('/api', async (req: Request, res: Response) => {
 
         if (settings && !settings.implementers) {
           settings.implementers = ['مشرف مكافحة العدوى', 'رئيس التمريض', 'مسؤول الجودة', 'مشرف السلامة والصحة المهنية'];
+        }
+        if (settings && !Array.isArray(settings.inspectionDays)) {
+          settings.inspectionDays = [6, 0, 1, 2, 3, 4, 5];
         }
         if (settings && !settings.teamSignature) {
           settings.teamSignature = 'مشرف مكافحة العدوى';
