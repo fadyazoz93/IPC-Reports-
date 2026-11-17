@@ -13,10 +13,251 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Futuristic & Arabic Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
   
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700&display=swap');
-    body { font-family: 'Tajawal', sans-serif; background-color: #f9fafb; }
+    :root {
+      --bg-canvas: #f3f7fc;
+      --surface-glass: rgba(255, 255, 255, 0.88);
+      --surface-solid: #ffffff;
+      --border-ice: rgba(148, 163, 184, 0.28);
+      --border-cyan: rgba(6, 182, 212, 0.32);
+      --ink-primary: #0f172a;
+      --ink-secondary: #475569;
+      --accent-cyan: #06b6d4;
+      --accent-azure: #2563eb;
+      --accent-indigo: #4f46e5;
+    }
+
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: var(--bg-canvas);
+      color: var(--ink-primary);
+      background-image:
+        radial-gradient(circle at 88% 8%, rgba(6, 182, 212, 0.11) 0%, transparent 36%),
+        radial-gradient(circle at 12% 85%, rgba(79, 70, 229, 0.08) 0%, transparent 40%),
+        linear-gradient(180deg, #f8fbff 0%, #eff5fc 100%);
+      background-attachment: fixed;
+    }
+
+    h1, h2, h3, h4, .font-display {
+      font-family: 'Cairo', 'Tajawal', sans-serif;
+    }
+
+    .font-mono-num {
+      font-family: 'JetBrains Mono', 'Tajawal', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Precision Tech Grid Backdrop */
+    .futuristic-grid-bg {
+      background-image:
+        linear-gradient(to right, rgba(14, 165, 233, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(14, 165, 233, 0.045) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    /* Frosted Glass Light Cards */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(186, 210, 236, 0.65);
+      box-shadow: 0 10px 30px -15px rgba(15, 23, 42, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .glass-sidebar {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-left: 1px solid rgba(186, 210, 236, 0.72);
+      box-shadow: -8px 0 32px -18px rgba(14, 116, 144, 0.14);
+    }
+
+    .glass-topbar {
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(186, 210, 236, 0.7);
+      box-shadow: 0 4px 20px -12px rgba(14, 116, 144, 0.12);
+    }
+
+    /* Light Mode Futuristic Inputs */
+    .f-input {
+      background-color: rgba(248, 250, 252, 0.92);
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      border-radius: 0.75rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+    .f-input:focus {
+      background-color: #ffffff;
+      border-color: #06b6d4;
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.16);
+      outline: none;
+    }
+    .f-input::placeholder {
+      color: #94a3b8;
+    }
+
+    /* Futuristic Nav Buttons */
+    .nav-item-btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      text-align: right;
+      padding: 0.65rem 0.9rem;
+      border-radius: 0.9rem;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: #334155;
+      border: 1px solid transparent;
+      transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+    }
+    .nav-item-btn:hover {
+      background: linear-gradient(135deg, rgba(224, 247, 250, 0.78), rgba(239, 246, 255, 0.9));
+      border-color: rgba(6, 182, 212, 0.26);
+      color: #0e7490;
+      transform: translateX(-2px);
+    }
+    .nav-item-btn.is-active {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.14), rgba(37, 99, 235, 0.12));
+      border-color: rgba(6, 182, 212, 0.42);
+      color: #0f172a;
+      box-shadow: 0 6px 18px -10px rgba(6, 182, 212, 0.45);
+    }
+    .nav-item-btn.is-active .f-icon-tile {
+      background: linear-gradient(135deg, #ecfeff, #dbeafe);
+      border-color: rgba(6, 182, 212, 0.5);
+      box-shadow: 0 0 14px rgba(6, 182, 212, 0.28);
+      transform: scale(1.06);
+    }
+
+    /* Futuristic Animated Icon Tile */
+    .f-icon-tile {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.35rem;
+      height: 2.35rem;
+      border-radius: 0.8rem;
+      background: linear-gradient(145deg, #ffffff, #f0f9ff);
+      border: 1px solid rgba(125, 211, 252, 0.55);
+      box-shadow: 0 4px 12px -4px rgba(14, 165, 233, 0.18), inset 0 1px 0 rgba(255,255,255,0.95);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .f-icon-tile-lg {
+      width: 2.9rem;
+      height: 2.9rem;
+      border-radius: 0.95rem;
+    }
+    .f-icon-tile::after {
+      content: '';
+      position: absolute;
+      inset: -40%;
+      background: linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, 0.8) 50%, transparent 65%);
+      transform: translateX(-120%) rotate(15deg);
+      animation: iconSheen 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .nav-item-btn:hover .f-icon-tile,
+    .f-card-interactive:hover .f-icon-tile {
+      transform: translateY(-2px) scale(1.07);
+      border-color: rgba(6, 182, 212, 0.65);
+      box-shadow: 0 8px 18px -6px rgba(6, 182, 212, 0.36);
+    }
+
+    /* GPU-Composited Keyframe Animations for Futuristic Icons */
+    @keyframes floatGentle {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-2.5px); }
+    }
+    @keyframes orbitSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes orbitSpinReverse {
+      0% { transform: rotate(360deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes scanSweep {
+      0%, 100% { transform: translateY(0px); opacity: 0.35; }
+      50% { transform: translateY(7px); opacity: 0.95; }
+    }
+    @keyframes barWave1 {
+      0%, 100% { transform: scaleY(0.78); }
+      50% { transform: scaleY(1.08); }
+    }
+    @keyframes barWave2 {
+      0%, 100% { transform: scaleY(1.05); }
+      50% { transform: scaleY(0.75); }
+    }
+    @keyframes slideSwap {
+      0%, 100% { transform: translateX(0px); }
+      50% { transform: translateX(-3px); }
+    }
+    @keyframes radarRing {
+      0% { transform: scale(0.85); opacity: 0.75; }
+      70% { transform: scale(1.18); opacity: 0; }
+      100% { transform: scale(1.18); opacity: 0; }
+    }
+    @keyframes iconSheen {
+      0%, 72% { transform: translateX(-120%) rotate(15deg); }
+      100% { transform: translateX(130%) rotate(15deg); }
+    }
+    @keyframes pageReveal {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .anim-float { animation: floatGentle 3.2s ease-in-out infinite; transform-origin: center; }
+    .anim-orbit { animation: orbitSpin 11s linear infinite; transform-origin: center; }
+    .anim-orbit-rev { animation: orbitSpinReverse 9s linear infinite; transform-origin: center; }
+    .anim-gear { animation: orbitSpin 14s linear infinite; transform-origin: 10px 14px; }
+    .anim-gear-sm { animation: orbitSpinReverse 10s linear infinite; transform-origin: 17px 7.5px; }
+    .anim-scan { animation: scanSweep 2.6s ease-in-out infinite; }
+    .anim-bar-1 { animation: barWave1 2.2s ease-in-out infinite; transform-origin: bottom; }
+    .anim-bar-2 { animation: barWave2 2.2s ease-in-out infinite; transform-origin: bottom; }
+    .anim-swap { animation: slideSwap 2.4s ease-in-out infinite; }
+    .anim-radar { animation: radarRing 2.6s cubic-bezier(0.2, 0.8, 0.4, 1) infinite; transform-origin: center; }
+    .page-section:not(.hidden) { animation: pageReveal 0.24s ease-out; }
+
+    /* Hover micro-motion on FontAwesome action button icons */
+    .btn-futuristic {
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+    .btn-futuristic:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px -8px rgba(6, 182, 212, 0.45);
+    }
+    .btn-futuristic:hover i,
+    .btn-futuristic:hover svg {
+      transform: scale(1.12);
+    }
+    .btn-futuristic i,
+    .btn-futuristic svg {
+      transition: transform 0.2s ease;
+    }
+
+    /* Accessible Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      .anim-float, .anim-orbit, .anim-orbit-rev, .anim-gear, .anim-gear-sm,
+      .anim-scan, .anim-bar-1, .anim-bar-2, .anim-swap, .anim-radar,
+      .f-icon-tile::after, .cyber-ring-1, .cyber-ring-2 {
+        animation: none !important;
+      }
+      .page-section:not(.hidden) {
+        animation: none !important;
+      }
+    }
     
     /* Print Styles */
     @media print {
@@ -144,16 +385,37 @@
       .border { border: 1px solid #ccc !important; }
     }
     
-    /* Loader */
-    .loader {
-      border: 4px solid #f3f3f3; border-top: 4px solid #1e3a8a; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite;
+    /* Futuristic Cyber Loader */
+    .cyber-spinner {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .cyber-ring-1 {
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      border: 3px solid rgba(6, 182, 212, 0.16);
+      border-top-color: #06b6d4;
+      border-right-color: #2563eb;
+      animation: orbitSpin 0.9s linear infinite;
+    }
+    .cyber-ring-2 {
+      position: absolute;
+      inset: 8px;
+      border-radius: 9999px;
+      border: 2.5px solid rgba(99, 102, 241, 0.14);
+      border-bottom-color: #6366f1;
+      animation: orbitSpinReverse 1.2s linear infinite;
+    }
 
     /* Custom Scroll for Checkbox list */
     .checkbox-list::-webkit-scrollbar { width: 6px; }
-    .checkbox-list::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
-    .checkbox-list::-webkit-scrollbar-track { background-color: #f1f5f9; }
+    .checkbox-list::-webkit-scrollbar-thumb { background-color: #bae6fd; border-radius: 4px; }
+    .checkbox-list::-webkit-scrollbar-track { background-color: #f8fafc; }
 
     /* Report Header Logos (Screen) */
     .report-header-bar {
@@ -184,95 +446,228 @@
       display: block;
     }
   </style>
-<link rel="stylesheet" href="/index.css">
 </head>
-<body class="text-gray-800">
+<body class="text-slate-900 antialiased selection:bg-cyan-100 selection:text-cyan-950">
+
+  <!-- Shared Futuristic SVG Gradient Definitions -->
+  <svg width="0" height="0" class="absolute pointer-events-none" aria-hidden="true">
+    <defs>
+      <linearGradient id="fGradCyanBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#06b6d4"/>
+        <stop offset="100%" stop-color="#2563eb"/>
+      </linearGradient>
+      <linearGradient id="fGradAzureIndigo" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0ea5e9"/>
+        <stop offset="100%" stop-color="#6366f1"/>
+      </linearGradient>
+      <linearGradient id="fGradVioletCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#7c3aed"/>
+        <stop offset="100%" stop-color="#06b6d4"/>
+      </linearGradient>
+      <linearGradient id="fGradEmeraldCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#10b981"/>
+        <stop offset="100%" stop-color="#0ea5e9"/>
+      </linearGradient>
+      <linearGradient id="fGradAmberCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f59e0b"/>
+        <stop offset="100%" stop-color="#06b6d4"/>
+      </linearGradient>
+      <linearGradient id="fGradSoftCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#cffafe"/>
+        <stop offset="100%" stop-color="#dbeafe"/>
+      </linearGradient>
+    </defs>
+  </svg>
 
   <!-- Sidebar / Navigation -->
   <div class="fixed inset-0 flex overflow-hidden">
     
-    <!-- Sidebar -->
-    <aside class="w-64 bg-blue-900 text-white flex-shrink-0 hidden md:flex flex-col no-print transition-all duration-300 shadow-xl" id="sidebar">
-      <div class="p-4 flex items-center justify-center font-bold text-xl border-b border-blue-800 gap-2.5">
-        <img src="/favicon.svg" alt="شعار مكافحة العدوى" class="w-8 h-8 object-contain drop-shadow">
-        <span>مكافحة العدوى</span>
+    <!-- Futuristic Light Glass Sidebar -->
+    <aside class="w-72 glass-sidebar text-slate-800 flex-shrink-0 hidden md:flex flex-col no-print transition-all duration-300 z-30" id="sidebar">
+      <div class="p-4 flex items-center justify-center font-extrabold text-lg border-b border-slate-200/80 gap-3 bg-gradient-to-l from-cyan-50/70 via-white/80 to-blue-50/70">
+        <span class="f-icon-tile f-icon-tile-lg border-cyan-300/70">
+          <svg viewBox="0 0 32 32" class="w-7 h-7" fill="none">
+            <circle cx="16" cy="16" r="13.5" stroke="url(#fGradCyanBlue)" stroke-width="1.4" stroke-dasharray="4 3" class="anim-orbit"/>
+            <path d="M16 5.5L24.5 9.2V15.5C24.5 21 20.8 25.4 16 26.8C11.2 25.4 7.5 21 7.5 15.5V9.2L16 5.5Z" fill="url(#fGradSoftCyan)" stroke="url(#fGradCyanBlue)" stroke-width="1.6" class="anim-float"/>
+            <path d="M16 11.5V20.5M11.5 16H20.5" stroke="url(#fGradAzureIndigo)" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <div class="text-right">
+          <span class="block font-display font-extrabold text-slate-900 leading-tight tracking-tight">مكافحة العدوى</span>
+          <span class="block text-[11px] font-bold text-cyan-700">منظومة المتابعة الذكية</span>
+        </div>
       </div>
 
       <!-- Active Center Info Card in Sidebar -->
-      <div class="p-3 bg-blue-950/70 border-b border-blue-800/80 flex flex-col gap-1.5">
-        <div class="text-[11px] text-blue-300 font-bold flex items-center justify-between">
-          <span class="flex items-center gap-1.5"><i class="fas fa-hospital text-blue-400"></i> المركز النشط حالياً:</span>
-          <button onclick="openCenterSwitcherModal()" class="text-[11px] bg-blue-700 hover:bg-blue-600 px-2 py-0.5 rounded text-white transition flex items-center gap-1" title="تغيير / تبديل المركز">
-            <i class="fas fa-sync-alt text-[9px]"></i> تبديل
+      <div class="m-3 p-3.5 rounded-2xl bg-gradient-to-br from-cyan-50/90 via-white to-indigo-50/70 border border-cyan-200/70 shadow-sm flex flex-col gap-1.5">
+        <div class="text-[11px] text-cyan-800 font-bold flex items-center justify-between gap-2">
+          <span class="flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24" class="w-4 h-4 anim-float" fill="none">
+              <path d="M4 20V7L12 3L20 7V20" stroke="url(#fGradCyanBlue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 20V13H15V20M12 7.5V10.5M10.5 9H13.5" stroke="url(#fGradAzureIndigo)" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            المركز النشط حالياً
+          </span>
+          <button onclick="openCenterSwitcherModal()" class="btn-futuristic text-[11px] bg-white hover:bg-cyan-50 text-cyan-800 border border-cyan-200 px-2.5 py-0.5 rounded-lg font-bold shadow-sm flex items-center gap-1" title="تغيير / تبديل المركز">
+            <i class="fas fa-sync-alt text-[9px] text-cyan-600"></i> تبديل
           </button>
         </div>
-        <div id="sidebar-center-name" class="font-bold text-sm text-white truncate" title="اسم المركز">جاري التحميل...</div>
-        <div id="sidebar-center-hospital" class="text-[11px] text-blue-200 truncate">--</div>
+        <div id="sidebar-center-name" class="font-bold text-sm text-slate-900 truncate" title="اسم المركز">جاري التحميل...</div>
+        <div id="sidebar-center-hospital" class="text-[11px] text-slate-500 truncate">--</div>
       </div>
 
-      <nav class="flex-1 overflow-y-auto py-4 flex flex-col">
-        <button onclick="nav('dailyReport')" class="nav-daily w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-calendar-week ml-3 w-6"></i> تقرير أسبوعي</button>
-        <button onclick="nav('monthlyReport')" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-calendar-alt ml-3 w-6"></i> تقارير شهرية</button>
-        <button onclick="nav('annualReport')" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-calendar ml-3 w-6"></i> تقرير سنوي</button>
-        <button onclick="nav('archive')" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300"><i class="fas fa-box-archive ml-3 w-6"></i> الأرشيف</button>
-        <button onclick="nav('centersPage')" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition border-l-4 border-transparent hover:border-blue-300 text-cyan-200"><i class="fas fa-hospital ml-3 w-6"></i> المراكز الصحية</button>
-        <button onclick="nav('settings')" class="nav-settings w-full text-right py-3 px-6 hover:bg-blue-800 transition text-yellow-300"><i class="fas fa-cog ml-3 w-6"></i> الإعدادات</button>
-        <div class="mt-auto pt-4 border-t border-blue-800">
-            <button onclick="openCenterSwitcherModal()" class="w-full text-right py-3 px-6 hover:bg-blue-800 transition text-cyan-200"><i class="fas fa-exchange-alt ml-3 w-6"></i> تبديل المركز</button>
+      <nav class="flex-1 overflow-y-auto px-3 py-2 flex flex-col gap-1.5">
+        <button onclick="nav('dailyReport')" data-nav="dailyReport" class="nav-daily nav-item-btn is-active">
+          <span class="f-icon-tile">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none">
+              <rect x="3" y="4.5" width="18" height="16" rx="3.5" fill="url(#fGradSoftCyan)" stroke="url(#fGradCyanBlue)" stroke-width="1.6"/>
+              <path d="M7.5 2.5V6M16.5 2.5V6M3 9.5H21" stroke="url(#fGradCyanBlue)" stroke-width="1.6" stroke-linecap="round"/>
+              <rect x="6" y="11" width="12" height="2" rx="1" fill="url(#fGradAzureIndigo)" class="anim-scan"/>
+            </svg>
+          </span>
+          <span>تقرير أسبوعي</span>
+        </button>
+
+        <button onclick="nav('monthlyReport')" data-nav="monthlyReport" class="nav-item-btn">
+          <span class="f-icon-tile">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none">
+              <rect x="3" y="3.5" width="18" height="17" rx="3.5" fill="url(#fGradSoftCyan)" stroke="url(#fGradAzureIndigo)" stroke-width="1.5"/>
+              <rect x="6.5" y="12.5" width="2.5" height="5" rx="1" fill="url(#fGradCyanBlue)" class="anim-bar-1"/>
+              <rect x="10.75" y="8.5" width="2.5" height="9" rx="1" fill="url(#fGradAzureIndigo)" class="anim-bar-2"/>
+              <rect x="15" y="10.5" width="2.5" height="7" rx="1" fill="url(#fGradEmeraldCyan)" class="anim-bar-1"/>
+            </svg>
+          </span>
+          <span>تقارير شهرية</span>
+        </button>
+
+        <button onclick="nav('annualReport')" data-nav="annualReport" class="nav-item-btn">
+          <span class="f-icon-tile">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none">
+              <circle cx="12" cy="12" r="8.5" stroke="url(#fGradVioletCyan)" stroke-width="1.5" stroke-dasharray="5 3" class="anim-orbit"/>
+              <circle cx="12" cy="12" r="4.5" fill="url(#fGradSoftCyan)" stroke="url(#fGradVioletCyan)" stroke-width="1.5" class="anim-float"/>
+              <path d="M12 9.5V12L13.8 13.2" stroke="url(#fGradAzureIndigo)" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span>تقرير سنوي</span>
+        </button>
+
+        <button onclick="nav('archive')" data-nav="archive" class="nav-item-btn">
+          <span class="f-icon-tile">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none">
+              <path d="M4 8.5L12 4L20 8.5V16.5L12 21L4 16.5V8.5Z" fill="url(#fGradSoftCyan)" stroke="url(#fGradEmeraldCyan)" stroke-width="1.6" stroke-linejoin="round" class="anim-float"/>
+              <path d="M4 8.5L12 13L20 8.5M12 13V21" stroke="url(#fGradCyanBlue)" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span>الأرشيف</span>
+        </button>
+
+        <button onclick="nav('centersPage')" data-nav="centersPage" class="nav-item-btn">
+          <span class="f-icon-tile">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="url(#fGradCyanBlue)" stroke-width="1" stroke-dasharray="2 3" class="anim-orbit-rev"/>
+              <path d="M6.5 19V8.5L12 5.5L17.5 8.5V19" fill="url(#fGradSoftCyan)" stroke="url(#fGradAzureIndigo)" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M12 9.5V14.5M9.5 12H14.5" stroke="url(#fGradCyanBlue)" stroke-width="1.8" stroke-linecap="round" class="anim-float"/>
+            </svg>
+          </span>
+          <span>المراكز الصحية</span>
+        </button>
+
+        <button onclick="nav('settings')" data-nav="settings" class="nav-settings nav-item-btn">
+          <span class="f-icon-tile">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none">
+              <g class="anim-gear">
+                <circle cx="10" cy="14" r="4.2" fill="url(#fGradSoftCyan)" stroke="url(#fGradAmberCyan)" stroke-width="1.6"/>
+                <circle cx="10" cy="14" r="1.4" fill="url(#fGradAmberCyan)"/>
+                <path d="M10 8.3V9.6M10 18.4V19.7M4.3 14H5.6M14.4 14H15.7M6 10L6.9 10.9M13.1 17.1L14 18M6 18L6.9 17.1M13.1 10.9L14 10" stroke="url(#fGradAmberCyan)" stroke-width="1.5" stroke-linecap="round"/>
+              </g>
+              <g class="anim-gear-sm">
+                <circle cx="17" cy="7.5" r="2.4" fill="#fff" stroke="url(#fGradCyanBlue)" stroke-width="1.5"/>
+                <path d="M17 4V5M17 10V11M13.5 7.5H14.5M19.5 7.5H20.5" stroke="url(#fGradCyanBlue)" stroke-width="1.3" stroke-linecap="round"/>
+              </g>
+            </svg>
+          </span>
+          <span>الإعدادات</span>
+        </button>
+
+        <div class="mt-auto pt-3 border-t border-slate-200/80">
+          <button onclick="openCenterSwitcherModal()" class="nav-item-btn text-cyan-800 bg-cyan-50/60 hover:bg-cyan-100/70 border border-cyan-200/70">
+            <span class="f-icon-tile">
+              <svg viewBox="0 0 24 24" class="w-5 h-5 anim-swap" fill="none">
+                <path d="M7 8H19M19 8L15.5 4.5M19 8L15.5 11.5" stroke="url(#fGradCyanBlue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M17 16H5M5 16L8.5 12.5M5 16L8.5 19.5" stroke="url(#fGradAzureIndigo)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span>تبديل المركز</span>
+          </button>
         </div>
       </nav>
     </aside>
 
-    <!-- Mobile Header -->
-    <div class="md:hidden fixed w-full bg-blue-900 text-white z-50 flex justify-between items-center p-3 px-4 no-print shadow-md">
-       <span class="font-bold flex items-center gap-2">
-         <img src="/favicon.svg" alt="شعار مكافحة العدوى" class="w-7 h-7 object-contain drop-shadow">
-         <span class="truncate max-w-[150px]" id="mobile-header-title">مكافحة العدوى</span>
+    <!-- Mobile Header (Light Glass) -->
+    <div class="md:hidden fixed w-full glass-topbar text-slate-900 z-50 flex justify-between items-center p-3 px-4 no-print">
+       <span class="font-bold flex items-center gap-2.5">
+         <span class="f-icon-tile !w-9 !h-9">
+           <svg viewBox="0 0 32 32" class="w-6 h-6" fill="none">
+             <circle cx="16" cy="16" r="13" stroke="url(#fGradCyanBlue)" stroke-width="1.5" stroke-dasharray="4 3" class="anim-orbit"/>
+             <path d="M16 6L24 9.5V15.5C24 20.5 20.5 24.8 16 26C11.5 24.8 8 20.5 8 15.5V9.5L16 6Z" fill="url(#fGradSoftCyan)" stroke="url(#fGradCyanBlue)" stroke-width="1.6"/>
+             <path d="M16 12V19M12.5 15.5H19.5" stroke="url(#fGradAzureIndigo)" stroke-width="2" stroke-linecap="round"/>
+           </svg>
+         </span>
+         <span class="truncate max-w-[140px] font-display font-extrabold text-slate-900" id="mobile-header-title">مكافحة العدوى</span>
        </span>
        <div class="flex items-center gap-2">
-         <button onclick="openCenterSwitcherModal()" class="text-xs bg-blue-800 px-2 py-1 rounded text-blue-200 hover:text-white flex items-center gap-1">
-           <i class="fas fa-hospital"></i> <span id="mobile-badge-center">المركز</span>
+         <button onclick="openCenterSwitcherModal()" class="text-xs bg-cyan-50 border border-cyan-200 px-2.5 py-1.5 rounded-xl text-cyan-900 font-bold flex items-center gap-1.5 shadow-sm">
+           <i class="fas fa-hospital text-cyan-600"></i> <span id="mobile-badge-center">المركز</span>
          </button>
-         <button onclick="document.getElementById('mobileMenu').classList.toggle('hidden')"><i class="fas fa-bars text-lg"></i></button>
+         <button onclick="document.getElementById('mobileMenu').classList.toggle('hidden')" class="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-cyan-50 transition">
+           <i class="fas fa-bars text-base"></i>
+         </button>
        </div>
     </div>
-    <div id="mobileMenu" class="hidden fixed top-14 left-0 w-full bg-blue-800 text-white z-40 no-print shadow-lg">
-        <button onclick="nav('dailyReport')" class="nav-daily block w-full text-right p-4 border-b border-blue-700">تقرير أسبوعي</button>
-        <button onclick="nav('monthlyReport')" class="block w-full text-right p-4 border-b border-blue-700">تقارير شهرية</button>
-        <button onclick="nav('annualReport')" class="block w-full text-right p-4 border-b border-blue-700">تقرير سنوي</button>
-        <button onclick="nav('archive')" class="block w-full text-right p-4 border-b border-blue-700">الأرشيف</button>
-        <button onclick="nav('centersPage')" class="block w-full text-right p-4 border-b border-blue-700 text-cyan-200">المراكز الصحية</button>
-        <button onclick="nav('settings')" class="nav-settings block w-full text-right p-4 border-b border-blue-700 text-yellow-300">الإعدادات</button>
-        <button onclick="openCenterSwitcherModal()" class="block w-full text-right p-4 text-cyan-200">تبديل المركز</button>
+    <div id="mobileMenu" class="hidden fixed top-16 left-0 w-full bg-white/95 backdrop-blur-xl text-slate-800 z-40 no-print shadow-xl border-b border-cyan-200/70 p-2 space-y-1">
+        <button onclick="nav('dailyReport')" class="nav-daily block w-full text-right px-4 py-3 rounded-xl hover:bg-cyan-50 font-bold text-sm">تقرير أسبوعي</button>
+        <button onclick="nav('monthlyReport')" class="block w-full text-right px-4 py-3 rounded-xl hover:bg-cyan-50 font-bold text-sm">تقارير شهرية</button>
+        <button onclick="nav('annualReport')" class="block w-full text-right px-4 py-3 rounded-xl hover:bg-cyan-50 font-bold text-sm">تقرير سنوي</button>
+        <button onclick="nav('archive')" class="block w-full text-right px-4 py-3 rounded-xl hover:bg-cyan-50 font-bold text-sm">الأرشيف</button>
+        <button onclick="nav('centersPage')" class="block w-full text-right px-4 py-3 rounded-xl hover:bg-cyan-50 font-bold text-sm text-cyan-800">المراكز الصحية</button>
+        <button onclick="nav('settings')" class="nav-settings block w-full text-right px-4 py-3 rounded-xl hover:bg-amber-50 font-bold text-sm text-amber-700">الإعدادات</button>
+        <button onclick="openCenterSwitcherModal()" class="block w-full text-right px-4 py-3 rounded-xl bg-cyan-50/80 font-bold text-sm text-cyan-900">تبديل المركز</button>
     </div>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-auto bg-gray-50 pt-16 md:pt-0" id="main-content">
+    <main class="flex-1 flex flex-col overflow-auto futuristic-grid-bg pt-16 md:pt-0" id="main-content">
       
       <!-- Top Center Status Bar (Active Center Indicator & Quick Actions) -->
-      <div id="topbar-center-status" class="bg-white border-b border-gray-200 px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-sm no-print">
+      <div id="topbar-center-status" class="glass-topbar px-6 py-3 flex flex-wrap items-center justify-between gap-3 no-print sticky top-0 z-20">
         <div class="flex items-center gap-3">
-          <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-800 border border-blue-100 flex items-center justify-center font-bold text-base shadow-sm">
-            <i class="fas fa-hospital-user"></i>
+          <span class="f-icon-tile f-icon-tile-lg relative">
+            <svg viewBox="0 0 28 28" class="w-6 h-6" fill="none">
+              <circle cx="14" cy="14" r="11" stroke="url(#fGradCyanBlue)" stroke-width="1" stroke-dasharray="3 2.5" class="anim-orbit"/>
+              <path d="M6.5 21.5V10L14 6L21.5 10V21.5" fill="url(#fGradSoftCyan)" stroke="url(#fGradAzureIndigo)" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M14 11V16M11.5 13.5H16.5" stroke="url(#fGradCyanBlue)" stroke-width="1.8" stroke-linecap="round" class="anim-float"/>
+            </svg>
           </span>
           <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-gray-500 font-bold">المركز النشط:</span>
-              <span id="topbar-center-name" class="font-bold text-blue-900 text-sm md:text-base">--</span>
-              <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                <span>متصل</span>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs text-slate-500 font-bold">المركز النشط:</span>
+              <span id="topbar-center-name" class="font-display font-extrabold text-slate-900 text-sm md:text-base">--</span>
+              <span class="bg-gradient-to-l from-emerald-50 to-cyan-50 text-emerald-700 border border-emerald-200/80 text-[11px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
+                <svg viewBox="0 0 16 16" class="w-3.5 h-3.5" fill="none">
+                  <circle cx="8" cy="8" r="6" stroke="#10b981" stroke-width="1.4" class="anim-radar"/>
+                  <path d="M5.2 8.2L7.2 10.2L11 6" stroke="#059669" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>نشط ومتصل</span>
               </span>
             </div>
-            <div id="topbar-center-hospital" class="text-xs text-gray-500 font-medium">--</div>
+            <div id="topbar-center-hospital" class="text-xs text-slate-500 font-medium">--</div>
           </div>
         </div>
-        <div class="flex items-center gap-2 mr-auto">
-          <button onclick="openCenterSwitcherModal()" class="bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-200 transition flex items-center gap-1.5 shadow-sm">
-            <i class="fas fa-exchange-alt"></i>
+        <div class="flex items-center gap-2.5 mr-auto">
+          <button onclick="openCenterSwitcherModal()" class="btn-futuristic bg-white hover:bg-cyan-50 text-cyan-800 text-xs font-bold px-3.5 py-2 rounded-xl border border-cyan-200/80 flex items-center gap-1.5 shadow-sm">
+            <i class="fas fa-exchange-alt text-cyan-600"></i>
             <span>تبديل المركز</span>
           </button>
-          <button onclick="openAddCenterModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+          <button onclick="openAddCenterModal()" class="btn-futuristic bg-gradient-to-l from-emerald-500 to-cyan-600 hover:from-emerald-600 hover:to-cyan-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm">
             <i class="fas fa-plus"></i>
             <span>إضافة مركز جديد</span>
           </button>
@@ -280,66 +675,79 @@
       </div>
 
       <!-- Loading Indicator -->
-      <div id="loading" class="hidden fixed inset-0 bg-black bg-opacity-30 z-[100] flex justify-center items-center">
-        <div class="bg-white p-5 rounded-lg shadow-lg flex flex-col items-center">
-          <div class="loader mb-2"></div>
-          <p class="text-blue-900 font-bold">جاري المعالجة...</p>
+      <div id="loading" class="hidden fixed inset-0 bg-slate-900/25 backdrop-blur-sm z-[100] flex justify-center items-center">
+        <div class="glass-panel p-6 rounded-2xl shadow-xl flex flex-col items-center gap-3 min-w-[180px]">
+          <div class="cyber-spinner">
+            <div class="cyber-ring-1"></div>
+            <div class="cyber-ring-2"></div>
+            <svg viewBox="0 0 20 20" class="w-4 h-4 anim-float" fill="none">
+              <path d="M10 3V17M3 10H17" stroke="url(#fGradCyanBlue)" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="text-slate-800 font-display font-bold text-sm">جاري المعالجة...</p>
         </div>
       </div>
 
 
 
       <!-- Center Switcher Modal -->
-      <div id="center-switcher-modal" class="hidden fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-[210] flex justify-center items-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 text-right border-t-4 border-blue-600">
-          <div class="flex items-center justify-between border-b pb-3 mb-4">
-            <h3 class="font-bold text-lg text-blue-900 flex items-center gap-2">
-              <i class="fas fa-exchange-alt text-blue-600"></i> تبديل المركز الصحي
+      <div id="center-switcher-modal" class="hidden fixed inset-0 bg-slate-900/45 backdrop-blur-sm z-[210] flex justify-center items-center p-4">
+        <div class="glass-panel bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 text-right">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+            <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2.5">
+              <span class="f-icon-tile !w-9 !h-9">
+                <svg viewBox="0 0 24 24" class="w-5 h-5 anim-swap" fill="none">
+                  <path d="M7 8H19M19 8L15.5 4.5M19 8L15.5 11.5" stroke="url(#fGradCyanBlue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M17 16H5M5 16L8.5 12.5M5 16L8.5 19.5" stroke="url(#fGradAzureIndigo)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span>تبديل المركز الصحي</span>
             </h3>
-            <button onclick="closeCenterSwitcherModal()" class="text-gray-400 hover:text-gray-600 text-lg"><i class="fas fa-times"></i></button>
+            <button onclick="closeCenterSwitcherModal()" class="text-slate-400 hover:text-slate-700 text-lg"><i class="fas fa-times"></i></button>
           </div>
-          <p class="text-xs text-gray-600 mb-4">اختر المركز الذي ترغب في عرض بياناته وتقاريره وإحصائياته:</p>
+          <p class="text-xs text-slate-600 mb-4">اختر المركز الذي ترغب في عرض بياناته وتقاريره وإحصائياته:</p>
           <div id="switcher-centers-list" class="flex flex-col gap-2 max-h-72 overflow-y-auto mb-4 p-1">
             <!-- Dynamic centers list -->
           </div>
-          <div class="flex items-center justify-between pt-3 border-t">
-            <button onclick="openAddCenterModal()" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+          <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+            <button onclick="openAddCenterModal()" class="btn-futuristic bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
               <i class="fas fa-plus"></i> إضافة مركز جديد
             </button>
-            <button onclick="closeCenterSwitcherModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1.5 rounded-lg text-xs font-bold transition">إغلاق</button>
+            <button onclick="closeCenterSwitcherModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition">إغلاق</button>
           </div>
         </div>
       </div>
 
       <!-- Add New Center Modal -->
-      <div id="add-center-modal" class="hidden fixed inset-0 bg-gray-900/85 backdrop-blur-sm z-[220] flex justify-center items-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-right border-t-4 border-emerald-500">
-          <div class="flex items-center justify-between border-b pb-3 mb-4">
-            <h3 class="font-bold text-lg text-emerald-900 flex items-center gap-2">
-              <i class="fas fa-plus-circle text-emerald-600"></i> إضافة مركز صحي جديد
+      <div id="add-center-modal" class="hidden fixed inset-0 bg-slate-900/45 backdrop-blur-sm z-[220] flex justify-center items-center p-4">
+        <div class="glass-panel bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-right">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+            <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2.5">
+              <span class="f-icon-tile !w-9 !h-9"><i class="fas fa-plus-circle text-emerald-600 text-base anim-float"></i></span>
+              <span>إضافة مركز صحي جديد</span>
             </h3>
-            <button onclick="closeAddCenterModal()" class="text-gray-400 hover:text-gray-600 text-lg"><i class="fas fa-times"></i></button>
+            <button onclick="closeAddCenterModal()" class="text-slate-400 hover:text-slate-700 text-lg"><i class="fas fa-times"></i></button>
           </div>
           
           <div class="mb-5">
-            <label class="block text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+            <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
               <i class="fas fa-hospital text-emerald-600"></i>
               <span>اسم المركز / المستشفى:</span>
-              <span class="text-red-500">*</span>
+              <span class="text-rose-500">*</span>
             </label>
-            <input type="text" id="add-center-name-input" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" placeholder="أدخل اسم المركز أو المستشفى (مثال: مركز صحة الأسرة بالمنيا)">
+            <input type="text" id="add-center-name-input" class="w-full p-2.5 f-input text-sm" placeholder="أدخل اسم المركز أو المستشفى (مثال: مركز صحة الأسرة بالمنيا)">
           </div>
 
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800 mb-5 leading-relaxed">
-            <i class="fas fa-info-circle text-blue-600 ml-1"></i>
+          <div class="bg-cyan-50/80 border border-cyan-200 rounded-xl p-3 text-xs text-cyan-900 mb-5 leading-relaxed">
+            <i class="fas fa-info-circle text-cyan-600 ml-1"></i>
             سيتم تهيئة هذا المركز تلقائياً بإعدادات وإجراءات وأقسام مكافحة العدوى الافتراضية، ويمكنك تخصيصها لاحقاً من صفحة الإعدادات.
           </div>
 
-          <div id="add-center-error-msg" class="hidden mb-4 p-2 bg-red-100 border border-red-300 rounded text-xs text-red-700"></div>
+          <div id="add-center-error-msg" class="hidden mb-4 p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700"></div>
 
           <div class="flex items-center justify-end gap-2">
-            <button type="button" onclick="closeAddCenterModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold transition">إلغاء</button>
-            <button type="button" onclick="confirmAddCenter()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5">
+            <button type="button" onclick="closeAddCenterModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition">إلغاء</button>
+            <button type="button" onclick="confirmAddCenter()" class="btn-futuristic bg-gradient-to-l from-emerald-500 to-cyan-600 text-white px-5 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1.5">
               <i class="fas fa-save"></i> حفظ وإضافة المركز
             </button>
           </div>
@@ -347,31 +755,31 @@
       </div>
 
       <!-- Delete Center Confirmation Modal -->
-      <div id="delete-center-modal" class="hidden fixed inset-0 bg-gray-900/85 backdrop-blur-sm z-[230] flex justify-center items-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-right border-t-4 border-red-600">
-          <div class="flex items-center gap-3 text-red-600 mb-3">
-            <span class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-xl font-bold flex-shrink-0">
-              <i class="fas fa-exclamation-triangle"></i>
+      <div id="delete-center-modal" class="hidden fixed inset-0 bg-slate-900/45 backdrop-blur-sm z-[230] flex justify-center items-center p-4">
+        <div class="glass-panel bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-right">
+          <div class="flex items-center gap-3 text-rose-600 mb-3">
+            <span class="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-xl font-bold flex-shrink-0">
+              <i class="fas fa-exclamation-triangle anim-float"></i>
             </span>
             <div>
-              <h3 class="font-bold text-lg text-red-900">حذف المركز وجميع بياناته</h3>
-              <p class="text-xs text-red-600 font-semibold">تحذير أمني شديد — هذا الإجراء لا يمكن التراجع عنه</p>
+              <h3 class="font-bold text-lg text-slate-900">حذف المركز وجميع بياناته</h3>
+              <p class="text-xs text-rose-600 font-semibold">تحذير أمني شديد — هذا الإجراء لا يمكن التراجع عنه</p>
             </div>
           </div>
 
-          <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-xs text-red-800 mb-4 leading-relaxed">
+          <div class="bg-rose-50/80 border border-rose-200 rounded-xl p-4 text-xs text-rose-900 mb-4 leading-relaxed">
             <p class="font-bold mb-2">أنت على وشك حذف المركز التالي:</p>
-            <p class="text-sm font-bold text-red-900 mb-2 p-2 bg-white rounded border border-red-200" id="delete-center-name-display">--</p>
-            <p class="text-[11px] text-red-700">
+            <p class="text-sm font-bold text-rose-900 mb-2 p-2 bg-white rounded-lg border border-rose-200" id="delete-center-name-display">--</p>
+            <p class="text-[11px] text-rose-700">
               ⚠️ سيتم حذف المركز نهائياً ومسح جميع التقارير اليومية والشهرية والسنوية والأرشيف والتقييمات المسجلة لهذا المركز من قاعدة البيانات فوراً.
             </p>
           </div>
 
-          <div id="delete-center-error-msg" class="hidden mb-3 p-2 bg-red-100 border border-red-300 rounded text-xs text-red-700"></div>
+          <div id="delete-center-error-msg" class="hidden mb-3 p-2 bg-rose-100 border border-rose-300 rounded-xl text-xs text-rose-700"></div>
 
           <div class="flex items-center justify-end gap-2">
-            <button type="button" onclick="closeDeleteCenterModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold transition">إلغاء</button>
-            <button type="button" onclick="executeDeleteCenter()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5">
+            <button type="button" onclick="closeDeleteCenterModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition">إلغاء</button>
+            <button type="button" onclick="executeDeleteCenter()" class="btn-futuristic bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1.5">
               <i class="fas fa-trash-alt"></i> نعم، حذف المركز وجميع بياناته
             </button>
           </div>
@@ -379,51 +787,51 @@
       </div>
 
       <!-- Turso Database Migration / Import Modal -->
-      <div id="turso-migration-modal" class="hidden fixed inset-0 bg-gray-900/85 backdrop-blur-sm z-[235] flex justify-center items-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6 text-right border-t-4 border-indigo-600 my-8">
+      <div id="turso-migration-modal" class="hidden fixed inset-0 bg-slate-900/45 backdrop-blur-sm z-[235] flex justify-center items-center p-4 overflow-y-auto">
+        <div class="glass-panel bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6 text-right my-8">
           
-          <div class="flex items-center justify-between border-b pb-3 mb-4">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
             <div class="flex items-center gap-2.5">
-              <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-xl font-bold flex-shrink-0">
-                <i class="fas fa-database"></i>
+              <span class="f-icon-tile f-icon-tile-lg">
+                <i class="fas fa-database text-indigo-600 text-lg anim-float"></i>
               </span>
               <div>
-                <h3 class="font-bold text-lg text-gray-900">استيراد البيانات من قاعدة بيانات Turso سابقة</h3>
-                <p class="text-xs text-gray-500">نقل السجلات السابقة والإعدادات وإضافتها إلى المركز في القاعدة الحالية</p>
+                <h3 class="font-bold text-lg text-slate-900">استيراد البيانات من قاعدة بيانات Turso سابقة</h3>
+                <p class="text-xs text-slate-500">نقل السجلات السابقة والإعدادات وإضافتها إلى المركز في القاعدة الحالية</p>
               </div>
             </div>
-            <button onclick="closeTursoMigrationModal()" class="text-gray-400 hover:text-gray-600 text-lg"><i class="fas fa-times"></i></button>
+            <button onclick="closeTursoMigrationModal()" class="text-slate-400 hover:text-slate-700 text-lg"><i class="fas fa-times"></i></button>
           </div>
 
           <!-- Step 1: Database Credentials -->
           <div class="space-y-4 mb-4">
             <div>
-              <label class="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1.5">
+              <label class="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
                 <i class="fas fa-link text-indigo-600"></i>
                 <span>رابط قاعدة بيانات Turso السابقة (Database URL):</span>
-                <span class="text-red-500">*</span>
+                <span class="text-rose-500">*</span>
               </label>
-              <input type="text" id="turso-mig-url" dir="ltr" class="w-full border border-gray-300 p-2.5 rounded-lg text-xs focus:outline-none focus:border-indigo-500 font-mono" placeholder="libsql://your-db-name.turso.io أو https://...">
-              <p class="text-[11px] text-gray-500 mt-1">الرابط من لوحة تحكم Turso أو عبر أمر `turso db show &lt;db-name&gt;`</p>
+              <input type="text" id="turso-mig-url" dir="ltr" class="w-full p-2.5 f-input text-xs font-mono-num" placeholder="libsql://your-db-name.turso.io أو https://...">
+              <p class="text-[11px] text-slate-500 mt-1">الرابط من لوحة تحكم Turso أو عبر أمر `turso db show &lt;db-name&gt;`</p>
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1.5">
-                <i class="fas fa-key text-yellow-500"></i>
+              <label class="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                <i class="fas fa-key text-amber-500"></i>
                 <span>رمز المصادقة (Auth Token):</span>
-                <span class="text-red-500">*</span>
+                <span class="text-rose-500">*</span>
               </label>
               <div class="relative">
-                <input type="password" id="turso-mig-token" dir="ltr" class="w-full border border-gray-300 p-2.5 rounded-lg text-xs focus:outline-none focus:border-indigo-500 font-mono pl-10" placeholder="eyJhbGciOi...">
-                <button type="button" onclick="toggleTursoTokenVisibility()" class="absolute left-3 top-2.5 text-gray-400 hover:text-gray-600 text-xs">
+                <input type="password" id="turso-mig-token" dir="ltr" class="w-full p-2.5 f-input text-xs font-mono-num pl-10" placeholder="eyJhbGciOi...">
+                <button type="button" onclick="toggleTursoTokenVisibility()" class="absolute left-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs">
                   <i id="turso-token-eye" class="fas fa-eye"></i>
                 </button>
               </div>
-              <p class="text-[11px] text-gray-500 mt-1">يتم إنشاؤه عبر أمر `turso db tokens create &lt;db-name&gt;`</p>
+              <p class="text-[11px] text-slate-500 mt-1">يتم إنشاؤه عبر أمر `turso db tokens create &lt;db-name&gt;`</p>
             </div>
 
             <div class="flex items-center justify-between pt-1">
-              <button type="button" id="btn-test-turso-conn" onclick="testTursoMigrationConnection()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+              <button type="button" id="btn-test-turso-conn" onclick="testTursoMigrationConnection()" class="btn-futuristic bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
                 <i class="fas fa-plug"></i> فحص الاتصال وقراءة السجلات
               </button>
               <span id="turso-test-loading" class="hidden text-xs text-indigo-600 font-bold items-center gap-1.5">
@@ -436,52 +844,52 @@
           <div id="turso-mig-preview-box" class="hidden mb-4 p-3.5 rounded-xl border text-xs leading-relaxed transition-all"></div>
 
           <!-- Step 2: Target Center Assignment -->
-          <div class="border-t pt-4 mb-4">
-            <h4 class="font-bold text-xs text-gray-800 mb-2 flex items-center gap-1.5">
-              <i class="fas fa-hospital-user text-blue-600"></i> تخصيص السجلات المستوردة للمركز:
+          <div class="border-t border-slate-200 pt-4 mb-4">
+            <h4 class="font-bold text-xs text-slate-800 mb-2 flex items-center gap-1.5">
+              <i class="fas fa-hospital-user text-cyan-600"></i> تخصيص السجلات المستوردة للمركز:
             </h4>
             
-            <div class="space-y-2 bg-gray-50 p-3 rounded-xl border border-gray-200">
-              <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-800">
-                <input type="radio" name="turso_mig_target" value="current" checked onchange="onTursoTargetCenterChange()" class="text-indigo-600 focus:ring-indigo-500">
+            <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800">
+                <input type="radio" name="turso_mig_target" value="current" checked onchange="onTursoTargetCenterChange()" class="accent-indigo-600">
                 <span>إضافة وتعيين السجلات للمركز النشط حالياً:</span>
-                <strong class="text-blue-900 bg-blue-100 px-2 py-0.5 rounded text-[11px]" id="turso-mig-current-center-label">--</strong>
+                <strong class="text-cyan-900 bg-cyan-100 px-2 py-0.5 rounded-full text-[11px]" id="turso-mig-current-center-label">--</strong>
               </label>
 
-              <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-800">
-                <input type="radio" name="turso_mig_target" value="new" onchange="onTursoTargetCenterChange()" class="text-indigo-600 focus:ring-indigo-500">
+              <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800">
+                <input type="radio" name="turso_mig_target" value="new" onchange="onTursoTargetCenterChange()" class="accent-indigo-600">
                 <span>إنشاء مركز صحي جديد وتخزين السجلات فيه</span>
               </label>
 
               <div id="turso-mig-new-center-wrap" class="hidden mr-6 mt-1.5">
-                <input type="text" id="turso-mig-new-center-input" class="w-full border border-gray-300 p-2 rounded-lg text-xs focus:outline-none focus:border-indigo-500" placeholder="أدخل اسم المركز الجديد (أو اتركه فارغاً للاعتماد على الاسم المكتشف)">
+                <input type="text" id="turso-mig-new-center-input" class="w-full p-2 f-input text-xs" placeholder="أدخل اسم المركز الجديد (أو اتركه فارغاً للاعتماد على الاسم المكتشف)">
               </div>
 
-              <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-800">
-                <input type="radio" name="turso_mig_target" value="auto" onchange="onTursoTargetCenterChange()" class="text-indigo-600 focus:ring-indigo-500">
+              <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800">
+                <input type="radio" name="turso_mig_target" value="auto" onchange="onTursoTargetCenterChange()" class="accent-indigo-600">
                 <span>الحفاظ على أسماء المراكز المسجلة في القاعدة السابقة تلقائياً</span>
               </label>
             </div>
           </div>
 
           <!-- Step 3: Migration Options -->
-          <div class="border-t pt-3 mb-5 space-y-2 text-xs">
-            <label class="flex items-start gap-2 cursor-pointer text-gray-800">
-              <input type="checkbox" id="turso-mig-import-settings" checked class="mt-0.5 text-indigo-600 rounded">
+          <div class="border-t border-slate-200 pt-3 mb-5 space-y-2 text-xs">
+            <label class="flex items-start gap-2 cursor-pointer text-slate-800">
+              <input type="checkbox" id="turso-mig-import-settings" checked class="mt-0.5 accent-indigo-600 rounded">
               <span>استيراد وتحديث إعدادات وأقسام وإجراءات مكافحة العدوى الخاصة بالمركز</span>
             </label>
-            <label class="flex items-start gap-2 cursor-pointer text-gray-800">
-              <input type="checkbox" id="turso-mig-replace-existing" class="mt-0.5 text-red-600 rounded">
-              <span class="text-red-700">استبدال سجلات المركز السابقة (حذف القديم قبل الاستيراد). افتراضياً غير محدد للدمج وتخطي المكرر.</span>
+            <label class="flex items-start gap-2 cursor-pointer text-slate-800">
+              <input type="checkbox" id="turso-mig-replace-existing" class="mt-0.5 accent-rose-600 rounded">
+              <span class="text-rose-700">استبدال سجلات المركز السابقة (حذف القديم قبل الاستيراد). افتراضياً غير محدد للدمج وتخطي المكرر.</span>
             </label>
           </div>
 
-          <div id="turso-mig-error-box" class="hidden mb-4 p-2.5 bg-red-100 border border-red-300 rounded-lg text-xs text-red-700 font-medium"></div>
+          <div id="turso-mig-error-box" class="hidden mb-4 p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium"></div>
 
           <!-- Actions -->
-          <div class="flex items-center justify-between border-t pt-3">
-            <button type="button" onclick="closeTursoMigrationModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold transition">إلغاء</button>
-            <button type="button" id="btn-start-turso-migration" onclick="executeTursoMigration()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold transition shadow-lg flex items-center gap-2">
+          <div class="flex items-center justify-between border-t border-slate-200 pt-3">
+            <button type="button" onclick="closeTursoMigrationModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition">إلغاء</button>
+            <button type="button" id="btn-start-turso-migration" onclick="executeTursoMigration()" class="btn-futuristic bg-gradient-to-l from-indigo-600 to-cyan-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow flex items-center gap-2">
               <i class="fas fa-file-import"></i> بدء استيراد ونقل السجلات
             </button>
           </div>
@@ -491,107 +899,128 @@
       <!-- PAGES -->
 
       <!-- 1. SETTINGS -->
-      <section id="settings" class="page-section hidden p-6">
-        <div class="flex flex-wrap justify-between items-center gap-3 mb-6 border-b border-gray-200 pb-2">
-            <div>
-              <h2 class="text-2xl font-bold text-blue-900">إعدادات النظام</h2>
-              <div class="text-xs text-blue-800 font-semibold mt-1 flex items-center gap-1.5">
-                <i class="fas fa-hospital text-blue-600"></i>
-                <span>تعديل إعدادات مركز:</span>
-                <span id="settings-center-badge" class="font-bold text-blue-900 bg-blue-100 px-2.5 py-0.5 rounded-full">--</span>
+      <section id="settings" class="page-section hidden p-6 max-w-7xl mx-auto w-full">
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-6 border-b border-slate-200/80 pb-4">
+            <div class="flex items-center gap-3.5">
+              <span class="f-icon-tile f-icon-tile-lg">
+                <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none">
+                  <g class="anim-gear">
+                    <circle cx="10" cy="14" r="4.2" fill="url(#fGradSoftCyan)" stroke="url(#fGradAmberCyan)" stroke-width="1.6"/>
+                    <circle cx="10" cy="14" r="1.4" fill="url(#fGradAmberCyan)"/>
+                    <path d="M10 8.3V9.6M10 18.4V19.7M4.3 14H5.6M14.4 14H15.7M6 10L6.9 10.9M13.1 17.1L14 18M6 18L6.9 17.1M13.1 10.9L14 10" stroke="url(#fGradAmberCyan)" stroke-width="1.5" stroke-linecap="round"/>
+                  </g>
+                  <g class="anim-gear-sm">
+                    <circle cx="17" cy="7.5" r="2.4" fill="#fff" stroke="url(#fGradCyanBlue)" stroke-width="1.5"/>
+                    <path d="M17 4V5M17 10V11M13.5 7.5H14.5M19.5 7.5H20.5" stroke="url(#fGradCyanBlue)" stroke-width="1.3" stroke-linecap="round"/>
+                  </g>
+                </svg>
+              </span>
+              <div>
+                <h2 class="text-2xl font-display font-extrabold text-slate-900">إعدادات النظام</h2>
+                <div class="text-xs text-slate-600 font-semibold mt-0.5 flex items-center gap-1.5">
+                  <i class="fas fa-hospital text-cyan-600"></i>
+                  <span>تعديل إعدادات مركز:</span>
+                  <span id="settings-center-badge" class="font-bold text-cyan-900 bg-cyan-50 border border-cyan-200 px-2.5 py-0.5 rounded-full">--</span>
+                </div>
               </div>
             </div>
             <div class="flex gap-2">
-                <button onclick="saveSettings()" class="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800 transition font-bold text-sm">حفظ التغييرات</button>
+                <button onclick="saveSettings()" class="btn-futuristic bg-gradient-to-l from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm flex items-center gap-2">
+                  <i class="fas fa-save"></i> حفظ التغييرات
+                </button>
             </div>
         </div>
-        <div id="settings-save-banner" class="hidden mb-4 p-3 rounded border text-sm font-bold flex items-center justify-between">
+        <div id="settings-save-banner" class="hidden mb-4 p-3 rounded-xl border text-sm font-bold flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <i id="settings-save-banner-icon" class="fas fa-check-circle"></i>
                 <span id="settings-save-banner-text"></span>
             </div>
-            <button type="button" onclick="document.getElementById('settings-save-banner').classList.add('hidden')" class="text-gray-500 hover:text-gray-800 px-2">
+            <button type="button" onclick="document.getElementById('settings-save-banner').classList.add('hidden')" class="text-slate-500 hover:text-slate-800 px-2">
                 <i class="fas fa-times"></i>
             </button>
         </div>
 
-        <div class="bg-white p-4 rounded shadow-sm border border-gray-200 mb-6">
-            <h3 class="font-bold mb-4 text-blue-900">إعدادات عامة</h3>
+        <div class="glass-panel p-5 rounded-2xl mb-6">
+            <h3 class="font-bold mb-4 text-slate-900 flex items-center gap-2">
+              <span class="f-icon-tile !w-8 !h-8"><i class="fas fa-sliders-h text-cyan-600 text-xs anim-float"></i></span>
+              <span>إعدادات عامة</span>
+            </h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                    <label class="block text-sm font-bold mb-1 text-gray-700">اسم المستشفى (ترويسة التقارير)</label>
-                    <input type="text" id="set-hospital-name" oninput="updateLiveHeaderTitlePreview()" class="w-full border border-gray-500 p-2 rounded bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400">
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">اسم المستشفى (ترويسة التقارير)</label>
+                    <input type="text" id="set-hospital-name" oninput="updateLiveHeaderTitlePreview()" class="w-full p-2.5 f-input text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-1 text-gray-700">توقيع مشرف مكافحة العدوى</label>
-                    <input type="text" id="set-team-signature" class="w-full border border-gray-500 p-2 rounded bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400" placeholder="مشرف مكافحة العدوى">
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">توقيع مشرف مكافحة العدوى</label>
+                    <input type="text" id="set-team-signature" class="w-full p-2.5 f-input text-sm" placeholder="مشرف مكافحة العدوى">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-1 text-gray-700">توقيع المدير</label>
-                    <input type="text" id="set-manager-signature" class="w-full border border-gray-500 p-2 rounded bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400" placeholder="مدير عام المستشفى">
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">توقيع المدير</label>
+                    <input type="text" id="set-manager-signature" class="w-full p-2.5 f-input text-sm" placeholder="مدير عام المستشفى">
                 </div>
             </div>
         </div>
 
         <!-- Header Logos Configuration (Google Drive Links) -->
-        <div class="bg-white p-4 rounded shadow-sm border border-gray-200 mb-6">
+        <div class="glass-panel p-5 rounded-2xl mb-6">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <h3 class="font-bold text-blue-900 flex items-center gap-2">
-                    <i class="fas fa-images text-blue-700"></i> شعارات ترويسة التقارير (Google Drive)
+                <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                    <span class="f-icon-tile !w-8 !h-8"><i class="fas fa-images text-indigo-600 text-xs anim-float"></i></span>
+                    <span>شعارات ترويسة التقارير (Google Drive)</span>
                 </h3>
-                <span class="text-xs text-blue-800 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded">
+                <span class="text-xs text-cyan-800 bg-cyan-50 border border-cyan-200 px-3 py-1 rounded-full font-semibold">
                     تظهر في الترويسة على الشاشة وعند طباعة PDF
                 </span>
             </div>
-            <p class="text-xs text-gray-500 mb-4">
+            <p class="text-xs text-slate-500 mb-4">
                 الصق رابط مشاركة الصورة من جوجل درايف (تأكد من ضبط صلاحية الملف في Google Drive على: <strong>أي شخص لديه الرابط / Anyone with the link</strong>).
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
                 <!-- Far Right Logo -->
-                <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                <div class="border border-slate-200/80 rounded-2xl p-3.5 bg-slate-50/70">
                     <div class="flex items-center justify-between mb-1.5">
-                        <label class="block text-sm font-bold text-gray-800">رابط اللوجو أقصى اليمين</label>
-                        <button type="button" onclick="clearLogoInput('right')" class="text-xs text-red-600 hover:text-red-800 font-bold">
+                        <label class="block text-sm font-bold text-slate-800">رابط اللوجو أقصى اليمين</label>
+                        <button type="button" onclick="clearLogoInput('right')" class="text-xs text-rose-600 hover:text-rose-800 font-bold">
                             <i class="fas fa-times-circle"></i> مسح
                         </button>
                     </div>
                     <div class="flex items-center gap-3">
-                        <div class="w-16 h-16 rounded border border-dashed border-gray-300 bg-white flex items-center justify-center shrink-0 p-1 overflow-hidden">
+                        <div class="w-16 h-16 rounded-xl border border-dashed border-cyan-300 bg-white flex items-center justify-center shrink-0 p-1 overflow-hidden">
                             <img id="preview-right-logo" alt="لوجو اليمين" class="hidden max-w-full max-h-full object-contain" onload="onPreviewLogoLoad('right')" onerror="onPreviewLogoError('right')">
-                            <i id="placeholder-right-logo" class="fas fa-image text-gray-300 text-xl"></i>
+                            <i id="placeholder-right-logo" class="fas fa-image text-slate-300 text-xl"></i>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <input type="url" id="set-right-logo" dir="ltr" oninput="updateSettingsLogoPreview('right')" placeholder="https://drive.google.com/file/d/.../view?usp=sharing" class="w-full border border-gray-500 p-2 rounded bg-gray-600 text-white placeholder-gray-300 text-xs focus:outline-none focus:border-blue-400">
-                            <p id="status-right-logo" class="text-[11px] text-gray-500 mt-1">اختياري — يظهر أقصى يمين الترويسة</p>
+                            <input type="url" id="set-right-logo" dir="ltr" oninput="updateSettingsLogoPreview('right')" placeholder="https://drive.google.com/file/d/.../view?usp=sharing" class="w-full p-2 f-input text-xs font-mono-num">
+                            <p id="status-right-logo" class="text-[11px] text-slate-500 mt-1">اختياري — يظهر أقصى يمين الترويسة</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Far Left Logo -->
-                <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                <div class="border border-slate-200/80 rounded-2xl p-3.5 bg-slate-50/70">
                     <div class="flex items-center justify-between mb-1.5">
-                        <label class="block text-sm font-bold text-gray-800">رابط اللوجو أقصى اليسار</label>
-                        <button type="button" onclick="clearLogoInput('left')" class="text-xs text-red-600 hover:text-red-800 font-bold">
+                        <label class="block text-sm font-bold text-slate-800">رابط اللوجو أقصى اليسار</label>
+                        <button type="button" onclick="clearLogoInput('left')" class="text-xs text-rose-600 hover:text-rose-800 font-bold">
                             <i class="fas fa-times-circle"></i> مسح
                         </button>
                     </div>
                     <div class="flex items-center gap-3">
-                        <div class="w-16 h-16 rounded border border-dashed border-gray-300 bg-white flex items-center justify-center shrink-0 p-1 overflow-hidden">
+                        <div class="w-16 h-16 rounded-xl border border-dashed border-cyan-300 bg-white flex items-center justify-center shrink-0 p-1 overflow-hidden">
                             <img id="preview-left-logo" alt="لوجو اليسار" class="hidden max-w-full max-h-full object-contain" onload="onPreviewLogoLoad('left')" onerror="onPreviewLogoError('left')">
-                            <i id="placeholder-left-logo" class="fas fa-image text-gray-300 text-xl"></i>
+                            <i id="placeholder-left-logo" class="fas fa-image text-slate-300 text-xl"></i>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <input type="url" id="set-left-logo" dir="ltr" oninput="updateSettingsLogoPreview('left')" placeholder="https://drive.google.com/file/d/.../view?usp=sharing" class="w-full border border-gray-500 p-2 rounded bg-gray-600 text-white placeholder-gray-300 text-xs focus:outline-none focus:border-blue-400">
-                            <p id="status-left-logo" class="text-[11px] text-gray-500 mt-1">اختياري — يظهر أقصى يسار الترويسة</p>
+                            <input type="url" id="set-left-logo" dir="ltr" oninput="updateSettingsLogoPreview('left')" placeholder="https://drive.google.com/file/d/.../view?usp=sharing" class="w-full p-2 f-input text-xs font-mono-num">
+                            <p id="status-left-logo" class="text-[11px] text-slate-500 mt-1">اختياري — يظهر أقصى يسار الترويسة</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Live Header Simulation -->
-            <div class="border border-gray-300 rounded-lg p-4 bg-white">
-                <div class="text-[11px] font-bold text-gray-400 mb-2">معاينة شكل ترويسة التقرير (Header Preview):</div>
+            <div class="border border-slate-200 rounded-xl p-4 bg-white">
+                <div class="text-[11px] font-bold text-slate-400 mb-2">معاينة شكل ترويسة التقرير (Header Preview):</div>
                 <div class="report-header-bar border-b-2 border-blue-900 pb-2">
                     <div id="live-header-right-slot" class="report-logo-slot report-logo-slot-right"></div>
                     <div class="text-center flex-1 px-2">
@@ -606,128 +1035,140 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
            <!-- Depts -->
-           <div class="bg-white p-4 rounded shadow-sm border border-gray-200">
-             <div class="flex items-center justify-between mb-2">
-               <h3 class="font-bold text-blue-900">الأقسام</h3>
+           <div class="glass-panel p-4 rounded-2xl">
+             <div class="flex items-center gap-2 mb-2.5">
+               <span class="f-icon-tile !w-7 !h-7"><i class="fas fa-sitemap text-cyan-600 text-xs"></i></span>
+               <h3 class="font-bold text-slate-900">الأقسام</h3>
              </div>
-             <textarea id="set-depts" class="w-full border border-gray-500 p-2 rounded h-32 bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400" placeholder="كل قسم في سطر جديد"></textarea>
+             <textarea id="set-depts" class="w-full p-2.5 h-32 f-input text-sm" placeholder="كل قسم في سطر جديد"></textarea>
            </div>
            <!-- Periods -->
-           <div class="bg-white p-4 rounded shadow-sm border border-gray-200">
-             <div class="flex items-center justify-between mb-2">
-               <h3 class="font-bold text-blue-900">فترات المرور</h3>
+           <div class="glass-panel p-4 rounded-2xl">
+             <div class="flex items-center gap-2 mb-2.5">
+               <span class="f-icon-tile !w-7 !h-7"><i class="fas fa-clock text-indigo-600 text-xs"></i></span>
+               <h3 class="font-bold text-slate-900">فترات المرور</h3>
              </div>
-             <textarea id="set-periods" class="w-full border border-gray-500 p-2 rounded h-32 bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400" placeholder="كل فترة في سطر جديد"></textarea>
+             <textarea id="set-periods" class="w-full p-2.5 h-32 f-input text-sm" placeholder="كل فترة في سطر جديد"></textarea>
            </div>
            <!-- Inspectors -->
-           <div class="bg-white p-4 rounded shadow-sm border border-gray-200">
-             <div class="flex items-center justify-between mb-2">
-               <h3 class="font-bold text-blue-900">القائمين بالمرور</h3>
+           <div class="glass-panel p-4 rounded-2xl">
+             <div class="flex items-center gap-2 mb-2.5">
+               <span class="f-icon-tile !w-7 !h-7"><i class="fas fa-user-shield text-sky-600 text-xs"></i></span>
+               <h3 class="font-bold text-slate-900">القائمين بالمرور</h3>
              </div>
-             <textarea id="set-inspectors" class="w-full border border-gray-500 p-2 rounded h-32 bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400" placeholder="كل اسم في سطر جديد"></textarea>
+             <textarea id="set-inspectors" class="w-full p-2.5 h-32 f-input text-sm" placeholder="كل اسم في سطر جديد"></textarea>
            </div>
            <!-- Implementers (المسؤولين عن التنفيذ) -->
-           <div class="bg-white p-4 rounded shadow-sm border border-gray-200 border-r-4 border-r-blue-600">
-             <div class="flex items-center justify-between mb-2">
-               <h3 class="font-bold text-blue-900 flex items-center gap-1.5">
-                 <i class="fas fa-user-check text-blue-600"></i>
-                 <span>المسؤولين عن التنفيذ</span>
-               </h3>
+           <div class="glass-panel p-4 rounded-2xl">
+             <div class="flex items-center gap-2 mb-2.5">
+               <span class="f-icon-tile !w-7 !h-7"><i class="fas fa-user-check text-emerald-600 text-xs"></i></span>
+               <h3 class="font-bold text-slate-900">المسؤولين عن التنفيذ</h3>
              </div>
-             <textarea id="set-implementers" class="w-full border border-gray-500 p-2 rounded h-32 bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400" placeholder="كل مسؤول في سطر جديد"></textarea>
+             <textarea id="set-implementers" class="w-full p-2.5 h-32 f-input text-sm" placeholder="كل مسؤول في سطر جديد"></textarea>
            </div>
         </div>
 
         <!-- Inspection Days Selection (أيام المرور من الشهر) -->
-        <div class="bg-white p-4 rounded shadow-sm border border-gray-200 border-r-4 border-r-emerald-600 mt-6">
+        <div class="glass-panel p-5 rounded-2xl mt-6">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <h3 class="font-bold text-blue-900 flex items-center gap-2">
-                    <i class="fas fa-calendar-check text-emerald-600"></i>
+                <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                    <span class="f-icon-tile !w-8 !h-8"><i class="fas fa-calendar-check text-emerald-600 text-xs anim-float"></i></span>
                     <span>أيام المرور المعتمدة في الشهر</span>
                 </h3>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="toggleAllInspectionDays(true)" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-2.5 py-1 rounded border border-blue-200 font-bold transition">تحديد الكل</button>
-                    <button type="button" onclick="toggleAllInspectionDays(false)" class="text-xs bg-gray-50 hover:bg-gray-100 text-gray-700 px-2.5 py-1 rounded border border-gray-200 font-bold transition">إلغاء الكل</button>
+                    <button type="button" onclick="toggleAllInspectionDays(true)" class="text-xs bg-cyan-50 hover:bg-cyan-100 text-cyan-800 px-3 py-1.5 rounded-lg border border-cyan-200 font-bold transition">تحديد الكل</button>
+                    <button type="button" onclick="toggleAllInspectionDays(false)" class="text-xs bg-slate-50 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 font-bold transition">إلغاء الكل</button>
                 </div>
             </div>
-            <p class="text-xs text-gray-500 mb-3">حدد أيام الأسبوع الخاصة بالمرور ليتم عرض التواريخ الموافقة لهذه الأيام فقط من الشهر في صفحة التقرير الأسبوعي.</p>
+            <p class="text-xs text-slate-500 mb-3">حدد أيام الأسبوع الخاصة بالمرور ليتم عرض التواريخ الموافقة لهذه الأيام فقط من الشهر في صفحة التقرير الأسبوعي.</p>
             <div id="inspection-days-settings-container" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
-                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
-                    <input type="checkbox" value="6" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50/90 hover:bg-cyan-50 border border-slate-200 cursor-pointer select-none transition text-xs font-bold text-slate-800">
+                    <input type="checkbox" value="6" class="inspection-day-chk accent-cyan-600 rounded w-4 h-4">
                     <span>السبت</span>
                 </label>
-                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
-                    <input type="checkbox" value="0" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50/90 hover:bg-cyan-50 border border-slate-200 cursor-pointer select-none transition text-xs font-bold text-slate-800">
+                    <input type="checkbox" value="0" class="inspection-day-chk accent-cyan-600 rounded w-4 h-4">
                     <span>الأحد</span>
                 </label>
-                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
-                    <input type="checkbox" value="1" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50/90 hover:bg-cyan-50 border border-slate-200 cursor-pointer select-none transition text-xs font-bold text-slate-800">
+                    <input type="checkbox" value="1" class="inspection-day-chk accent-cyan-600 rounded w-4 h-4">
                     <span>الإثنين</span>
                 </label>
-                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
-                    <input type="checkbox" value="2" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50/90 hover:bg-cyan-50 border border-slate-200 cursor-pointer select-none transition text-xs font-bold text-slate-800">
+                    <input type="checkbox" value="2" class="inspection-day-chk accent-cyan-600 rounded w-4 h-4">
                     <span>الثلاثاء</span>
                 </label>
-                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
-                    <input type="checkbox" value="3" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50/90 hover:bg-cyan-50 border border-slate-200 cursor-pointer select-none transition text-xs font-bold text-slate-800">
+                    <input type="checkbox" value="3" class="inspection-day-chk accent-cyan-600 rounded w-4 h-4">
                     <span>الأربعاء</span>
                 </label>
-                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
-                    <input type="checkbox" value="4" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50/90 hover:bg-cyan-50 border border-slate-200 cursor-pointer select-none transition text-xs font-bold text-slate-800">
+                    <input type="checkbox" value="4" class="inspection-day-chk accent-cyan-600 rounded w-4 h-4">
                     <span>الخميس</span>
                 </label>
-                <label class="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 border border-gray-200 cursor-pointer select-none transition text-xs font-bold text-gray-800">
-                    <input type="checkbox" value="5" class="inspection-day-chk accent-emerald-600 rounded w-4 h-4">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50/90 hover:bg-cyan-50 border border-slate-200 cursor-pointer select-none transition text-xs font-bold text-slate-800">
+                    <input type="checkbox" value="5" class="inspection-day-chk accent-cyan-600 rounded w-4 h-4">
                     <span>الجمعة</span>
                 </label>
             </div>
         </div>
 
-        <div class="bg-white p-4 rounded shadow-sm border border-gray-200 mt-6 mb-6">
-            <h3 class="font-bold mb-2 text-blue-900 flex items-center gap-2">
-                <i class="fas fa-clipboard-list text-blue-600"></i>
+        <div class="glass-panel p-5 rounded-2xl mt-6 mb-6">
+            <h3 class="font-bold mb-2 text-slate-900 flex items-center gap-2">
+                <span class="f-icon-tile !w-8 !h-8"><i class="fas fa-clipboard-list text-cyan-600 text-xs anim-float"></i></span>
                 <span>الملاحظات والتوصيات الأسبوعية</span>
             </h3>
-            <p class="text-xs text-gray-500 mb-3">قائمة الملاحظات والتوصيات الافتراضية (تظهر كخيارات Checkbox في التقرير الأسبوعي للمرور السريع)</p>
-            <table class="w-full text-sm text-right border border-gray-200">
-                <thead class="bg-blue-50 text-blue-900">
-                    <tr>
-                        <th class="p-2.5 border border-gray-200 w-1/2">الملاحظة</th>
-                        <th class="p-2.5 border border-gray-200 w-1/2">التوصية</th>
-                    </tr>
-                </thead>
-                <tbody id="proc-table-body">
-                    <!-- Dynamic Rows -->
-                </tbody>
-            </table>
+            <p class="text-xs text-slate-500 mb-3">قائمة الملاحظات والتوصيات الافتراضية (تظهر كخيارات Checkbox في التقرير الأسبوعي للمرور السريع)</p>
+            <div class="overflow-hidden rounded-xl border border-slate-200">
+              <table class="w-full text-sm text-right">
+                  <thead class="bg-gradient-to-l from-cyan-50 to-blue-50 text-slate-900">
+                      <tr>
+                          <th class="p-3 border-b border-slate-200 w-1/2 font-bold">الملاحظة</th>
+                          <th class="p-3 border-b border-slate-200 w-1/2 font-bold">التوصية</th>
+                      </tr>
+                  </thead>
+                  <tbody id="proc-table-body" class="divide-y divide-slate-100 bg-white">
+                      <!-- Dynamic Rows -->
+                  </tbody>
+              </table>
+            </div>
             
-            <div class="flex flex-wrap justify-between items-start mt-4 border-t border-gray-100 pt-4 gap-3">
-               <button onclick="addProcRow()" class="text-blue-700 text-sm font-bold hover:underline">+ إضافة ملاحظة وتوصية (يدوي)</button>
+            <div class="flex flex-wrap justify-between items-start mt-4 border-t border-slate-100 pt-4 gap-3">
+               <button onclick="addProcRow()" class="btn-futuristic bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                 <i class="fas fa-plus"></i> إضافة ملاحظة وتوصية (يدوي)
+               </button>
                
                <!-- Bulk Import Box -->
-               <div class="bg-gray-100 p-3 rounded border border-gray-300 w-full md:w-1/2 mt-2 md:mt-0">
-                  <h4 class="font-bold text-xs text-gray-700 mb-1 flex items-center gap-1">
-                      <i class="fas fa-file-excel text-green-600"></i> نسخ سريع من إكسيل (Bulk Import)
+               <div class="bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200 w-full md:w-1/2 mt-2 md:mt-0">
+                  <h4 class="font-bold text-xs text-slate-800 mb-1 flex items-center gap-1.5">
+                      <i class="fas fa-file-excel text-emerald-600"></i> نسخ سريع من إكسيل (Bulk Import)
                   </h4>
-                  <p class="text-[10px] text-gray-500 mb-2">انسخ الأعمدة من إكسيل بالترتيب: <strong>الملاحظة | التوصية</strong></p>
-                  <textarea id="bulk-proc-input" class="w-full h-20 text-xs p-2 border border-gray-300 rounded focus:border-blue-500 outline-none" placeholder="الصق البيانات هنا..."></textarea>
-                  <button onclick="importBulkProcedures()" class="mt-2 bg-green-600 text-white text-xs px-3 py-1 rounded hover:bg-green-700 transition">استيراد البيانات</button>
+                  <p class="text-[10px] text-slate-500 mb-2">انسخ الأعمدة من إكسيل بالترتيب: <strong>الملاحظة | التوصية</strong></p>
+                  <textarea id="bulk-proc-input" class="w-full h-20 text-xs p-2.5 f-input" placeholder="الصق البيانات هنا..."></textarea>
+                  <button onclick="importBulkProcedures()" class="btn-futuristic mt-2 bg-gradient-to-l from-emerald-500 to-teal-600 text-white text-xs px-3.5 py-1.5 rounded-lg font-bold">استيراد البيانات</button>
                </div>
             </div>
         </div>
 
-        <!-- Turso Migration Card -->
-        <div class="bg-gradient-to-r from-indigo-900 to-blue-900 text-white p-6 rounded-lg shadow-sm border border-indigo-700 mb-8">
+        <!-- Turso Migration Card (Light Futuristic Card) -->
+        <div class="glass-panel bg-gradient-to-l from-cyan-50/80 via-white to-indigo-50/80 p-6 rounded-2xl border border-cyan-200/80 mb-8">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h3 class="font-bold text-lg text-indigo-100 flex items-center gap-2 mb-1">
-                        <i class="fas fa-database text-yellow-400"></i> استيراد وترحيل البيانات من قاعدة بيانات Turso سابقة
-                    </h3>
-                    <p class="text-xs text-indigo-200 leading-relaxed max-w-2xl">
-                        هل لديك قاعدة بيانات Turso سابقة تحتوي على سجلات وتقارير المركز؟ يمكنك الآن إدخال رابط القاعدة ورمز المصادقة لنقل جميع التقارير والإعدادات إلى هذه المنظومة تلقائياً مع الحفاظ على البيانات.
-                    </p>
+                <div class="flex items-start gap-3.5">
+                    <span class="f-icon-tile f-icon-tile-lg mt-0.5">
+                      <svg viewBox="0 0 24 24" class="w-6 h-6 anim-float" fill="none">
+                        <ellipse cx="12" cy="6.5" rx="7" ry="2.8" fill="url(#fGradSoftCyan)" stroke="url(#fGradAzureIndigo)" stroke-width="1.6"/>
+                        <path d="M5 6.5V17.5C5 19.05 8.13 20.3 12 20.3C15.87 20.3 19 19.05 19 17.5V6.5" stroke="url(#fGradAzureIndigo)" stroke-width="1.6"/>
+                        <path d="M5 12C5 13.55 8.13 14.8 12 14.8C15.87 14.8 19 13.55 19 12" stroke="url(#fGradCyanBlue)" stroke-width="1.4"/>
+                      </svg>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-900 mb-1">استيراد وترحيل البيانات من قاعدة بيانات Turso سابقة</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed max-w-2xl">
+                            هل لديك قاعدة بيانات Turso سابقة تحتوي على سجلات وتقارير المركز؟ يمكنك الآن إدخال رابط القاعدة ورمز المصادقة لنقل جميع التقارير والإعدادات إلى هذه المنظومة تلقائياً مع الحفاظ على البيانات.
+                        </p>
+                    </div>
                 </div>
-                <button onclick="openTursoMigrationModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow transition flex items-center gap-2 whitespace-nowrap self-start md:self-center">
+                <button onclick="openTursoMigrationModal()" class="btn-futuristic bg-gradient-to-l from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm flex items-center gap-2 whitespace-nowrap self-start md:self-center">
                     <i class="fas fa-file-import"></i> بدء استيراد السجلات السابقة
                 </button>
             </div>
@@ -735,102 +1176,111 @@
       </section>
 
       <!-- 3. WEEKLY REPORT FORM -->
-      <section id="dailyReport" class="page-section hidden p-6">
-        <h2 class="text-2xl font-bold mb-6 text-blue-900 border-b border-gray-200 pb-2 no-print flex items-center gap-2">
-            <i class="fas fa-calendar-week text-blue-600"></i>
-            <span>إدخال تقرير أسبوعي</span>
-        </h2>
+      <section id="dailyReport" class="page-section hidden p-6 max-w-7xl mx-auto w-full">
+        <div class="mb-6 border-b border-slate-200/80 pb-4 no-print flex items-center gap-3.5">
+            <span class="f-icon-tile f-icon-tile-lg">
+              <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none">
+                <rect x="3" y="4.5" width="18" height="16" rx="3.5" fill="url(#fGradSoftCyan)" stroke="url(#fGradCyanBlue)" stroke-width="1.6"/>
+                <path d="M7.5 2.5V6M16.5 2.5V6M3 9.5H21" stroke="url(#fGradCyanBlue)" stroke-width="1.6" stroke-linecap="round"/>
+                <rect x="6" y="11" width="12" height="2" rx="1" fill="url(#fGradAzureIndigo)" class="anim-scan"/>
+              </svg>
+            </span>
+            <div>
+              <h2 class="text-2xl font-display font-extrabold text-slate-900">إدخال تقرير أسبوعي</h2>
+              <p class="text-xs text-slate-500 mt-0.5">تسجيل مرور قسم واحد أو عدة أقسام خلال نفس اليوم بدقة</p>
+            </div>
+        </div>
         
         <!-- Input Form -->
-        <div id="daily-form-container" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8 no-print">
+        <div id="daily-form-container" class="glass-panel p-6 rounded-2xl mb-8 no-print">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <div>
-                    <label class="block text-sm font-bold mb-1 text-gray-700">الشهر</label>
-                    <input type="month" id="daily-month" onchange="populateWeeklyMonthDates(false)" class="w-full border border-gray-300 p-2 rounded bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition">
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">الشهر</label>
+                    <input type="month" id="daily-month" onchange="populateWeeklyMonthDates(false)" class="w-full p-2.5 f-input text-sm font-mono-num">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-1 text-gray-700">يوم وتاريخ المرور</label>
-                    <select id="daily-date" class="w-full border border-gray-300 p-2 rounded bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition"></select>
-                    <p id="daily-date-hint" class="text-[11px] text-gray-500 mt-1"></p>
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">يوم وتاريخ المرور</label>
+                    <select id="daily-date" class="w-full p-2.5 f-input text-sm font-mono-num"></select>
+                    <p id="daily-date-hint" class="text-[11px] text-slate-500 mt-1 font-medium"></p>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-1 text-gray-700">الفترة</label>
-                    <select id="daily-period" class="w-full border border-gray-300 p-2 rounded bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition"></select>
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">الفترة</label>
+                    <select id="daily-period" class="w-full p-2.5 f-input text-sm"></select>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-1 text-gray-700">القسم</label>
-                    <select id="daily-dept" class="w-full border border-gray-300 p-2 rounded bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition"></select>
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">القسم</label>
+                    <select id="daily-dept" class="w-full p-2.5 f-input text-sm"></select>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-1 text-gray-700">القائم بالمرور</label>
-                    <select id="daily-inspector" class="w-full border border-gray-300 p-2 rounded bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition"></select>
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">القائم بالمرور</label>
+                    <select id="daily-inspector" class="w-full p-2.5 f-input text-sm"></select>
                 </div>
 
                 <!-- المسؤول عن التنفيذ (Checkboxes) -->
-                <div class="col-span-1 md:col-span-2 lg:col-span-4 bg-blue-50/60 p-4 rounded-xl border border-blue-200 mt-2">
-                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                        <label class="block text-sm font-bold text-blue-900 flex items-center gap-2">
-                            <i class="fas fa-user-check text-blue-600"></i>
+                <div class="col-span-1 md:col-span-2 lg:col-span-5 bg-cyan-50/55 p-4 rounded-2xl border border-cyan-200/75 mt-2">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                        <label class="block text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <span class="f-icon-tile !w-7 !h-7"><i class="fas fa-user-check text-cyan-600 text-xs"></i></span>
                             <span>المسؤول عن التنفيذ (اختر من القائمة المحددة مسبقاً في الإعدادات):</span>
-                            <span class="text-red-500">*</span>
+                            <span class="text-rose-500">*</span>
                         </label>
-                        <span class="text-[11px] text-gray-500 font-medium">يمكن اختيار أكثر من مسؤول بالتحديد</span>
+                        <span class="text-[11px] text-slate-500 font-medium">يمكن اختيار أكثر من مسؤول بالتحديد</span>
                     </div>
-                    <div id="weekly-implementers-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 bg-white p-3 rounded-lg border border-gray-200 max-h-44 overflow-y-auto checkbox-list">
+                    <div id="weekly-implementers-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 bg-white/90 p-3 rounded-xl border border-slate-200/80 max-h-44 overflow-y-auto checkbox-list">
                         <!-- Populated dynamically via JS -->
                     </div>
                     <input type="hidden" id="daily-supervisor" value="">
                 </div>
             </div>
 
-            <div class="border-t border-gray-200 pt-5 mt-4">
+            <div class="border-t border-slate-200/80 pt-5 mt-4">
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-                    <div>
-                        <h3 class="font-bold text-base text-blue-900 flex items-center gap-2">
-                            <i class="fas fa-clipboard-check text-blue-600"></i>
-                            <span>الملاحظات المرصودة خلال الأسبوع:</span>
-                        </h3>
-                        <p class="text-xs text-gray-500 mt-0.5">حدد الملاحظات التي تم رصدها في هذا القسم لاحتساب المخالفات وتضمين التوصيات المقابلة لها مع ثبات الملاحظة والتوصية</p>
+                    <div class="flex items-start gap-2.5">
+                        <span class="f-icon-tile !w-8 !h-8 mt-0.5"><i class="fas fa-clipboard-check text-cyan-600 text-xs anim-float"></i></span>
+                        <div>
+                            <h3 class="font-bold text-base text-slate-900">الملاحظات المرصودة خلال الأسبوع:</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">حدد الملاحظات التي تم رصدها في هذا القسم لاحتساب المخالفات وتضمين التوصيات المقابلة لها مع ثبات الملاحظة والتوصية</p>
+                        </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button type="button" onclick="toggleQuickAddObsModal(true)" class="text-xs text-white bg-blue-700 hover:bg-blue-800 px-3.5 py-1.5 rounded-lg shadow-sm font-bold transition flex items-center gap-1.5">
+                        <button type="button" onclick="toggleQuickAddObsModal(true)" class="btn-futuristic text-xs text-white bg-gradient-to-l from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 px-3.5 py-2 rounded-xl shadow-sm font-bold flex items-center gap-1.5">
                             <i class="fas fa-plus-circle"></i> إضافة ملاحظة جديدة
                         </button>
-                        <button type="button" onclick="clearAllViolationCheckboxes()" class="text-xs text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg border font-medium transition">
+                        <button type="button" onclick="clearAllViolationCheckboxes()" class="text-xs text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl border border-slate-200 font-medium transition">
                             <i class="fas fa-times"></i> إلغاء تحديد الكل
                         </button>
                     </div>
                 </div>
 
                 <!-- Quick Add Observation Inline Panel -->
-                <div id="quick-add-obs-panel" class="hidden mb-4 p-4 bg-blue-50/80 border border-blue-200 rounded-xl shadow-sm transition-all">
-                    <div class="flex items-center justify-between mb-3 border-b border-blue-200/60 pb-2">
-                        <h4 class="font-bold text-sm text-blue-900 flex items-center gap-1.5">
-                            <i class="fas fa-plus-circle text-blue-600"></i>
+                <div id="quick-add-obs-panel" class="hidden mb-4 p-4 bg-cyan-50/70 border border-cyan-200 rounded-2xl shadow-sm transition-all">
+                    <div class="flex items-center justify-between mb-3 border-b border-cyan-200/60 pb-2">
+                        <h4 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+                            <i class="fas fa-plus-circle text-cyan-600"></i>
                             <span>إضافة ملاحظة وتوصية جديدة إلى القائمة</span>
                         </h4>
-                        <button type="button" onclick="toggleQuickAddObsModal(false)" class="text-gray-400 hover:text-gray-600 text-sm">
+                        <button type="button" onclick="toggleQuickAddObsModal(false)" class="text-slate-400 hover:text-slate-600 text-sm">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">الملاحظة (المخالفة المرصودة) <span class="text-red-500">*</span></label>
-                            <input type="text" id="quick-obs-note" placeholder="اكتب نص الملاحظة هنا..." class="w-full text-xs border border-gray-300 p-2.5 rounded-lg bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">الملاحظة (المخالفة المرصودة) <span class="text-rose-500">*</span></label>
+                            <input type="text" id="quick-obs-note" placeholder="اكتب نص الملاحظة هنا..." class="w-full text-xs p-2.5 f-input bg-white">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">التوصية (الإجراء التصحيحي المقترح) <span class="text-red-500">*</span></label>
-                            <input type="text" id="quick-obs-rec" placeholder="اكتب التوصية المعتمدة هنا..." class="w-full text-xs border border-gray-300 p-2.5 rounded-lg bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">التوصية (الإجراء التصحيحي المقترح) <span class="text-rose-500">*</span></label>
+                            <input type="text" id="quick-obs-rec" placeholder="اكتب التوصية المعتمدة هنا..." class="w-full text-xs p-2.5 f-input bg-white">
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
-                        <label class="flex items-center gap-2 cursor-pointer text-xs text-gray-700 select-none">
-                            <input type="checkbox" id="quick-obs-auto-check" checked class="w-4 h-4 accent-blue-600 rounded">
+                        <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-700 select-none">
+                            <input type="checkbox" id="quick-obs-auto-check" checked class="w-4 h-4 accent-cyan-600 rounded">
                             <span>تحديد هذه الملاحظة كمخالفة مرصودة في التقرير الحالي فور إضافتها</span>
                         </label>
                         <div class="flex items-center gap-2 mr-auto">
-                            <button type="button" onclick="toggleQuickAddObsModal(false)" class="text-xs text-gray-600 hover:text-gray-800 bg-white border border-gray-300 px-3.5 py-1.5 rounded-lg transition">إلغاء</button>
-                            <button type="button" onclick="saveQuickObservation()" class="text-xs text-white bg-blue-700 hover:bg-blue-800 px-4 py-1.5 rounded-lg font-bold shadow-sm transition flex items-center gap-1.5">
+                            <button type="button" onclick="toggleQuickAddObsModal(false)" class="text-xs text-slate-600 hover:text-slate-800 bg-white border border-slate-300 px-3.5 py-1.5 rounded-xl transition">إلغاء</button>
+                            <button type="button" onclick="saveQuickObservation()" class="btn-futuristic text-xs text-white bg-gradient-to-l from-cyan-600 to-blue-600 px-4 py-1.5 rounded-xl font-bold shadow-sm flex items-center gap-1.5">
                                 <i class="fas fa-check"></i> إضافة وحفظ بالقائمة
                             </button>
                         </div>
@@ -843,23 +1293,23 @@
             </div>
 
             <!-- Drafted Departments for Same Day -->
-            <div id="weekly-draft-banner" class="hidden mt-5 p-3 rounded-lg border text-xs font-bold flex items-center justify-between">
+            <div id="weekly-draft-banner" class="hidden mt-5 p-3 rounded-xl border text-xs font-bold flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <i id="weekly-draft-banner-icon" class="fas fa-check-circle"></i>
                     <span id="weekly-draft-banner-text"></span>
                 </div>
-                <button type="button" onclick="hideWeeklyDraftBanner()" class="text-gray-500 hover:text-gray-800 px-2">
+                <button type="button" onclick="hideWeeklyDraftBanner()" class="text-slate-500 hover:text-slate-800 px-2">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
-            <div id="weekly-draft-depts-panel" class="hidden mt-5 bg-emerald-50/70 border border-emerald-200 rounded-xl p-4">
+            <div id="weekly-draft-depts-panel" class="hidden mt-5 bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4">
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-3 border-b border-emerald-200/70 pb-2">
                     <h4 class="font-bold text-sm text-emerald-900 flex items-center gap-2">
-                        <i class="fas fa-layer-group text-emerald-600"></i>
-                        <span>الأقسام المضافة لتقرير اليوم (<span id="weekly-draft-count">0</span>)</span>
+                        <span class="f-icon-tile !w-7 !h-7"><i class="fas fa-layer-group text-emerald-600 text-xs"></i></span>
+                        <span>الأقسام المضافة لتقرير اليوم (<span id="weekly-draft-count" class="font-mono-num">0</span>)</span>
                     </h4>
-                    <button type="button" onclick="clearWeeklyDraftDepts()" class="text-xs text-red-600 hover:text-red-800 font-bold flex items-center gap-1">
+                    <button type="button" onclick="clearWeeklyDraftDepts()" class="text-xs text-rose-600 hover:text-rose-800 font-bold flex items-center gap-1">
                         <i class="fas fa-trash-alt"></i> مسح القائمة
                     </button>
                 </div>
@@ -868,12 +1318,12 @@
                 </div>
             </div>
 
-            <div class="mt-6 flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-gray-200">
-                <button type="button" onclick="addDeptToWeeklyDraft()" class="bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow hover:bg-blue-800 transition font-bold text-sm flex items-center gap-2">
+            <div class="mt-6 flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200/80">
+                <button type="button" onclick="addDeptToWeeklyDraft()" class="btn-futuristic bg-gradient-to-l from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-5 py-2.5 rounded-xl shadow-sm font-bold text-sm flex items-center gap-2">
                     <i class="fas fa-plus-circle"></i>
                     <span id="btn-add-dept-draft-label">إضافة القسم لتقرير اليوم (وإدخال قسم آخر)</span>
                 </button>
-                <button type="button" onclick="submitDailyReport()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg shadow hover:bg-emerald-700 transition font-bold text-sm flex items-center gap-2 mr-auto">
+                <button type="button" onclick="submitDailyReport()" class="btn-futuristic bg-gradient-to-l from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-2.5 rounded-xl shadow-sm font-bold text-sm flex items-center gap-2 mr-auto">
                     <i class="fas fa-save"></i> حفظ وعرض التقرير الأسبوعي
                 </button>
             </div>
@@ -938,79 +1388,93 @@
       </section>
 
       <!-- 4. MONTHLY REPORT -->
-      <section id="monthlyReport" class="page-section hidden p-6">
-        <h2 class="text-2xl font-bold mb-6 text-blue-900 no-print">التقارير الشهرية</h2>
-        <div class="bg-white p-6 rounded shadow-sm border border-gray-200 mb-4 flex flex-wrap gap-4 items-end justify-between no-print">
+      <section id="monthlyReport" class="page-section hidden p-6 max-w-7xl mx-auto w-full">
+        <div class="mb-6 border-b border-slate-200/80 pb-4 no-print flex items-center gap-3.5">
+            <span class="f-icon-tile f-icon-tile-lg">
+              <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none">
+                <rect x="3" y="3.5" width="18" height="17" rx="3.5" fill="url(#fGradSoftCyan)" stroke="url(#fGradAzureIndigo)" stroke-width="1.5"/>
+                <rect x="6.5" y="12.5" width="2.5" height="5" rx="1" fill="url(#fGradCyanBlue)" class="anim-bar-1"/>
+                <rect x="10.75" y="8.5" width="2.5" height="9" rx="1" fill="url(#fGradAzureIndigo)" class="anim-bar-2"/>
+                <rect x="15" y="10.5" width="2.5" height="7" rx="1" fill="url(#fGradEmeraldCyan)" class="anim-bar-1"/>
+              </svg>
+            </span>
+            <div>
+              <h2 class="text-2xl font-display font-extrabold text-slate-900">التقارير الشهرية</h2>
+              <p class="text-xs text-slate-500 mt-0.5">استعراض وطباعة ونسخ التقرير التراكمي الشهري</p>
+            </div>
+        </div>
+        <div class="glass-panel p-6 rounded-2xl mb-4 flex flex-wrap gap-4 items-end justify-between no-print">
             <div class="flex flex-wrap gap-4 items-end">
                 <div>
-                    <label class="block text-sm font-bold mb-1 text-gray-700">اختر الشهر</label>
-                    <input type="month" id="month-picker" class="border border-gray-300 p-2 rounded bg-gray-50 focus:border-blue-500 outline-none">
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">اختر الشهر</label>
+                    <input type="month" id="month-picker" class="p-2.5 f-input text-sm font-mono-num">
                 </div>
-                <button onclick="generatePeriodicReport('monthly')" class="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 transition flex items-center gap-2">
+                <button onclick="generatePeriodicReport('monthly')" class="btn-futuristic bg-gradient-to-l from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2">
                     <i class="fas fa-chart-bar"></i> عرض التقرير
                 </button>
             </div>
-            <button onclick="openCopyMonthModal()" class="bg-emerald-700 text-white px-5 py-2 rounded hover:bg-emerald-800 transition flex items-center gap-2 shadow-sm">
+            <button onclick="openCopyMonthModal()" class="btn-futuristic bg-gradient-to-l from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm">
                 <i class="fas fa-copy"></i> نسخ تقرير شهري إلى شهر آخر
             </button>
         </div>
 
         <!-- Inline Status Banner for Monthly Report Operations -->
-        <div id="monthly-copy-banner" class="hidden mb-6 p-4 rounded border flex items-center justify-between no-print">
+        <div id="monthly-copy-banner" class="hidden mb-6 p-4 rounded-xl border flex items-center justify-between no-print">
             <div class="flex items-center gap-3">
                 <i id="monthly-copy-banner-icon" class="fas fa-check-circle text-lg"></i>
                 <span id="monthly-copy-banner-text" class="text-sm font-bold"></span>
             </div>
-            <button onclick="hideMonthlyBanner()" class="text-gray-500 hover:text-gray-800 px-2">
+            <button onclick="hideMonthlyBanner()" class="text-slate-500 hover:text-slate-800 px-2">
                 <i class="fas fa-times"></i>
             </button>
         </div>
 
-        <div id="monthly-result" class="hidden bg-white p-8 shadow max-w-5xl mx-auto border border-gray-200">
+        <div id="monthly-result" class="hidden bg-white p-8 shadow-sm max-w-5xl mx-auto border border-slate-200 rounded-2xl">
            <!-- Dynamic Content -->
         </div>
 
         <!-- Copy Monthly Report Modal -->
-        <div id="copy-month-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 no-print">
-            <div class="bg-white rounded-lg shadow-xl border border-gray-200 w-full max-w-md overflow-hidden">
-                <div class="bg-blue-900 text-white px-6 py-4 flex items-center justify-between">
-                    <h3 class="text-lg font-bold flex items-center gap-2">
-                        <i class="fas fa-copy"></i> نسخ تقرير شهري
+        <div id="copy-month-modal" class="hidden fixed inset-0 bg-slate-900/45 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
+            <div class="glass-panel bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+                <div class="bg-gradient-to-l from-cyan-50 via-white to-blue-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <span class="f-icon-tile !w-8 !h-8"><i class="fas fa-copy text-cyan-600 text-xs"></i></span>
+                        <span>نسخ تقرير شهري</span>
                     </h3>
-                    <button onclick="closeCopyMonthModal()" class="text-blue-200 hover:text-white transition">
+                    <button onclick="closeCopyMonthModal()" class="text-slate-400 hover:text-slate-700 transition">
                         <i class="fas fa-times text-lg"></i>
                     </button>
                 </div>
                 <div class="p-6 space-y-4">
-                    <p class="text-sm text-gray-600 leading-relaxed">
+                    <p class="text-sm text-slate-600 leading-relaxed">
                         يمكنك نسخ جميع تقييمات وملاحظات المرور المسجلة في شهر معين إلى شهر آخر مع ضبط التواريخ تلقائياً.
                     </p>
                     <div>
-                        <label class="block text-sm font-bold mb-1 text-gray-800">نسخ من شهر (المصدر)</label>
-                        <input type="month" id="copy-source-month" class="w-full border border-gray-300 p-2.5 rounded bg-gray-50 focus:border-blue-600 outline-none">
+                        <label class="block text-sm font-bold mb-1.5 text-slate-800">نسخ من شهر (المصدر)</label>
+                        <input type="month" id="copy-source-month" class="w-full p-2.5 f-input font-mono-num">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold mb-1 text-gray-800">إلى شهر (الهدف)</label>
-                        <input type="month" id="copy-target-month" class="w-full border border-gray-300 p-2.5 rounded bg-gray-50 focus:border-blue-600 outline-none">
+                        <label class="block text-sm font-bold mb-1.5 text-slate-800">إلى شهر (الهدف)</label>
+                        <input type="month" id="copy-target-month" class="w-full p-2.5 f-input font-mono-num">
                     </div>
-                    <div class="bg-amber-50 border border-amber-200 rounded p-3">
+                    <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3">
                         <label class="flex items-start gap-2.5 cursor-pointer">
-                            <input type="checkbox" id="copy-replace-existing" checked class="mt-1 w-4 h-4 text-emerald-700 rounded border-gray-300 focus:ring-emerald-600">
+                            <input type="checkbox" id="copy-replace-existing" checked class="mt-1 w-4 h-4 accent-emerald-600 rounded">
                             <span class="text-xs text-amber-900 leading-relaxed font-medium">
                                 استبدال بيانات الشهر الهدف (إن وجدت) لمنع تكرار التقييمات عند النسخ أكثر من مرة.
                             </span>
                         </label>
                     </div>
-                    <div id="copy-month-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs font-bold p-3 rounded flex items-center gap-2">
+                    <div id="copy-month-error" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold p-3 rounded-xl flex items-center gap-2">
                         <i class="fas fa-exclamation-circle"></i>
                         <span id="copy-month-error-text"></span>
                     </div>
                 </div>
-                <div class="bg-gray-50 px-6 py-3 border-t border-gray-200 flex justify-end gap-3">
-                    <button type="button" onclick="closeCopyMonthModal()" class="px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 text-sm font-bold hover:bg-gray-100 transition">
+                <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 flex justify-end gap-3">
+                    <button type="button" onclick="closeCopyMonthModal()" class="px-4 py-2 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100 transition">
                         إلغاء
                     </button>
-                    <button type="button" id="copy-month-submit-btn" onclick="submitCopyMonthlyReport()" class="px-5 py-2 rounded bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 transition flex items-center gap-2">
+                    <button type="button" id="copy-month-submit-btn" onclick="submitCopyMonthlyReport()" class="btn-futuristic px-5 py-2 rounded-xl bg-gradient-to-l from-emerald-500 to-teal-600 text-white text-sm font-bold flex items-center gap-2">
                         <i class="fas fa-check"></i> تنفيذ النسخ
                     </button>
                 </div>
@@ -1019,50 +1483,77 @@
       </section>
 
       <!-- 5. ANNUAL REPORT -->
-      <section id="annualReport" class="page-section hidden p-6">
-        <h2 class="text-2xl font-bold mb-6 text-blue-900 no-print">التقرير السنوي</h2>
-        <div class="bg-white p-6 rounded shadow-sm border border-gray-200 mb-6 flex gap-4 items-end no-print">
+      <section id="annualReport" class="page-section hidden p-6 max-w-7xl mx-auto w-full">
+        <div class="mb-6 border-b border-slate-200/80 pb-4 no-print flex items-center gap-3.5">
+            <span class="f-icon-tile f-icon-tile-lg">
+              <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none">
+                <circle cx="12" cy="12" r="8.5" stroke="url(#fGradVioletCyan)" stroke-width="1.5" stroke-dasharray="5 3" class="anim-orbit"/>
+                <circle cx="12" cy="12" r="4.5" fill="url(#fGradSoftCyan)" stroke="url(#fGradVioletCyan)" stroke-width="1.5" class="anim-float"/>
+                <path d="M12 9.5V12L13.8 13.2" stroke="url(#fGradAzureIndigo)" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+            </span>
             <div>
-                <label class="block text-sm font-bold mb-1 text-gray-700">اختر السنة</label>
-                <select id="year-picker" class="border border-gray-300 p-2 rounded w-32 bg-gray-50 focus:border-blue-500 outline-none">
+              <h2 class="text-2xl font-display font-extrabold text-slate-900">التقرير السنوي</h2>
+              <p class="text-xs text-slate-500 mt-0.5">الملخص السنوي للملاحظات المتكررة والتوصيات عبر جميع الأقسام</p>
+            </div>
+        </div>
+        <div class="glass-panel p-6 rounded-2xl mb-6 flex flex-wrap gap-4 items-end no-print">
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">اختر السنة</label>
+                <select id="year-picker" class="p-2.5 w-36 f-input text-sm font-mono-num">
                     <!-- Populated via JS -->
                 </select>
             </div>
-            <button onclick="generatePeriodicReport('yearly')" class="bg-purple-700 text-white px-6 py-2 rounded hover:bg-purple-800 transition">عرض التقرير</button>
+            <button onclick="generatePeriodicReport('yearly')" class="btn-futuristic bg-gradient-to-l from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2">
+                <i class="fas fa-chart-line"></i> عرض التقرير
+            </button>
         </div>
-        <div id="yearly-result" class="hidden bg-white p-8 shadow max-w-5xl mx-auto border border-gray-200"></div>
+        <div id="yearly-result" class="hidden bg-white p-8 shadow-sm max-w-5xl mx-auto border border-slate-200 rounded-2xl"></div>
       </section>
       
       <!-- 6. ARCHIVE -->
-      <section id="archive" class="page-section hidden p-6">
-        <h2 class="text-2xl font-bold mb-6 text-blue-900 no-print">الأرشيف</h2>
+      <section id="archive" class="page-section hidden p-6 max-w-7xl mx-auto w-full">
+        <div class="mb-6 border-b border-slate-200/80 pb-4 no-print flex items-center gap-3.5">
+            <span class="f-icon-tile f-icon-tile-lg">
+              <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none">
+                <path d="M4 8.5L12 4L20 8.5V16.5L12 21L4 16.5V8.5Z" fill="url(#fGradSoftCyan)" stroke="url(#fGradEmeraldCyan)" stroke-width="1.6" stroke-linejoin="round" class="anim-float"/>
+                <path d="M4 8.5L12 13L20 8.5M12 13V21" stroke="url(#fGradCyanBlue)" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <div>
+              <h2 class="text-2xl font-display font-extrabold text-slate-900">الأرشيف</h2>
+              <p class="text-xs text-slate-500 mt-0.5">البحث في السجلات التاريخية، تعديل أو حذف التقارير، والطباعة المجمعة</p>
+            </div>
+        </div>
         
         <!-- Archive Search Form -->
-        <div class="bg-white p-6 rounded shadow-sm border border-gray-200 mb-6 no-print">
-          <div class="flex gap-2 mb-4 border-b border-gray-100 pb-3">
-             <span class="text-sm font-bold text-gray-500 flex items-center ml-2">عرض سريع:</span>
-             <button onclick="quickSetDate('today')" class="px-3 py-1 bg-blue-50 text-blue-700 rounded border border-blue-100 text-xs font-bold hover:bg-blue-100 transition">اليوم</button>
-             <button onclick="quickSetDate('month')" class="px-3 py-1 bg-blue-50 text-blue-700 rounded border border-blue-100 text-xs font-bold hover:bg-blue-100 transition">هذا الشهر</button>
-             <button onclick="quickSetDate('year')" class="px-3 py-1 bg-blue-50 text-blue-700 rounded border border-blue-100 text-xs font-bold hover:bg-blue-100 transition">هذه السنة</button>
+        <div class="glass-panel p-6 rounded-2xl mb-6 no-print">
+          <div class="flex flex-wrap gap-2 mb-4 border-b border-slate-100 pb-3">
+             <span class="text-sm font-bold text-slate-500 flex items-center ml-2">عرض سريع:</span>
+             <button onclick="quickSetDate('today')" class="px-3.5 py-1.5 bg-cyan-50 text-cyan-800 rounded-xl border border-cyan-200/80 text-xs font-bold hover:bg-cyan-100 transition">اليوم</button>
+             <button onclick="quickSetDate('month')" class="px-3.5 py-1.5 bg-cyan-50 text-cyan-800 rounded-xl border border-cyan-200/80 text-xs font-bold hover:bg-cyan-100 transition">هذا الشهر</button>
+             <button onclick="quickSetDate('year')" class="px-3.5 py-1.5 bg-cyan-50 text-cyan-800 rounded-xl border border-cyan-200/80 text-xs font-bold hover:bg-cyan-100 transition">هذه السنة</button>
           </div>
           <div class="flex gap-4 items-end flex-wrap">
              <div>
-               <label class="block text-sm text-gray-700 font-bold mb-1">من تاريخ</label>
-               <input type="date" id="arch-start" class="border border-gray-300 p-2 rounded bg-gray-50 focus:border-blue-500 outline-none">
+               <label class="block text-sm text-slate-700 font-bold mb-1.5">من تاريخ</label>
+               <input type="date" id="arch-start" class="p-2.5 f-input text-sm font-mono-num">
              </div>
              <div>
-               <label class="block text-sm text-gray-700 font-bold mb-1">إلى تاريخ</label>
-               <input type="date" id="arch-end" class="border border-gray-300 p-2 rounded bg-gray-50 focus:border-blue-500 outline-none">
+               <label class="block text-sm text-slate-700 font-bold mb-1.5">إلى تاريخ</label>
+               <input type="date" id="arch-end" class="p-2.5 f-input text-sm font-mono-num">
              </div>
              <div>
-               <label class="block text-sm text-gray-700 font-bold mb-1">القسم</label>
-               <select id="arch-dept" class="border border-gray-300 p-2 rounded w-40 bg-gray-50 focus:border-blue-500 outline-none"><option value="">الكل</option></select>
+               <label class="block text-sm text-slate-700 font-bold mb-1.5">القسم</label>
+               <select id="arch-dept" class="p-2.5 w-44 f-input text-sm"><option value="">الكل</option></select>
              </div>
              <div>
-               <label class="block text-sm text-gray-700 font-bold mb-1">القائم بالمرور</label>
-               <select id="arch-inspector" class="border border-gray-300 p-2 rounded w-40 bg-gray-50 focus:border-blue-500 outline-none"><option value="">الكل</option></select>
+               <label class="block text-sm text-slate-700 font-bold mb-1.5">القائم بالمرور</label>
+               <select id="arch-inspector" class="p-2.5 w-44 f-input text-sm"><option value="">الكل</option></select>
              </div>
-             <button onclick="generateArchive()" class="bg-gray-700 text-white px-6 py-2 rounded hover:bg-gray-800 transition">بحث</button>
+             <button onclick="generateArchive()" class="btn-futuristic bg-gradient-to-l from-cyan-600 to-blue-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2">
+               <i class="fas fa-search"></i> بحث
+             </button>
           </div>
         </div>
 
@@ -1171,13 +1662,14 @@
         </div>
 
         <!-- Edit Archive Report Modal -->
-        <div id="edit-archive-report-modal" class="hidden fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-[225] flex justify-center items-center p-4 overflow-y-auto no-print">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full text-right border-t-4 border-amber-500 my-6 overflow-hidden">
-                <div class="bg-blue-900 text-white px-6 py-4 flex items-center justify-between">
-                    <h3 class="font-bold text-lg flex items-center gap-2">
-                        <i class="fas fa-edit text-amber-300"></i> تعديل التقرير الأسبوعي
+        <div id="edit-archive-report-modal" class="hidden fixed inset-0 bg-slate-900/45 backdrop-blur-sm z-[225] flex justify-center items-center p-4 overflow-y-auto no-print">
+            <div class="glass-panel bg-white rounded-2xl shadow-2xl max-w-3xl w-full text-right my-6 overflow-hidden">
+                <div class="bg-gradient-to-l from-cyan-50 via-white to-amber-50/70 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                    <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2.5">
+                        <span class="f-icon-tile !w-9 !h-9"><i class="fas fa-edit text-amber-500 text-sm anim-float"></i></span>
+                        <span>تعديل التقرير الأسبوعي</span>
                     </h3>
-                    <button type="button" onclick="closeEditArchiveReportModal()" class="text-blue-200 hover:text-white text-lg">
+                    <button type="button" onclick="closeEditArchiveReportModal()" class="text-slate-400 hover:text-slate-700 text-lg">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -1185,49 +1677,49 @@
                 <div class="p-6 max-h-[75vh] overflow-y-auto space-y-5">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-xs font-bold mb-1 text-gray-700">التاريخ</label>
-                            <input type="date" id="edit-arch-date" onchange="updateEditArchiveDayPreview()" class="w-full border border-gray-300 p-2 rounded text-xs bg-gray-50 focus:bg-white focus:border-blue-500 outline-none">
-                            <p id="edit-arch-day-preview" class="text-[11px] text-blue-700 font-bold mt-1"></p>
+                            <label class="block text-xs font-bold mb-1 text-slate-700">التاريخ</label>
+                            <input type="date" id="edit-arch-date" onchange="updateEditArchiveDayPreview()" class="w-full p-2 f-input text-xs font-mono-num">
+                            <p id="edit-arch-day-preview" class="text-[11px] text-cyan-700 font-bold mt-1"></p>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold mb-1 text-gray-700">الفترة</label>
-                            <select id="edit-arch-period" class="w-full border border-gray-300 p-2 rounded text-xs bg-gray-50 focus:bg-white focus:border-blue-500 outline-none"></select>
+                            <label class="block text-xs font-bold mb-1 text-slate-700">الفترة</label>
+                            <select id="edit-arch-period" class="w-full p-2 f-input text-xs"></select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold mb-1 text-gray-700">القسم</label>
-                            <select id="edit-arch-dept" class="w-full border border-gray-300 p-2 rounded text-xs bg-gray-50 focus:bg-white focus:border-blue-500 outline-none"></select>
+                            <label class="block text-xs font-bold mb-1 text-slate-700">القسم</label>
+                            <select id="edit-arch-dept" class="w-full p-2 f-input text-xs"></select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold mb-1 text-gray-700">القائم بالمرور</label>
-                            <select id="edit-arch-inspector" class="w-full border border-gray-300 p-2 rounded text-xs bg-gray-50 focus:bg-white focus:border-blue-500 outline-none"></select>
+                            <label class="block text-xs font-bold mb-1 text-slate-700">القائم بالمرور</label>
+                            <select id="edit-arch-inspector" class="w-full p-2 f-input text-xs"></select>
                         </div>
                     </div>
 
-                    <div class="bg-blue-50/60 p-3.5 rounded-xl border border-blue-200">
-                        <label class="block text-xs font-bold text-blue-900 mb-2 flex items-center gap-1.5">
-                            <i class="fas fa-user-check text-blue-600"></i>
-                            <span>المسؤول عن التنفيذ <span class="text-red-500">*</span></span>
+                    <div class="bg-cyan-50/60 p-3.5 rounded-2xl border border-cyan-200/80">
+                        <label class="block text-xs font-bold text-slate-900 mb-2 flex items-center gap-1.5">
+                            <i class="fas fa-user-check text-cyan-600"></i>
+                            <span>المسؤول عن التنفيذ <span class="text-rose-500">*</span></span>
                         </label>
-                        <div id="edit-arch-implementers-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 bg-white p-2.5 rounded-lg border border-gray-200 max-h-36 overflow-y-auto checkbox-list"></div>
+                        <div id="edit-arch-implementers-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 bg-white p-2.5 rounded-xl border border-slate-200 max-h-36 overflow-y-auto checkbox-list"></div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-blue-900 mb-2 flex items-center gap-1.5">
-                            <i class="fas fa-clipboard-check text-blue-600"></i>
+                        <label class="block text-xs font-bold text-slate-900 mb-2 flex items-center gap-1.5">
+                            <i class="fas fa-clipboard-check text-cyan-600"></i>
                             <span>الملاحظات المرصودة والتوصيات المعتمدة</span>
                         </label>
                         <div id="edit-arch-observations-container" class="space-y-2 max-h-64 overflow-y-auto p-1 checkbox-list"></div>
                     </div>
 
-                    <div id="edit-arch-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs font-bold p-3 rounded flex items-center gap-2">
+                    <div id="edit-arch-error" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold p-3 rounded-xl flex items-center gap-2">
                         <i class="fas fa-exclamation-circle"></i>
                         <span id="edit-arch-error-text"></span>
                     </div>
                 </div>
 
-                <div class="bg-gray-50 px-6 py-3 border-t border-gray-200 flex items-center justify-end gap-2">
-                    <button type="button" onclick="closeEditArchiveReportModal()" class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-xs font-bold hover:bg-gray-100 transition">إلغاء</button>
-                    <button type="button" id="edit-arch-save-btn" onclick="submitEditArchiveReport()" class="px-5 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow flex items-center gap-1.5">
+                <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeEditArchiveReportModal()" class="px-4 py-2 rounded-xl border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-100 transition">إلغاء</button>
+                    <button type="button" id="edit-arch-save-btn" onclick="submitEditArchiveReport()" class="btn-futuristic px-5 py-2 rounded-xl bg-gradient-to-l from-amber-500 to-orange-500 text-white text-xs font-bold shadow flex items-center gap-1.5">
                         <i class="fas fa-save"></i> حفظ التعديلات
                     </button>
                 </div>
@@ -1235,31 +1727,31 @@
         </div>
 
         <!-- Delete Archive Report Confirmation Modal -->
-        <div id="delete-archive-report-modal" class="hidden fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-[230] flex justify-center items-center p-4 no-print">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-right border-t-4 border-red-600">
-                <div class="flex items-center gap-3 text-red-600 mb-3">
-                    <span class="w-11 h-11 rounded-full bg-red-100 flex items-center justify-center text-lg font-bold flex-shrink-0">
-                        <i class="fas fa-trash-alt"></i>
+        <div id="delete-archive-report-modal" class="hidden fixed inset-0 bg-slate-900/45 backdrop-blur-sm z-[230] flex justify-center items-center p-4 no-print">
+            <div class="glass-panel bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-right">
+                <div class="flex items-center gap-3 text-rose-600 mb-3">
+                    <span class="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-lg font-bold flex-shrink-0">
+                        <i class="fas fa-trash-alt anim-float"></i>
                     </span>
                     <div>
-                        <h3 class="font-bold text-lg text-red-900">حذف التقرير من الأرشيف</h3>
-                        <p class="text-xs text-red-600 font-semibold">لا يمكن التراجع عن هذا الإجراء بعد التأكيد</p>
+                        <h3 class="font-bold text-lg text-slate-900">حذف التقرير من الأرشيف</h3>
+                        <p class="text-xs text-rose-600 font-semibold">لا يمكن التراجع عن هذا الإجراء بعد التأكيد</p>
                     </div>
                 </div>
 
-                <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-xs text-red-900 mb-4 space-y-1.5">
-                    <p class="font-bold text-red-800 mb-2">هل أنت متأكد من حذف التقرير التالي؟</p>
-                    <div><strong>التاريخ:</strong> <span id="del-arch-date">--</span></div>
+                <div class="bg-rose-50/80 border border-rose-200 rounded-xl p-4 text-xs text-rose-900 mb-4 space-y-1.5">
+                    <p class="font-bold text-rose-800 mb-2">هل أنت متأكد من حذف التقرير التالي؟</p>
+                    <div><strong>التاريخ:</strong> <span id="del-arch-date" class="font-mono-num">--</span></div>
                     <div><strong>القسم:</strong> <span id="del-arch-dept">--</span></div>
                     <div><strong>الفترة:</strong> <span id="del-arch-period">--</span></div>
                     <div><strong>القائم بالمرور:</strong> <span id="del-arch-inspector">--</span></div>
                 </div>
 
-                <div id="delete-arch-error" class="hidden mb-3 p-2.5 bg-red-100 border border-red-300 rounded text-xs text-red-700 font-bold"></div>
+                <div id="delete-arch-error" class="hidden mb-3 p-2.5 bg-rose-100 border border-rose-300 rounded-xl text-xs text-rose-700 font-bold"></div>
 
                 <div class="flex items-center justify-end gap-2">
-                    <button type="button" onclick="closeDeleteArchiveReportModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold transition">إلغاء</button>
-                    <button type="button" id="delete-arch-confirm-btn" onclick="executeDeleteArchiveReport()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5">
+                    <button type="button" onclick="closeDeleteArchiveReportModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition">إلغاء</button>
+                    <button type="button" id="delete-arch-confirm-btn" onclick="executeDeleteArchiveReport()" class="btn-futuristic bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1.5">
                         <i class="fas fa-trash-alt"></i> نعم، حذف التقرير
                     </button>
                 </div>
@@ -1269,29 +1761,36 @@
       </section>
 
       <!-- 7. CENTERS MANAGEMENT PAGE -->
-      <section id="centersPage" class="page-section hidden p-6">
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b border-gray-200 pb-4">
-          <div>
-            <h2 class="text-2xl font-bold text-blue-900 flex items-center gap-2.5">
-              <i class="fas fa-hospital text-blue-600"></i> إدارة المراكز الصحية
-            </h2>
-            <p class="text-xs text-gray-500 mt-1">عرض وإضافة وتبديل وحذف المراكز الصحية في المنظومة (عزل كامل لتقارير وبيانات كل مركز)</p>
+      <section id="centersPage" class="page-section hidden p-6 max-w-7xl mx-auto w-full">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b border-slate-200/80 pb-4">
+          <div class="flex items-center gap-3.5">
+            <span class="f-icon-tile f-icon-tile-lg">
+              <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="url(#fGradCyanBlue)" stroke-width="1" stroke-dasharray="2 3" class="anim-orbit-rev"/>
+                <path d="M6.5 19V8.5L12 5.5L17.5 8.5V19" fill="url(#fGradSoftCyan)" stroke="url(#fGradAzureIndigo)" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M12 9.5V14.5M9.5 12H14.5" stroke="url(#fGradCyanBlue)" stroke-width="1.8" stroke-linecap="round" class="anim-float"/>
+              </svg>
+            </span>
+            <div>
+              <h2 class="text-2xl font-display font-extrabold text-slate-900">إدارة المراكز الصحية</h2>
+              <p class="text-xs text-slate-500 mt-1">عرض وإضافة وتبديل وحذف المراكز الصحية في المنظومة (عزل كامل لتقارير وبيانات كل مركز)</p>
+            </div>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button onclick="openTursoMigrationModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow transition flex items-center gap-2">
+            <button onclick="openTursoMigrationModal()" class="btn-futuristic bg-gradient-to-l from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm flex items-center gap-2">
               <i class="fas fa-database"></i> استيراد من قاعدة Turso سابقة
             </button>
-            <button onclick="openAddCenterModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow transition flex items-center gap-2">
+            <button onclick="openAddCenterModal()" class="btn-futuristic bg-gradient-to-l from-emerald-500 to-cyan-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm flex items-center gap-2">
               <i class="fas fa-plus-circle"></i> إضافة مركز جديد
             </button>
-            <button onclick="renderCentersPageUI()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-bold border transition" title="تحديث القائمة">
-              <i class="fas fa-sync-alt"></i>
+            <button onclick="renderCentersPageUI()" class="bg-white hover:bg-cyan-50 text-slate-700 px-3.5 py-2 rounded-xl text-sm font-bold border border-slate-200 transition shadow-sm" title="تحديث القائمة">
+              <i class="fas fa-sync-alt text-cyan-600"></i>
             </button>
           </div>
         </div>
 
         <!-- Banner for Feedback -->
-        <div id="centers-page-banner" class="hidden mb-6 p-3 rounded-lg text-sm font-bold text-center"></div>
+        <div id="centers-page-banner" class="hidden mb-6 p-3 rounded-xl text-sm font-bold text-center"></div>
 
         <!-- Centers Cards Grid -->
         <div id="centers-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1300,7 +1799,7 @@
       </section>
 
       <!-- Footer -->
-      <footer class="mt-auto py-4 text-center text-gray-500 text-sm no-print border-t border-gray-200">
+      <footer class="mt-auto py-4 text-center text-slate-500 text-xs font-medium no-print border-t border-slate-200/70 bg-white/50">
         &copy; 2026 Dr. Fady Ezzat. All Rights Reserved
       </footer>
 
@@ -1591,6 +2090,10 @@
       } else {
           console.error("Page not found: " + pageId);
       }
+
+      document.querySelectorAll('#sidebar .nav-item-btn[data-nav]').forEach(btn => {
+          btn.classList.toggle('is-active', btn.dataset.nav === pageId);
+      });
       
       // Close mobile menu if open
       document.getElementById('mobileMenu').classList.add('hidden');
@@ -1712,20 +2215,20 @@
         container.innerHTML = allCenters.map(c => {
           const isActive = currentCenter && currentCenter.name === c.name;
           return `
-            <div onclick="switchCenter('${escapeHtmlAttr(c.name)}')" class="flex items-center justify-between p-3 rounded-xl border transition cursor-pointer ${isActive ? 'bg-blue-50 border-blue-500 shadow-sm' : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-blue-300'}">
+            <div onclick="switchCenter('${escapeHtmlAttr(c.name)}')" class="f-card-interactive flex items-center justify-between p-3 rounded-xl border transition cursor-pointer ${isActive ? 'bg-cyan-50/85 border-cyan-400 shadow-sm' : 'bg-slate-50/80 border-slate-200 hover:bg-cyan-50/40 hover:border-cyan-300'}">
               <div class="flex items-center gap-3">
-                <span class="w-8 h-8 rounded-lg ${isActive ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'} flex items-center justify-center text-sm font-bold">
-                  <i class="fas fa-hospital"></i>
+                <span class="f-icon-tile !w-9 !h-9">
+                  <i class="fas fa-hospital ${isActive ? 'text-cyan-600' : 'text-slate-500'} text-sm"></i>
                 </span>
                 <div>
-                  <div class="font-bold text-sm ${isActive ? 'text-blue-900' : 'text-gray-800'}">${escapeHtmlAttr(c.name)}</div>
-                  <div class="text-[11px] text-gray-500">${escapeHtmlAttr(c.hospital_name || c.name)}</div>
+                  <div class="font-bold text-sm ${isActive ? 'text-slate-900' : 'text-slate-800'}">${escapeHtmlAttr(c.name)}</div>
+                  <div class="text-[11px] text-slate-500">${escapeHtmlAttr(c.hospital_name || c.name)}</div>
                 </div>
               </div>
               <div>
                 ${isActive 
-                  ? '<span class="bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1"><i class="fas fa-check"></i> الحالي</span>'
-                  : '<span class="text-xs text-blue-600 font-bold hover:underline">اختيار وتفعيل</span>'}
+                  ? '<span class="bg-gradient-to-l from-cyan-600 to-blue-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1"><i class="fas fa-check"></i> الحالي</span>'
+                  : '<span class="text-xs text-cyan-700 font-bold hover:underline">اختيار وتفعيل</span>'}
               </div>
             </div>
           `;
@@ -1915,13 +2418,13 @@
 
       if (allCenters.length === 0) {
         grid.innerHTML = `
-          <div class="col-span-full bg-white p-8 rounded-xl shadow-sm border border-gray-200 text-center">
-            <div class="w-16 h-16 mx-auto mb-3 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center text-2xl">
-              <i class="fas fa-hospital"></i>
-            </div>
-            <h4 class="font-bold text-gray-700 text-base mb-1">لا توجد مراكز صحية مسجلة</h4>
-            <p class="text-xs text-gray-500 mb-4">قم بإضافة المركز الأول لبدء تسجيل التقارير والتقييمات</p>
-            <button onclick="openAddCenterModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition">
+          <div class="col-span-full glass-panel p-8 rounded-2xl text-center">
+            <span class="f-icon-tile f-icon-tile-lg mx-auto mb-3">
+              <i class="fas fa-hospital text-cyan-600 text-xl anim-float"></i>
+            </span>
+            <h4 class="font-bold text-slate-800 text-base mb-1">لا توجد مراكز صحية مسجلة</h4>
+            <p class="text-xs text-slate-500 mb-4">قم بإضافة المركز الأول لبدء تسجيل التقارير والتقييمات</p>
+            <button onclick="openAddCenterModal()" class="btn-futuristic bg-gradient-to-l from-emerald-500 to-cyan-600 text-white px-4 py-2 rounded-xl text-xs font-bold">
               <i class="fas fa-plus ml-1"></i> إضافة أول مركز
             </button>
           </div>
@@ -1932,36 +2435,39 @@
       grid.innerHTML = allCenters.map(c => {
         const isActive = currentCenter && currentCenter.name === c.name;
         return `
-          <div class="bg-white rounded-xl shadow-sm border transition duration-200 hover:shadow-md flex flex-col justify-between ${isActive ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-200'}">
+          <div class="f-card-interactive glass-panel rounded-2xl transition duration-200 hover:shadow-lg flex flex-col justify-between ${isActive ? 'border-cyan-400 ring-2 ring-cyan-200/70' : 'border-slate-200/80'}">
             <div class="p-5">
               <div class="flex items-start justify-between gap-3 mb-3">
-                <div class="w-10 h-10 rounded-xl ${isActive ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-700'} flex items-center justify-center font-bold text-lg shadow-sm flex-shrink-0">
-                  <i class="fas fa-hospital"></i>
-                </div>
+                <span class="f-icon-tile f-icon-tile-lg flex-shrink-0">
+                  <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none">
+                    <path d="M5 19V8.5L12 5L19 8.5V19" fill="url(#fGradSoftCyan)" stroke="${isActive ? 'url(#fGradCyanBlue)' : 'url(#fGradAzureIndigo)'}" stroke-width="1.6" stroke-linejoin="round"/>
+                    <path d="M12 9.5V14.5M9.5 12H14.5" stroke="url(#fGradCyanBlue)" stroke-width="1.8" stroke-linecap="round" class="anim-float"/>
+                  </svg>
+                </span>
                 ${isActive 
-                  ? '<span class="bg-blue-100 text-blue-800 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1"><i class="fas fa-check-circle text-blue-600"></i> المركز النشط</span>'
-                  : '<span class="bg-gray-100 text-gray-600 text-[11px] font-bold px-2 py-0.5 rounded-full">مركز مسجل</span>'}
+                  ? '<span class="bg-cyan-50 text-cyan-800 border border-cyan-200 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1"><i class="fas fa-check-circle text-cyan-600"></i> المركز النشط</span>'
+                  : '<span class="bg-slate-100 text-slate-600 text-[11px] font-bold px-2.5 py-0.5 rounded-full">مركز مسجل</span>'}
               </div>
-              <h3 class="font-bold text-gray-900 text-base mb-1">${escapeHtmlAttr(c.name)}</h3>
-              <p class="text-xs text-gray-500 mb-3"><i class="fas fa-building text-gray-400 ml-1"></i> ${escapeHtmlAttr(c.hospital_name || c.name)}</p>
-              <div class="text-[11px] text-gray-400 bg-gray-50 p-2 rounded-lg border border-gray-100 flex items-center justify-between">
+              <h3 class="font-bold text-slate-900 text-base mb-1">${escapeHtmlAttr(c.name)}</h3>
+              <p class="text-xs text-slate-500 mb-3"><i class="fas fa-building text-cyan-500 ml-1"></i> ${escapeHtmlAttr(c.hospital_name || c.name)}</p>
+              <div class="text-[11px] text-slate-500 bg-slate-50/90 p-2.5 rounded-xl border border-slate-200/70 flex items-center justify-between">
                 <span>تاريخ التسجيل:</span>
-                <span class="font-semibold text-gray-600">${c.created_at ? c.created_at.split('T')[0] : 'سابقاً'}</span>
+                <span class="font-semibold text-slate-700 font-mono-num">${c.created_at ? c.created_at.split('T')[0] : 'سابقاً'}</span>
               </div>
             </div>
 
-            <div class="p-4 bg-gray-50 border-t border-gray-100 rounded-b-xl flex items-center justify-between gap-2">
+            <div class="p-4 bg-slate-50/70 border-t border-slate-200/70 rounded-b-2xl flex items-center justify-between gap-2">
               ${isActive ? `
-                <button disabled class="bg-gray-200 text-gray-500 text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-1.5 cursor-default">
+                <button disabled class="bg-slate-200/80 text-slate-500 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-default">
                   <i class="fas fa-check"></i> قيد الاستخدام حالياً
                 </button>
               ` : `
-                <button onclick="switchCenter('${escapeHtmlAttr(c.name)}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition shadow-sm flex items-center gap-1.5">
+                <button onclick="switchCenter('${escapeHtmlAttr(c.name)}')" class="btn-futuristic bg-gradient-to-l from-cyan-600 to-blue-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm flex items-center gap-1.5">
                   <i class="fas fa-sign-in-alt"></i> تنشيط والدخول
                 </button>
               `}
 
-              <button onclick="openDeleteCenterModal('${escapeHtmlAttr(c.name)}')" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold px-3 py-2 rounded-lg transition flex items-center gap-1" title="حذف المركز وجميع بياناته">
+              <button onclick="openDeleteCenterModal('${escapeHtmlAttr(c.name)}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1" title="حذف المركز وجميع بياناته">
                 <i class="fas fa-trash-alt"></i> حذف
               </button>
             </div>
@@ -2426,17 +2932,17 @@
     function addProcRow(note='', rec='', isExisting=false) {
       const tbody = document.getElementById('proc-table-body');
       const tr = document.createElement('tr');
-      tr.className = "hover:bg-gray-50 transition";
+      tr.className = "hover:bg-cyan-50/40 transition";
       tr.dataset.existing = isExisting ? 'true' : 'false';
 
       tr.innerHTML = `
-        <td class="p-2 border border-gray-200 align-top">
-          <input type="text" class="w-full border border-gray-500 p-2 rounded proc-note bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400 text-xs md:text-sm" placeholder="نص الملاحظة">
+        <td class="p-2.5 border-b border-slate-100 align-top">
+          <input type="text" class="w-full p-2.5 f-input proc-note text-xs md:text-sm" placeholder="نص الملاحظة">
         </td>
-        <td class="p-2 border border-gray-200 align-top">
+        <td class="p-2.5 border-b border-slate-100 align-top">
           <div class="flex items-center gap-2">
-            <input type="text" class="flex-1 border border-gray-500 p-2 rounded proc-rec bg-gray-600 text-white placeholder-gray-300 focus:outline-none focus:border-blue-400 text-xs md:text-sm" placeholder="التوصية المقترحة">
-            <button type="button" onclick="removeProcedureRow(this)" class="text-gray-400 hover:text-red-600 p-1.5 rounded transition shrink-0" title="حذف هذه الملاحظة">
+            <input type="text" class="flex-1 p-2.5 f-input proc-rec text-xs md:text-sm" placeholder="التوصية المقترحة">
+            <button type="button" onclick="removeProcedureRow(this)" class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-rose-50 transition shrink-0" title="حذف هذه الملاحظة">
               <i class="fas fa-trash-alt text-sm"></i>
             </button>
           </div>
@@ -2671,10 +3177,12 @@
         const procedures = settingsData.procedures || [];
         if (procedures.length === 0) {
             list.innerHTML = `
-                <div class="text-center p-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                    <i class="fas fa-clipboard-list text-3xl text-gray-400 mb-2"></i>
-                    <p class="text-gray-600 text-xs font-bold mb-3">لا توجد ملاحظات مسجلة في القائمة حالياً.</p>
-                    <button type="button" onclick="toggleQuickAddObsModal(true)" class="text-xs bg-blue-700 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-800 transition">
+                <div class="text-center p-8 bg-slate-50/80 rounded-2xl border border-dashed border-cyan-300">
+                    <span class="f-icon-tile f-icon-tile-lg mx-auto mb-3">
+                      <i class="fas fa-clipboard-list text-xl text-cyan-600 anim-float"></i>
+                    </span>
+                    <p class="text-slate-700 text-xs font-bold mb-3">لا توجد ملاحظات مسجلة في القائمة حالياً.</p>
+                    <button type="button" onclick="toggleQuickAddObsModal(true)" class="btn-futuristic text-xs bg-gradient-to-l from-cyan-600 to-blue-600 text-white px-4 py-2 rounded-xl font-bold">
                         <i class="fas fa-plus ml-1"></i> إضافة أول ملاحظة الآن
                     </button>
                 </div>
@@ -2689,22 +3197,22 @@
 
             const div = document.createElement('div');
             div.id = `obs_card_${idx}`;
-            div.className = `p-3.5 rounded-xl border transition shadow-sm ${isChecked ? 'bg-red-50/70 border-red-300' : 'bg-white hover:bg-blue-50/30 border-gray-200'}`;
+            div.className = `p-3.5 rounded-2xl border transition shadow-sm ${isChecked ? 'bg-rose-50/75 border-rose-300' : 'bg-white/95 hover:bg-cyan-50/40 border-slate-200/80'}`;
             div.innerHTML = `
                 <label class="flex items-start gap-3 cursor-pointer select-none">
-                    <input type="checkbox" id="obs_chk_${idx}" onchange="toggleObservationItem(${idx})" class="obs-checkbox mt-1 w-4 h-4 accent-red-600 rounded cursor-pointer" ${isChecked ? 'checked' : ''}>
+                    <input type="checkbox" id="obs_chk_${idx}" onchange="toggleObservationItem(${idx})" class="obs-checkbox mt-1 w-4 h-4 accent-rose-600 rounded cursor-pointer" ${isChecked ? 'checked' : ''}>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between gap-2">
-                            <span class="font-bold text-xs sm:text-sm text-gray-800 leading-snug block">${escapeHtml(noteText)}</span>
-                            <span id="obs_badge_${idx}" class="${isChecked ? 'inline-flex' : 'hidden'} items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 shrink-0">
+                            <span class="font-bold text-xs sm:text-sm text-slate-900 leading-snug block">${escapeHtml(noteText)}</span>
+                            <span id="obs_badge_${idx}" class="${isChecked ? 'inline-flex' : 'hidden'} items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 shrink-0">
                                 مخالفة مرصودة
                             </span>
                         </div>
-                        <div class="text-[11px] text-gray-600 mt-1.5 flex items-start gap-1.5 bg-gray-50/80 p-2 rounded-lg border border-gray-100">
+                        <div class="text-[11px] text-slate-600 mt-1.5 flex items-start gap-1.5 bg-slate-50/90 p-2 rounded-xl border border-slate-100">
                             <i class="fas fa-lightbulb text-amber-500 shrink-0 mt-0.5"></i>
                             <div class="leading-relaxed">
-                                <span class="font-bold text-gray-700 ml-1">التوصية المعتمدة:</span>
-                                <span class="text-gray-800">${escapeHtml(recText || 'لا توجد توصية محددة')}</span>
+                                <span class="font-bold text-slate-700 ml-1">التوصية المعتمدة:</span>
+                                <span class="text-slate-800">${escapeHtml(recText || 'لا توجد توصية محددة')}</span>
                             </div>
                         </div>
                     </div>
@@ -2720,12 +3228,12 @@
         const badge = document.getElementById(`obs_badge_${idx}`);
         if (!chk || !card) return;
         if (chk.checked) {
-            card.classList.remove('bg-white', 'border-gray-200', 'hover:bg-blue-50/30');
-            card.classList.add('bg-red-50/70', 'border-red-300');
+            card.classList.remove('bg-white/95', 'border-slate-200/80', 'hover:bg-cyan-50/40');
+            card.classList.add('bg-rose-50/75', 'border-rose-300');
             if (badge) badge.classList.remove('hidden');
         } else {
-            card.classList.remove('bg-red-50/70', 'border-red-300');
-            card.classList.add('bg-white', 'border-gray-200', 'hover:bg-blue-50/30');
+            card.classList.remove('bg-rose-50/75', 'border-rose-300');
+            card.classList.add('bg-white/95', 'border-slate-200/80', 'hover:bg-cyan-50/40');
             if (badge) badge.classList.add('hidden');
         }
     }
@@ -3678,55 +4186,58 @@
         let html = `
             ${printHeader}
             <div class="flex justify-between items-center mb-4 no-print">
-                <h3 class="font-bold text-xl text-blue-900"><i class="fas fa-list-ul ml-2"></i> نتائج البحث (${currentArchiveReports.length} تقرير)</h3>
+                <h3 class="font-bold text-xl text-slate-900 flex items-center gap-2.5">
+                  <span class="f-icon-tile !w-9 !h-9"><i class="fas fa-list-ul text-cyan-600 text-sm anim-float"></i></span>
+                  <span>نتائج البحث (<span class="font-mono-num">${currentArchiveReports.length}</span> تقرير)</span>
+                </h3>
                 <div class="flex gap-2">
-                    <button onclick="printSelectedReports()" class="bg-emerald-600 text-white px-4 py-2 rounded shadow hover:bg-emerald-700 transition flex items-center text-sm">
+                    <button onclick="printSelectedReports()" class="btn-futuristic bg-gradient-to-l from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-xl shadow-sm flex items-center text-sm font-bold">
                         <i class="fas fa-print ml-2"></i> طباعة المحدد
                     </button>
                 </div>
             </div>
             <div class="mb-6 no-print relative">
                 <input type="text" id="archive-filter-input" onkeyup="filterArchiveTable()" placeholder="تصفية النتائج (ابحث عن قسم، تاريخ، أو قائم بالمرور...)" 
-                       class="w-full border border-gray-300 p-3 pr-10 rounded shadow-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
-                <i class="fas fa-search absolute left-3 top-4 text-gray-400"></i>
+                       class="w-full p-3 pr-10 f-input shadow-sm text-sm">
+                <i class="fas fa-search absolute left-3.5 top-3.5 text-cyan-600"></i>
             </div>
-            <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-                <table id="archive-table" class="w-full text-sm text-right bg-white">
-                    <thead class="bg-blue-900 text-white">
+            <div class="glass-panel overflow-x-auto rounded-2xl shadow-sm">
+                <table id="archive-table" class="w-full text-sm text-right bg-white/95">
+                    <thead class="bg-gradient-to-l from-cyan-50 via-sky-50 to-blue-50 text-slate-900">
                         <tr>
-                            <th class="p-4 font-bold border-b border-blue-800 w-10 text-center no-print">
-                                <input type="checkbox" id="archive-select-all" onclick="toggleSelectAllArchive(this)" class="w-4 h-4 accent-blue-300">
+                            <th class="p-4 font-bold border-b border-cyan-200 w-10 text-center no-print">
+                                <input type="checkbox" id="archive-select-all" onclick="toggleSelectAllArchive(this)" class="w-4 h-4 accent-cyan-600">
                             </th>
-                            <th class="p-4 font-bold border-b border-blue-800">التاريخ</th>
-                            <th class="p-4 font-bold border-b border-blue-800">الفترة</th>
-                            <th class="p-4 font-bold border-b border-blue-800">القسم</th>
-                            <th class="p-4 font-bold border-b border-blue-800">القائم بالمرور</th>
-                            <th class="p-4 font-bold border-b border-blue-800 w-56 text-center no-print">إجراءات</th>
+                            <th class="p-4 font-bold border-b border-cyan-200">التاريخ</th>
+                            <th class="p-4 font-bold border-b border-cyan-200">الفترة</th>
+                            <th class="p-4 font-bold border-b border-cyan-200">القسم</th>
+                            <th class="p-4 font-bold border-b border-cyan-200">القائم بالمرور</th>
+                            <th class="p-4 font-bold border-b border-cyan-200 w-56 text-center no-print">إجراءات</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody class="divide-y divide-slate-100">
         `;
 
         currentArchiveReports.forEach((rep, index) => {
             html += `
-                <tr class="hover:bg-blue-50 transition text-gray-700">
+                <tr class="hover:bg-cyan-50/45 transition text-slate-700">
                     <td class="p-4 text-center no-print">
-                        <input type="checkbox" class="archive-chk w-4 h-4 accent-blue-600" value="${index}">
+                        <input type="checkbox" class="archive-chk w-4 h-4 accent-cyan-600" value="${index}">
                     </td>
-                    <td class="p-4 font-medium">${escapeHtml(rep.date)}</td>
+                    <td class="p-4 font-medium font-mono-num">${escapeHtml(rep.date)}</td>
                     <td class="p-4">${escapeHtml(rep.period)}</td>
-                    <td class="p-4 font-bold text-gray-900">${escapeHtml(rep.dept)}</td>
+                    <td class="p-4 font-bold text-slate-900">${escapeHtml(rep.dept)}</td>
                     <td class="p-4">${escapeHtml(rep.inspector)}</td>
                     <td class="p-4 text-center no-print">
                         <div class="flex items-center justify-center gap-1.5 flex-wrap">
-                            <button type="button" onclick="viewArchiveReport(${index})" class="bg-blue-600 text-white px-2.5 py-1 rounded text-xs hover:bg-blue-700 transition inline-flex items-center gap-1" title="عرض تفاصيل التقرير">
-                                <i class="fas fa-eye"></i> عرض
+                            <button type="button" onclick="viewArchiveReport(${index})" class="btn-futuristic bg-cyan-50 text-cyan-800 border border-cyan-200 px-2.5 py-1.5 rounded-lg text-xs font-bold hover:bg-cyan-100 inline-flex items-center gap-1" title="عرض تفاصيل التقرير">
+                                <i class="fas fa-eye text-cyan-600"></i> عرض
                             </button>
-                            <button type="button" onclick="openEditArchiveReportModal(${index})" class="bg-amber-500 text-white px-2.5 py-1 rounded text-xs hover:bg-amber-600 transition inline-flex items-center gap-1" title="تعديل التقرير">
-                                <i class="fas fa-edit"></i> تعديل
+                            <button type="button" onclick="openEditArchiveReportModal(${index})" class="btn-futuristic bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-100 inline-flex items-center gap-1" title="تعديل التقرير">
+                                <i class="fas fa-edit text-amber-600"></i> تعديل
                             </button>
-                            <button type="button" onclick="openDeleteArchiveReportModal(${index})" class="bg-red-600 text-white px-2.5 py-1 rounded text-xs hover:bg-red-700 transition inline-flex items-center gap-1" title="حذف التقرير">
-                                <i class="fas fa-trash-alt"></i> حذف
+                            <button type="button" onclick="openDeleteArchiveReportModal(${index})" class="btn-futuristic bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-100 inline-flex items-center gap-1" title="حذف التقرير">
+                                <i class="fas fa-trash-alt text-rose-600"></i> حذف
                             </button>
                         </div>
                     </td>
