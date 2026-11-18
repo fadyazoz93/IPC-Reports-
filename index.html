@@ -17,6 +17,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- SheetJS for direct Excel (.xlsx/.xls/.csv) mobile & desktop import -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" defer></script>
   
   <style>
     :root {
@@ -899,7 +901,7 @@
       <!-- PAGES -->
 
       <!-- 1. SETTINGS -->
-      <section id="settings" class="page-section hidden p-6 max-w-7xl mx-auto w-full">
+      <section id="settings" class="page-section hidden p-3.5 sm:p-6 max-w-7xl mx-auto w-full">
         <div class="flex flex-wrap justify-between items-center gap-3 mb-6 border-b border-slate-200/80 pb-4">
             <div class="flex items-center gap-3.5">
               <span class="f-icon-tile f-icon-tile-lg">
@@ -1113,40 +1115,81 @@
             </div>
         </div>
 
-        <div class="glass-panel p-5 rounded-2xl mt-6 mb-6">
-            <h3 class="font-bold mb-2 text-slate-900 flex items-center gap-2">
-                <span class="f-icon-tile !w-8 !h-8"><i class="fas fa-clipboard-list text-cyan-600 text-xs anim-float"></i></span>
-                <span>الملاحظات والتوصيات الأسبوعية</span>
-            </h3>
-            <p class="text-xs text-slate-500 mb-3">قائمة الملاحظات والتوصيات الافتراضية (تظهر كخيارات Checkbox في التقرير الأسبوعي للمرور السريع)</p>
-            <div class="overflow-hidden rounded-xl border border-slate-200">
-              <table class="w-full text-sm text-right">
-                  <thead class="bg-gradient-to-l from-cyan-50 to-blue-50 text-slate-900">
+        <div class="glass-panel p-3.5 sm:p-5 rounded-2xl mt-6 mb-6">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                  <span class="f-icon-tile !w-8 !h-8"><i class="fas fa-clipboard-list text-cyan-600 text-xs anim-float"></i></span>
+                  <span>الملاحظات والتوصيات الأسبوعية</span>
+              </h3>
+              <div class="text-xs text-slate-500 font-semibold flex items-center gap-1.5">
+                <span>إجمالي البنود:</span>
+                <span id="proc-total-count" class="font-mono-num font-bold text-cyan-700">0</span>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">قائمة الملاحظات والتوصيات الافتراضية (تظهر كخيارات في التقرير الأسبوعي — يمكنك عرض النصوص كاملة وتعديلها بسهولة من الهاتف أو استيرادها من إكسيل).</p>
+
+            <!-- Mobile-Ready Bulk Import Box -->
+            <div class="bg-slate-50/95 p-3.5 sm:p-4 rounded-2xl border border-slate-200 mb-5">
+               <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                 <h4 class="font-bold text-xs sm:text-sm text-slate-800 flex items-center gap-2">
+                     <i class="fas fa-file-excel text-emerald-600 text-base"></i>
+                     <span>نسخ سريع واستيراد من إكسيل (Bulk Import)</span>
+                 </h4>
+                 <span id="bulk-proc-preview-count" class="text-[11px] font-bold text-emerald-700 font-mono-num"></span>
+               </div>
+               <p class="text-[11px] sm:text-xs text-slate-600 mb-3 leading-relaxed">
+                 انسخ عمودين من إكسيل أو جداول بيانات جوجل بالترتيب: <strong>الملاحظة | التوصية</strong> ثم اضغط "لصق من الحافظة"، أو اختر ملف إكسيل مباشرة من الهاتف.
+               </p>
+
+               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
+                 <button type="button" onclick="pasteFromClipboardToBulk()" class="btn-futuristic min-h-[44px] w-full bg-white hover:bg-cyan-50 text-cyan-800 border border-cyan-300 px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
+                   <i class="fas fa-paste text-cyan-600"></i>
+                   <span>لصق سريع من الحافظة</span>
+                 </button>
+                 <label for="bulk-excel-file" class="btn-futuristic min-h-[44px] w-full cursor-pointer bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
+                   <i class="fas fa-file-upload text-emerald-600"></i>
+                   <span>اختيار ملف إكسيل (XLSX / CSV)</span>
+                   <input type="file" id="bulk-excel-file" accept=".xlsx,.xls,.csv,.tsv,.txt" onchange="importExcelFileProcedures(this)" class="hidden">
+                 </label>
+               </div>
+
+               <textarea id="bulk-proc-input" onpaste="handleBulkProcPaste(event)" oninput="updateBulkImportPreview()" class="w-full min-h-[96px] text-xs sm:text-sm p-3 f-input bg-white leading-relaxed" placeholder="أو اضغط مطولاً هنا واختر لصق (Paste)...&#10;مثال: الملاحظة [Tab أو |] التوصية"></textarea>
+
+               <div id="bulk-import-status" class="hidden mt-2.5 p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between gap-2"></div>
+
+               <div class="flex flex-wrap items-center justify-between gap-2.5 mt-3">
+                 <button type="button" onclick="importBulkProcedures()" class="btn-futuristic min-h-[44px] w-full sm:w-auto bg-gradient-to-l from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs sm:text-sm px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm">
+                   <i class="fas fa-file-import"></i>
+                   <span>استيراد البيانات إلى القائمة</span>
+                 </button>
+                 <button type="button" onclick="clearBulkImportInput()" class="min-h-[44px] w-full sm:w-auto text-xs text-slate-600 hover:text-slate-800 bg-white border border-slate-200 px-4 py-2 rounded-xl font-bold transition">
+                   مسح مربع اللصق
+                 </button>
+               </div>
+            </div>
+
+            <!-- Responsive Table (Full Stacked Cards on Mobile, 2-Column Table on Desktop) -->
+            <div class="overflow-visible md:overflow-hidden md:rounded-xl md:border md:border-slate-200">
+              <table class="w-full text-sm text-right block md:table">
+                  <thead class="hidden md:table-header-group bg-gradient-to-l from-cyan-50 to-blue-50 text-slate-900">
                       <tr>
                           <th class="p-3 border-b border-slate-200 w-1/2 font-bold">الملاحظة</th>
                           <th class="p-3 border-b border-slate-200 w-1/2 font-bold">التوصية</th>
                       </tr>
                   </thead>
-                  <tbody id="proc-table-body" class="divide-y divide-slate-100 bg-white">
+                  <tbody id="proc-table-body" class="block md:table-row-group space-y-3 md:space-y-0 md:divide-y md:divide-slate-100 bg-transparent md:bg-white">
                       <!-- Dynamic Rows -->
                   </tbody>
               </table>
             </div>
             
-            <div class="flex flex-wrap justify-between items-start mt-4 border-t border-slate-100 pt-4 gap-3">
-               <button onclick="addProcRow()" class="btn-futuristic bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
+            <div class="flex flex-col sm:flex-row flex-wrap justify-between items-stretch sm:items-center mt-4 border-t border-slate-100 pt-4 gap-3">
+               <button type="button" onclick="addProcRow('', '', false, true)" class="btn-futuristic min-h-[44px] bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2">
                  <i class="fas fa-plus"></i> إضافة ملاحظة وتوصية (يدوي)
                </button>
-               
-               <!-- Bulk Import Box -->
-               <div class="bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200 w-full md:w-1/2 mt-2 md:mt-0">
-                  <h4 class="font-bold text-xs text-slate-800 mb-1 flex items-center gap-1.5">
-                      <i class="fas fa-file-excel text-emerald-600"></i> نسخ سريع من إكسيل (Bulk Import)
-                  </h4>
-                  <p class="text-[10px] text-slate-500 mb-2">انسخ الأعمدة من إكسيل بالترتيب: <strong>الملاحظة | التوصية</strong></p>
-                  <textarea id="bulk-proc-input" class="w-full h-20 text-xs p-2.5 f-input" placeholder="الصق البيانات هنا..."></textarea>
-                  <button onclick="importBulkProcedures()" class="btn-futuristic mt-2 bg-gradient-to-l from-emerald-500 to-teal-600 text-white text-xs px-3.5 py-1.5 rounded-lg font-bold">استيراد البيانات</button>
-               </div>
+               <button type="button" onclick="saveSettings()" class="btn-futuristic min-h-[44px] bg-gradient-to-l from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-sm flex items-center justify-center gap-2">
+                 <i class="fas fa-save"></i> حفظ التغييرات
+               </button>
             </div>
         </div>
 
@@ -2913,8 +2956,41 @@
       const tbody = document.getElementById('proc-table-body');
       tbody.innerHTML = '';
       (settingsData.procedures || []).forEach((proc) => {
-        addProcRow(proc.note || proc.name, proc.rec, true);
+        addProcRow(proc.note || proc.name, proc.rec, true, false);
       });
+      updateProcRowNumbers();
+      requestAnimationFrame(() => resizeAllProcTextareas());
+      setTimeout(resizeAllProcTextareas, 60);
+    }
+
+    function autoResizeProcTextarea(el) {
+      if (!el) return;
+      el.style.height = 'auto';
+      if (el.scrollHeight > 0) {
+        el.style.height = Math.max(48, el.scrollHeight + 2) + 'px';
+      }
+    }
+
+    function resizeAllProcTextareas() {
+      document.querySelectorAll('#proc-table-body textarea.proc-note, #proc-table-body textarea.proc-rec').forEach(el => {
+        autoResizeProcTextarea(el);
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      if (currentPageId === 'settings') {
+        resizeAllProcTextareas();
+      }
+    });
+
+    function updateProcRowNumbers() {
+      const rows = document.querySelectorAll('#proc-table-body tr');
+      rows.forEach((tr, idx) => {
+        const numBadge = tr.querySelector('.proc-row-num');
+        if (numBadge) numBadge.textContent = String(idx + 1);
+      });
+      const totalEl = document.getElementById('proc-total-count');
+      if (totalEl) totalEl.textContent = String(rows.length);
     }
 
     function toggleAllInspectionDays(checked) {
@@ -2927,59 +3003,368 @@
       const tr = btn.closest('tr');
       if (!tr) return;
       tr.remove();
+      updateProcRowNumbers();
     }
 
-    function addProcRow(note='', rec='', isExisting=false) {
+    function addProcRow(note='', rec='', isExisting=false, scrollIntoView=false) {
       const tbody = document.getElementById('proc-table-body');
       const tr = document.createElement('tr');
-      tr.className = "hover:bg-cyan-50/40 transition";
+      tr.className = "block md:table-row bg-white border border-slate-200 md:border-0 rounded-2xl md:rounded-none p-3.5 md:p-0 shadow-sm md:shadow-none hover:bg-cyan-50/40 transition";
       tr.dataset.existing = isExisting ? 'true' : 'false';
 
       tr.innerHTML = `
-        <td class="p-2.5 border-b border-slate-100 align-top">
-          <input type="text" class="w-full p-2.5 f-input proc-note text-xs md:text-sm" placeholder="نص الملاحظة">
+        <td class="block md:table-cell p-0 md:p-2.5 md:border-b md:border-slate-100 align-top">
+          <div class="flex items-center justify-between mb-2 md:hidden">
+            <span class="text-xs font-bold text-cyan-800 flex items-center gap-1.5">
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-700 font-mono-num text-[11px] proc-row-num">1</span>
+              <span>الملاحظة</span>
+            </span>
+            <button type="button" onclick="removeProcedureRow(this)" class="min-h-[40px] inline-flex items-center justify-center text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl px-3 text-xs font-bold gap-1.5 transition" title="حذف هذه الملاحظة">
+              <i class="fas fa-trash-alt"></i>
+              <span>حذف</span>
+            </button>
+          </div>
+          <textarea rows="1" oninput="autoResizeProcTextarea(this)" class="w-full min-h-[48px] p-3 f-input proc-note text-sm leading-relaxed resize-none overflow-hidden" placeholder="نص الملاحظة..."></textarea>
         </td>
-        <td class="p-2.5 border-b border-slate-100 align-top">
-          <div class="flex items-center gap-2">
-            <input type="text" class="flex-1 p-2.5 f-input proc-rec text-xs md:text-sm" placeholder="التوصية المقترحة">
-            <button type="button" onclick="removeProcedureRow(this)" class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-rose-50 transition shrink-0" title="حذف هذه الملاحظة">
+        <td class="block md:table-cell p-0 pt-3 md:p-2.5 md:border-b md:border-slate-100 align-top">
+          <label class="block text-xs font-bold text-indigo-800 mb-1.5 md:hidden">التوصية المقترحة</label>
+          <div class="flex items-start gap-2">
+            <textarea rows="1" oninput="autoResizeProcTextarea(this)" class="flex-1 w-full min-h-[48px] p-3 f-input proc-rec text-sm leading-relaxed resize-none overflow-hidden" placeholder="التوصية المقترحة..."></textarea>
+            <button type="button" onclick="removeProcedureRow(this)" class="hidden md:inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-slate-400 hover:text-rose-600 p-2 rounded-xl hover:bg-rose-50 transition shrink-0" title="حذف هذه الملاحظة">
               <i class="fas fa-trash-alt text-sm"></i>
             </button>
           </div>
         </td>
       `;
-      tr.querySelector('.proc-note').value = note || '';
-      tr.querySelector('.proc-rec').value = rec || '';
+      const noteEl = tr.querySelector('.proc-note');
+      const recEl = tr.querySelector('.proc-rec');
+      noteEl.value = note || '';
+      recEl.value = rec || '';
       tbody.appendChild(tr);
+      updateProcRowNumbers();
+      requestAnimationFrame(() => {
+        autoResizeProcTextarea(noteEl);
+        autoResizeProcTextarea(recEl);
+      });
+      if (scrollIntoView) {
+        tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        noteEl.focus();
+      }
+      return tr;
+    }
+
+    function showBulkImportStatus(msg, isError = false) {
+      const box = document.getElementById('bulk-import-status');
+      if (!box) return;
+      box.className = isError
+        ? 'mt-2.5 p-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-xs font-bold flex items-center justify-between gap-2'
+        : 'mt-2.5 p-2.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center justify-between gap-2';
+      box.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="fas ${isError ? 'fa-exclamation-circle text-rose-600' : 'fa-check-circle text-emerald-600'}"></i>
+          <span>${escapeHtml(msg)}</span>
+        </div>
+        <button type="button" onclick="document.getElementById('bulk-import-status').classList.add('hidden')" class="text-slate-500 hover:text-slate-800 px-1.5">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      box.classList.remove('hidden');
+    }
+
+    function convertHtmlTableToBulkTsv(htmlStr) {
+      if (!htmlStr || !/<t[rdh]/i.test(htmlStr)) return '';
+      try {
+        const doc = new DOMParser().parseFromString(htmlStr, 'text/html');
+        const trs = Array.from(doc.querySelectorAll('tr'));
+        if (trs.length === 0) return '';
+        const lines = [];
+        trs.forEach(tr => {
+          const cells = Array.from(tr.querySelectorAll('td, th')).map(cell =>
+            (cell.innerText || cell.textContent || '')
+              .replace(/\r?\n+/g, ' ')
+              .replace(/\s{2,}/g, ' ')
+              .trim()
+          );
+          if (cells.some(Boolean)) {
+            lines.push(cells.slice(0, 2).join('\t'));
+          }
+        });
+        return lines.join('\n');
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function parseDelimitedTextRows(rawText, delimiter) {
+      const records = [];
+      let row = [];
+      let field = '';
+      let inQuotes = false;
+      const text = String(rawText || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (inQuotes) {
+          if (ch === '"') {
+            if (text[i + 1] === '"') {
+              field += '"';
+              i++;
+            } else {
+              inQuotes = false;
+            }
+          } else {
+            field += ch;
+          }
+        } else {
+          if (ch === '"' && field.length === 0) {
+            inQuotes = true;
+          } else if (ch === delimiter) {
+            row.push(field.replace(/\n+/g, ' ').trim());
+            field = '';
+          } else if (ch === '\n') {
+            row.push(field.replace(/\n+/g, ' ').trim());
+            if (row.some(Boolean)) records.push(row);
+            row = [];
+            field = '';
+          } else {
+            field += ch;
+          }
+        }
+      }
+      row.push(field.replace(/\n+/g, ' ').trim());
+      if (row.some(Boolean)) records.push(row);
+      return records;
+    }
+
+    function parseBulkProcedureRows(raw) {
+      const trimmed = String(raw || '').trim();
+      if (!trimmed) return [];
+
+      let parsed = [];
+      if (trimmed.includes('\t')) {
+        parsed = parseDelimitedTextRows(trimmed, '\t');
+      } else if (trimmed.includes('|')) {
+        parsed = parseDelimitedTextRows(trimmed, '|');
+      } else if (trimmed.includes(';')) {
+        parsed = parseDelimitedTextRows(trimmed, ';');
+      } else if (trimmed.includes(',')) {
+        parsed = parseDelimitedTextRows(trimmed, ',');
+      } else {
+        parsed = trimmed.split(/\r?\n/).map(line => [line.trim()]).filter(r => r[0]);
+      }
+
+      const cleaned = parsed
+        .map(cols => ({
+          note: (cols[0] || '').trim(),
+          rec: (cols[1] || '').trim()
+        }))
+        .filter(item => item.note || item.rec);
+
+      // Skip common header row if pasted from Excel template
+      if (cleaned.length > 0) {
+        const firstNote = cleaned[0].note.toLowerCase();
+        const firstRec = cleaned[0].rec.toLowerCase();
+        if (
+          (firstNote === 'الملاحظة' || firstNote === 'الملاحظات' || firstNote === 'note') &&
+          (firstRec === 'التوصية' || firstRec === 'التوصيات' || firstRec === 'recommendation' || !firstRec)
+        ) {
+          cleaned.shift();
+        }
+      }
+      return cleaned;
+    }
+
+    function updateBulkImportPreview() {
+      const input = document.getElementById('bulk-proc-input');
+      const badge = document.getElementById('bulk-proc-preview-count');
+      if (!input || !badge) return;
+      const items = parseBulkProcedureRows(input.value);
+      badge.textContent = items.length > 0 ? `تم التعرف على ${items.length} بند جاهز للاستيراد` : '';
+    }
+
+    function handleBulkProcPaste(e) {
+      if (!e || !e.clipboardData) return;
+      const htmlData = e.clipboardData.getData('text/html');
+      const tsvFromHtml = convertHtmlTableToBulkTsv(htmlData);
+      if (tsvFromHtml) {
+        e.preventDefault();
+        const textarea = document.getElementById('bulk-proc-input');
+        if (!textarea) return;
+        const start = textarea.selectionStart ?? textarea.value.length;
+        const end = textarea.selectionEnd ?? textarea.value.length;
+        const prefix = textarea.value.slice(0, start);
+        const suffix = textarea.value.slice(end);
+        const joiner = prefix && !prefix.endsWith('\n') ? '\n' : '';
+        textarea.value = prefix + joiner + tsvFromHtml + suffix;
+        updateBulkImportPreview();
+        const count = parseBulkProcedureRows(textarea.value).length;
+        showBulkImportStatus(`تم لصق ${count} صف من جدول إكسيل بنجاح — اضغط "استيراد البيانات إلى القائمة".`, false);
+      } else {
+        setTimeout(updateBulkImportPreview, 20);
+      }
+    }
+
+    async function pasteFromClipboardToBulk() {
+      const textarea = document.getElementById('bulk-proc-input');
+      if (!textarea) return;
+
+      try {
+        let pastedContent = '';
+        if (navigator.clipboard && typeof navigator.clipboard.read === 'function') {
+          try {
+            const items = await navigator.clipboard.read();
+            for (const item of items) {
+              if (item.types.includes('text/html')) {
+                const blob = await item.getType('text/html');
+                const html = await blob.text();
+                const tsv = convertHtmlTableToBulkTsv(html);
+                if (tsv) {
+                  pastedContent = tsv;
+                  break;
+                }
+              }
+              if (!pastedContent && item.types.includes('text/plain')) {
+                const blob = await item.getType('text/plain');
+                pastedContent = await blob.text();
+              }
+            }
+          } catch (readErr) {
+            // Fallback to readText below
+          }
+        }
+
+        if (!pastedContent && navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+          pastedContent = await navigator.clipboard.readText();
+        }
+
+        if (pastedContent && pastedContent.trim()) {
+          textarea.value = textarea.value.trim()
+            ? textarea.value.trimEnd() + '\n' + pastedContent.trim()
+            : pastedContent.trim();
+          updateBulkImportPreview();
+          const detected = parseBulkProcedureRows(textarea.value).length;
+          showBulkImportStatus(`تم اللصق من الحافظة (${detected} صف) — اضغط "استيراد البيانات إلى القائمة".`, false);
+        } else {
+          textarea.focus();
+          showBulkImportStatus('الحافظة فارغة أو لم يتم منح الإذن — اضغط مطولاً داخل المربع واختر لصق (Paste).', true);
+        }
+      } catch (err) {
+        textarea.focus();
+        showBulkImportStatus('المتصفح يتطلب اللصق اليدوي: اضغط مطولاً داخل المربع واختر لصق (Paste).', true);
+      }
+    }
+
+    function importExcelFileProcedures(fileInput) {
+      const file = fileInput?.files?.[0];
+      if (!file) return;
+
+      const finishWithRows = (rows) => {
+        const cleaned = rows
+          .map(cols => ({
+            note: String(cols?.[0] ?? '').replace(/\r?\n+/g, ' ').trim(),
+            rec: String(cols?.[1] ?? '').replace(/\r?\n+/g, ' ').trim()
+          }))
+          .filter(item => item.note || item.rec);
+
+        if (cleaned.length > 0) {
+          const firstNote = cleaned[0].note.toLowerCase();
+          const firstRec = cleaned[0].rec.toLowerCase();
+          if (
+            (firstNote === 'الملاحظة' || firstNote === 'الملاحظات' || firstNote === 'note') &&
+            (firstRec === 'التوصية' || firstRec === 'التوصيات' || firstRec === 'recommendation' || !firstRec)
+          ) {
+            cleaned.shift();
+          }
+        }
+
+        if (cleaned.length === 0) {
+          showBulkImportStatus('لم يتم العثور على ملاحظات صالحة داخل الملف.', true);
+          fileInput.value = '';
+          return;
+        }
+
+        let firstAddedRow = null;
+        cleaned.forEach((item, idx) => {
+          const rowEl = addProcRow(item.note, item.rec, false, false);
+          if (idx === 0) firstAddedRow = rowEl;
+        });
+
+        requestAnimationFrame(() => resizeAllProcTextareas());
+        showBulkImportStatus(`تم استيراد ${cleaned.length} بند من الملف بنجاح. لا تنسَ الضغط على "حفظ التغييرات".`, false);
+        showSettingsSaveBanner(`تم استيراد ${cleaned.length} ملاحظة من الملف بنجاح. راجع القائمة ثم اضغط 'حفظ التغييرات'.`);
+        if (firstAddedRow) {
+          firstAddedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        fileInput.value = '';
+      };
+
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      if ((ext === 'xlsx' || ext === 'xls') && typeof XLSX !== 'undefined') {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const data = new Uint8Array(ev.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheet];
+            const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+            finishWithRows(rows);
+          } catch (err) {
+            showBulkImportStatus('تعذر قراءة ملف الإكسيل: ' + (err.message || err), true);
+            fileInput.value = '';
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else if (ext === 'csv' || ext === 'tsv' || ext === 'txt') {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const items = parseBulkProcedureRows(String(ev.target.result || ''));
+          finishWithRows(items.map(i => [i.note, i.rec]));
+        };
+        reader.readAsText(file, 'UTF-8');
+      } else {
+        showBulkImportStatus('يرجى اختيار ملف بصيغة .xlsx أو .xls أو .csv، أو استخدام اللصق السريع.', true);
+        fileInput.value = '';
+      }
+    }
+
+    function clearBulkImportInput() {
+      const textarea = document.getElementById('bulk-proc-input');
+      if (textarea) textarea.value = '';
+      updateBulkImportPreview();
+      const box = document.getElementById('bulk-import-status');
+      if (box) box.classList.add('hidden');
     }
     
     function importBulkProcedures() {
-      const raw = document.getElementById('bulk-proc-input').value;
+      const inputEl = document.getElementById('bulk-proc-input');
+      const raw = inputEl ? inputEl.value : '';
       if (!raw.trim()) {
+        showBulkImportStatus("الرجاء لصق البيانات من إكسيل أولاً", true);
         showSettingsSaveBanner("الرجاء لصق البيانات أولاً", true);
         return;
       }
       
-      const rows = raw.split('\n');
-      let count = 0;
-      
-      rows.forEach(row => {
-          if (!row.trim()) return;
-          // Excel copy-paste creates Tab separated values
-          const cols = row.split('\t'); 
-          
-          // Col 0: Note, Col 1: Recommendation
-          const note = cols[0] ? cols[0].trim() : '';
-          const rec  = cols[1] ? cols[1].trim() : '';
-          
-          if (note || rec) {
-              addProcRow(note, rec, false);
-              count++;
-          }
+      const parsedItems = parseBulkProcedureRows(raw);
+      if (parsedItems.length === 0) {
+        showBulkImportStatus("لم يتم التعرف على صفوف صالحة للاستيراد", true);
+        return;
+      }
+
+      let firstAddedRow = null;
+      parsedItems.forEach((item, idx) => {
+        const rowEl = addProcRow(item.note, item.rec, false, false);
+        if (idx === 0) firstAddedRow = rowEl;
       });
       
-      document.getElementById('bulk-proc-input').value = '';
-      showSettingsSaveBanner(`تم إضافة ${count} ملاحظة بنجاح. راجع القائمة ثم اضغط 'حفظ التغييرات'.`);
+      if (inputEl) inputEl.value = '';
+      updateBulkImportPreview();
+      requestAnimationFrame(() => resizeAllProcTextareas());
+      showBulkImportStatus(`تم إضافة ${parsedItems.length} ملاحظة بنجاح! راجع القائمة بالأسفل ثم اضغط "حفظ التغييرات".`, false);
+      showSettingsSaveBanner(`تم إضافة ${parsedItems.length} ملاحظة بنجاح. راجع القائمة ثم اضغط 'حفظ التغييرات'.`);
+      if (firstAddedRow) {
+        firstAddedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
 
     function saveSettings() {
