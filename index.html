@@ -1239,7 +1239,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <div>
                     <label class="block text-sm font-bold mb-1.5 text-slate-700">الشهر</label>
-                    <input type="month" id="daily-month" onchange="populateWeeklyMonthDates(false)" class="w-full p-2.5 f-input text-sm font-mono-num">
+                    <input type="month" id="daily-month" onchange="populateWeeklyMonthDates(false, true)" class="w-full p-2.5 f-input text-sm font-mono-num">
                 </div>
                 <div>
                     <label class="block text-sm font-bold mb-1.5 text-slate-700">يوم وتاريخ المرور</label>
@@ -2300,6 +2300,7 @@
         settingsData = data || {};
         weeklyDraftDepts = [];
         editingWeeklyDraftIndex = -1;
+        invalidateSavedWeeklyDatesCache();
         updateAllCenterLabels();
 
         // Refresh currently viewed page
@@ -3448,10 +3449,91 @@
       `).join('');
     }
 
-    function populateWeeklyMonthDates(preferToday = true) {
-      const monthInput = document.getElementById('daily-month');
+    let savedWeeklyDatesCache = {};
+    let weeklyDatesFetchSeq = 0;
+
+    function getSavedDatesCacheKey(monthStr, centerName) {
+      return `${String(centerName || '').trim()}::${String(monthStr || '').trim()}`;
+    }
+
+    function invalidateSavedWeeklyDatesCache(monthStr = null, centerName = null) {
+      if (!monthStr) {
+        savedWeeklyDatesCache = {};
+        return;
+      }
+      const key = getSavedDatesCacheKey(monthStr, centerName);
+      delete savedWeeklyDatesCache[key];
+    }
+
+    function markWeeklyDateAsSaved(dateStr, centerName) {
+      const cleanDate = String(dateStr || '').trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)) return;
+      const monthStr = cleanDate.slice(0, 7);
+      const key = getSavedDatesCacheKey(monthStr, centerName);
+      if (!(savedWeeklyDatesCache[key] instanceof Set)) {
+        savedWeeklyDatesCache[key] = new Set();
+      }
+      savedWeeklyDatesCache[key].add(cleanDate);
+    }
+
+    function renderWeeklyDateSelectOptions(allAllowedDates, savedDatesSet, preferToday = true, isSyncing = false) {
       const dateSelect = document.getElementById('daily-date');
       const hintEl = document.getElementById('daily-date-hint');
+      if (!dateSelect) return;
+
+      const todayYmd = getLocalYMD(new Date());
+      const prevSelected = dateSelect.value;
+
+      if (allAllowedDates.length === 0) {
+        dateSelect.innerHTML = '<option value="">لا توجد أيام مرور محددة في الإعدادات</option>';
+        if (hintEl) {
+          hintEl.innerHTML = 'لم يتم تحديد أيام مرور. <button type="button" onclick="nav(\'settings\')" class="text-blue-600 font-bold underline">تحديد من الإعدادات</button>';
+        }
+        return;
+      }
+
+      const savedSet = savedDatesSet instanceof Set ? savedDatesSet : new Set();
+      const availableDates = allAllowedDates.filter(item => !savedSet.has(item.ymd));
+      const hiddenSavedCount = allAllowedDates.length - availableDates.length;
+
+      if (availableDates.length === 0) {
+        dateSelect.innerHTML = '<option value="">تم حفظ جميع أيام المرور لهذا الشهر</option>';
+        dateSelect.value = '';
+        if (hintEl) {
+          hintEl.innerText = `تم إنجاز وحفظ جميع أيام المرور المحددة لهذا الشهر (${allAllowedDates.length} يوم). يمكنك اختيار شهر آخر أو تعديل التقارير من الأرشيف.`;
+        }
+        return;
+      }
+
+      dateSelect.innerHTML = availableDates
+        .map(item => `<option value="${item.ymd}">${escapeHtml(item.label)}</option>`)
+        .join('');
+
+      let targetYmd = '';
+      if (!preferToday && prevSelected && availableDates.some(m => m.ymd === prevSelected)) {
+        targetYmd = prevSelected;
+      } else if (availableDates.some(m => m.ymd === todayYmd)) {
+        targetYmd = todayYmd;
+      } else {
+        const pastOrToday = availableDates.filter(m => m.ymd <= todayYmd);
+        targetYmd = pastOrToday.length > 0 ? pastOrToday[pastOrToday.length - 1].ymd : availableDates[0].ymd;
+      }
+      dateSelect.value = targetYmd;
+
+      if (hintEl) {
+        if (isSyncing) {
+          hintEl.innerText = 'جاري تحديث الأيام المتاحة للمرور...';
+        } else if (hiddenSavedCount > 0) {
+          hintEl.innerText = `الأيام المتبقية للمرور هذا الشهر: ${availableDates.length} يوم (تم إخفاء ${hiddenSavedCount} يوم محفوظ)`;
+        } else {
+          hintEl.innerText = `الأيام المتاحة للمرور هذا الشهر: ${availableDates.length} يوم`;
+        }
+      }
+    }
+
+    function populateWeeklyMonthDates(preferToday = true, forceRefresh = false) {
+      const monthInput = document.getElementById('daily-month');
+      const dateSelect = document.getElementById('daily-date');
       if (!monthInput || !dateSelect) return;
 
       const todayYmd = getLocalYMD(new Date());
@@ -3459,7 +3541,8 @@
         monthInput.value = todayYmd.slice(0, 7);
       }
 
-      const [yearStr, monthStr] = monthInput.value.split('-');
+      const monthVal = monthInput.value;
+      const [yearStr, monthStr] = monthVal.split('-');
       const year = Number(yearStr);
       const month = Number(monthStr);
       const daysInMonth = new Date(year, month, 0).getDate();
@@ -3469,14 +3552,14 @@
         : [6, 0, 1, 2, 3, 4, 5];
 
       const arabicDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-      const matchingDates = [];
+      const allAllowedDates = [];
 
       for (let day = 1; day <= daysInMonth; day++) {
         const d = new Date(year, month - 1, day);
         const dayOfWeek = d.getDay();
         if (allowedDays.includes(dayOfWeek)) {
           const ymd = `${yearStr}-${monthStr}-${String(day).padStart(2, '0')}`;
-          matchingDates.push({
+          allAllowedDates.push({
             ymd,
             dayName: arabicDays[dayOfWeek],
             label: `${arabicDays[dayOfWeek]} - ${ymd}`
@@ -3484,34 +3567,38 @@
         }
       }
 
-      const prevSelected = dateSelect.value;
+      const cName = currentCenter ? currentCenter.name : '';
+      const cacheKey = getSavedDatesCacheKey(monthVal, cName);
+      const cachedSet = savedWeeklyDatesCache[cacheKey];
 
-      if (matchingDates.length === 0) {
-        dateSelect.innerHTML = '<option value="">لا توجد أيام مرور محددة في الإعدادات</option>';
-        if (hintEl) {
-          hintEl.innerHTML = 'لم يتم تحديد أيام مرور. <button type="button" onclick="nav(\'settings\')" class="text-blue-600 font-bold underline">تحديد من الإعدادات</button>';
-        }
+      if (cachedSet instanceof Set && !forceRefresh) {
+        renderWeeklyDateSelectOptions(allAllowedDates, cachedSet, preferToday, false);
         return;
       }
 
-      dateSelect.innerHTML = matchingDates
-        .map(item => `<option value="${item.ymd}">${escapeHtml(item.label)}</option>`)
-        .join('');
+      // Render immediately using cached set (if any) while syncing fresh saved dates from backend
+      renderWeeklyDateSelectOptions(allAllowedDates, cachedSet instanceof Set ? cachedSet : new Set(), preferToday, true);
 
-      let targetYmd = '';
-      if (!preferToday && prevSelected && matchingDates.some(m => m.ymd === prevSelected)) {
-        targetYmd = prevSelected;
-      } else if (matchingDates.some(m => m.ymd === todayYmd)) {
-        targetYmd = todayYmd;
-      } else {
-        const pastOrToday = matchingDates.filter(m => m.ymd <= todayYmd);
-        targetYmd = pastOrToday.length > 0 ? pastOrToday[pastOrToday.length - 1].ymd : matchingDates[0].ymd;
-      }
-      dateSelect.value = targetYmd;
+      const currentSeq = ++weeklyDatesFetchSeq;
+      google.script.run.withSuccessHandler(savedDates => {
+        if (currentSeq !== weeklyDatesFetchSeq) return;
+        const activeCenterName = currentCenter ? currentCenter.name : '';
+        if (activeCenterName !== cName) return;
+        const activeMonthEl = document.getElementById('daily-month');
+        if (!activeMonthEl || activeMonthEl.value !== monthVal) return;
 
-      if (hintEl) {
-        hintEl.innerText = `الأيام المتاحة للمرور هذا الشهر: ${matchingDates.length} يوم`;
-      }
+        const freshSet = new Set(
+          (Array.isArray(savedDates) ? savedDates : [])
+            .map(d => String(d || '').trim())
+            .filter(Boolean)
+        );
+        savedWeeklyDatesCache[cacheKey] = freshSet;
+        renderWeeklyDateSelectOptions(allAllowedDates, freshSet, preferToday, false);
+      }).withFailureHandler(err => {
+        console.error('Failed to fetch saved report dates:', err);
+        if (currentSeq !== weeklyDatesFetchSeq) return;
+        renderWeeklyDateSelectOptions(allAllowedDates, cachedSet instanceof Set ? cachedSet : new Set(), preferToday, false);
+      }).getSavedReportDates(monthVal, cName);
     }
 
     function initDailyForm() {
@@ -3538,7 +3625,7 @@
         fill('daily-period', settingsData.periods);
         fill('daily-dept', settingsData.departments);
         fill('daily-inspector', settingsData.inspectors);
-        populateWeeklyMonthDates(true);
+        populateWeeklyMonthDates(true, true);
         renderWeeklyImplementersCheckboxes();
         renderDailyProcedures();
         renderWeeklyDraftDeptsPanel();
@@ -3859,7 +3946,7 @@
     function addDeptToWeeklyDraft() {
         const dateVal = document.getElementById('daily-date')?.value || '';
         if (!dateVal) {
-            showWeeklyDraftBanner('يرجى تحديد تاريخ المرور أولاً', true);
+            showWeeklyDraftBanner('لا يوجد يوم مرور متاح ومحدد — يرجى اختيار يوم أو شهر آخر', true);
             return;
         }
         const entry = collectCurrentDeptFormEntry();
@@ -3963,7 +4050,7 @@
     function submitDailyReport() {
         const dateVal = document.getElementById('daily-date')?.value || '';
         if (!dateVal) {
-            showWeeklyDraftBanner('يرجى تحديد تاريخ المرور أولاً', true);
+            showWeeklyDraftBanner('لا يوجد يوم مرور متاح ومحدد — يرجى اختيار يوم أو شهر آخر', true);
             return;
         }
 
@@ -4004,6 +4091,8 @@
         loading(true);
         google.script.run.withSuccessHandler(() => {
             loading(false);
+            markWeeklyDateAsSaved(dateVal, payload.centerName);
+            populateWeeklyMonthDates(false, false);
             weeklyDraftDepts = [];
             editingWeeklyDraftIndex = -1;
             const btnLabel = document.getElementById('btn-add-dept-draft-label');
@@ -4404,6 +4493,7 @@
             submitBtn.disabled = false;
             submitBtn.innerHTML = origBtnHtml;
             closeCopyMonthModal();
+            invalidateSavedWeeklyDatesCache();
 
             // Switch month picker to the target month and render optimistically with 0 follow-up queries
             document.getElementById('month-picker').value = targetMonth;
@@ -5121,6 +5211,7 @@
             loading(false);
             if (saveBtn) saveBtn.disabled = false;
             closeEditArchiveReportModal();
+            invalidateSavedWeeklyDatesCache();
             showArchiveBanner('تم تعديل التقرير وحفظ التغييرات بنجاح');
             generateArchive(true);
         }).withFailureHandler(err => {
@@ -5166,6 +5257,7 @@
             loading(false);
             if (btn) btn.disabled = false;
             closeDeleteArchiveReportModal();
+            invalidateSavedWeeklyDatesCache();
             showArchiveBanner('تم حذف التقرير من الأرشيف بنجاح');
             generateArchive(true);
         }).withFailureHandler(err => {

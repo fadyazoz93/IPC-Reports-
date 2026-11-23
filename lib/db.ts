@@ -340,6 +340,28 @@ const localDbExecutor = {
       return { rows };
     }
 
+    // 13b. Select distinct saved report dates for a month/center
+    if (normalizedSql.includes('SELECT DISTINCT report_date FROM "Reports Data"')) {
+      const data = loadLocalData();
+      let list = [...(data["Reports Data"] || [])];
+      if (normalizedSql.includes("center_name = ?")) {
+        const targetCenter = String(getArgForClause("center_name = ?") || "");
+        list = list.filter((r: any) => (r.center_name || "") === targetCenter);
+      }
+      if (normalizedSql.includes("year = ?")) {
+        const y = Number(getArgForClause("year = ?"));
+        list = list.filter((r: any) => Number(r.year) === y);
+      }
+      if (normalizedSql.includes("month = ?")) {
+        const m = Number(getArgForClause("month = ?"));
+        list = list.filter((r: any) => Number(r.month) === m);
+      }
+      const uniqueDates = Array.from(
+        new Set(list.map((r: any) => String(r.report_date || "").trim()).filter(Boolean))
+      ).sort();
+      return { rows: uniqueDates.map(report_date => ({ report_date })) };
+    }
+
     // 14. Select reports with explicit columns (governed query without SELECT *)
     if (normalizedSql.includes('FROM "Reports Data"')) {
       const data = loadLocalData();

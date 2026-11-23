@@ -127,6 +127,7 @@ app.post('/api', async (req: Request, res: Response) => {
           throw new Error("يرجى تقديم بيانات الاتصال بقاعدة بيانات Turso المصدر");
         }
         data = await migrateRemoteTursoData(options);
+        memoryCache.invalidatePrefix('report:');
         break;
       }
 
@@ -700,6 +701,48 @@ app.post('/api', async (req: Request, res: Response) => {
       }
 
       // ----------------------------------------------------
+      // 4c. Saved Report Dates for a Month (Covering Index Query)
+      // ----------------------------------------------------
+      case 'getSavedReportDates': {
+        const [monthStr, centerName] = args || [];
+        const cleanMonth = String(monthStr || '').trim();
+        if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(cleanMonth)) {
+          data = [];
+          break;
+        }
+        const cleanCenter = String(centerName || '').trim();
+        const scopeKey = cleanCenter || 'global';
+        const cacheKey = `report:${scopeKey}:saved_dates:${cleanMonth}`;
+
+        const cachedDates = memoryCache.get<string[]>(cacheKey);
+        if (cachedDates) {
+          data = cachedDates;
+          break;
+        }
+
+        const [yearNum, monthNum] = cleanMonth.split('-').map(Number);
+        const sql = cleanCenter
+          ? 'SELECT DISTINCT report_date FROM "Reports Data" WHERE center_name = ? AND year = ? AND month = ? ORDER BY report_date ASC'
+          : 'SELECT DISTINCT report_date FROM "Reports Data" WHERE year = ? AND month = ? ORDER BY report_date ASC';
+        const sqlArgs = cleanCenter
+          ? [cleanCenter, yearNum, monthNum]
+          : [yearNum, monthNum];
+
+        const result = await db.execute(sql, sqlArgs);
+        const uniqueDates = Array.from(
+          new Set(
+            (result.rows || [])
+              .map((row: any) => String(row.report_date || '').trim())
+              .filter(Boolean)
+          )
+        ).sort();
+
+        memoryCache.set(cacheKey, uniqueDates, 10 * 60 * 1000);
+        data = uniqueDates;
+        break;
+      }
+
+      // ----------------------------------------------------
       // 5. Copy Monthly Report (Cache-Aside + Batch Write + Per-Center support)
       // ----------------------------------------------------
       case 'copyMonthlyReport': {
@@ -827,6 +870,7 @@ app.post('/api', async (req: Request, res: Response) => {
 
         memoryCache.delete(`report:${scopeKey}:yearly:${tgtYear}`);
         memoryCache.delete(`report:${scopeKey}:dashboard_metrics`);
+        memoryCache.delete(`report:${scopeKey}:saved_dates:${targetMonth}`);
         memoryCache.invalidatePrefix(`report:${scopeKey}:daily:${targetMonth}`);
         memoryCache.invalidatePrefix(`report:${scopeKey}:range:`);
 
