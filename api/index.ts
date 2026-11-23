@@ -383,10 +383,10 @@ app.post('/api', async (req: Request, res: Response) => {
       }
 
       // ----------------------------------------------------
-      // 2. Save Settings (Per-Center support)
+      // 2. Save Settings (Per-Center support + Propagate edited observations to all reports)
       // ----------------------------------------------------
       case 'saveSettingsData': {
-        const [newSettings, _role, centerName] = args || [];
+        const [newSettings, _role, centerName, renamedObservations] = args || [];
         if (!newSettings) {
           throw new Error("Missing settings parameter");
         }
@@ -416,8 +416,200 @@ app.post('/api', async (req: Request, res: Response) => {
           }
         }
 
+        // Propagate any edited observation text (and recommendation) to all previously saved reports
+        let propagatedCount = 0;
+        if (Array.isArray(renamedObservations) && renamedObservations.length > 0) {
+          const updateStatements: any[] = [];
+          for (const item of renamedObservations) {
+            const oldNote = String(item?.oldNote || '').trim();
+            const oldName = String(item?.oldName || oldNote).trim();
+            const oldRec = String(item?.oldRec || '').trim();
+            const newNote = String(item?.newNote || '').trim();
+            const newRec = String(item?.newRec || '').trim();
+
+            if (!oldNote) continue;
+            const noteChanged = Boolean(newNote) && newNote !== oldNote;
+            const recChanged = newRec !== oldRec;
+            if (!noteChanged && !recChanged) continue;
+
+            propagatedCount++;
+
+            if (noteChanged && recChanged) {
+              if (cleanCenter) {
+                updateStatements.push({
+                  sql: 'UPDATE "Reports Data" SET note = ?, procedure = ?, rec = ? WHERE center_name = ? AND status = \'No\' AND (note = ? OR procedure = ? OR procedure = ?)',
+                  args: [newNote, newNote, newRec, cleanCenter, oldNote, oldNote, oldName]
+                });
+                updateStatements.push({
+                  sql: 'UPDATE "Reports Data" SET procedure = ? WHERE center_name = ? AND status != \'No\' AND (procedure = ? OR procedure = ?)',
+                  args: [newNote, cleanCenter, oldNote, oldName]
+                });
+              } else {
+                updateStatements.push({
+                  sql: 'UPDATE "Reports Data" SET note = ?, procedure = ?, rec = ? WHERE status = \'No\' AND (note = ? OR procedure = ? OR procedure = ?)',
+                  args: [newNote, newNote, newRec, oldNote, oldNote, oldName]
+                });
+                updateStatements.push({
+                  sql: 'UPDATE "Reports Data" SET procedure = ? WHERE status != \'No\' AND (procedure = ? OR procedure = ?)',
+                  args: [newNote, oldNote, oldName]
+                });
+              }
+            } else if (noteChanged) {
+              if (cleanCenter) {
+                updateStatements.push({
+                  sql: 'UPDATE "Reports Data" SET note = ?, procedure = ? WHERE center_name = ? AND status = \'No\' AND (note = ? OR procedure = ? OR procedure = ?)',
+                  args: [newNote, newNote, cleanCenter, oldNote, oldNote, oldName]
+                });
+                updateStatements.push({
+                  sql: 'UPDATE "Reports Data" SET procedure = ? WHERE center_name = ? AND status != \'No\' AND (procedure = ? OR procedure = ?)',
+                  args: [newNote, cleanCenter, oldNote, oldName]
+                });
+              } else {
+                updateStatements.push({
+                  sql: 'UPDATE "Reports Data" SET note = ?, procedure = ? WHERE status = \'No\' AND (note = ? OR procedure = ? OR procedure = ?)',
+                  args: [newNote, newNote, oldNote, oldNote, oldName]
+                });
+                updateStatements.push({
+                  sql: 'UPDATE "Reports Data" SET procedure = ? WHERE status != \'No\' AND (procedure = ? OR procedure = ?)',
+                  args: [newNote, oldNote, oldName]
+                });
+              }
+            } else if (recChanged) {
+              if (cleanCenter) {
+                updateStatements.push({
+                  sql: 'UPDATE "Reports Data" SET rec = ? WHERE center_name = ? AND status = \'No\' AND (note = ? OR procedure = ? OR procedure = ?)',
+                  args: [newRec, cleanCenter, oldNote, oldNote, oldName]
+                });
+              } else {
+                updateStatements.push({
+                  sql: 'UPDATE "Reports Data" SET rec = ? WHERE status = \'No\' AND (note = ? OR procedure = ? OR procedure = ?)',
+                  args: [newRec, oldNote, oldNote, oldName]
+                });
+              }
+            }
+          }
+
+          if (updateStatements.length > 0) {
+            await db.batch(updateStatements, "write");
+            memoryCache.invalidatePrefix('report:');
+          }
+        }
+
+        // Remap any previously saved report dates that no longer fall on allowed inspectionDays
+        // to the nearest allowed inspection day within the same month
+        let remappedDatesCount = 0;
+        const allowedDaysArr: number[] = Array.isArray(sanitizedSettings.inspectionDays)
+          ? Array.from(
+              new Set(
+                sanitizedSettings.inspectionDays
+                  .map((d: any) => Number(d))
+                  .filter((n: number) => !isNaN(n) && n >= 0 && n <= 6)
+              )
+            )
+          : [];
+
+        if (allowedDaysArr.length > 0 && allowedDaysArr.length < 7) {
+          const allowedSet = new Set<number>(allowedDaysArr);
+          const datesSql = cleanCenter
+            ? 'SELECT DISTINCT report_date FROM "Reports Data" WHERE center_name = ? ORDER BY report_date ASC'
+            : 'SELECT DISTINCT report_date FROM "Reports Data" ORDER BY report_date ASC';
+          const datesArgs = cleanCenter ? [cleanCenter] : [];
+          const existingDatesRes = await db.execute(datesSql, datesArgs);
+
+          const validFormatDates: string[] = Array.from(
+            new Set<string>(
+              (existingDatesRes.rows || [])
+                .map((r: any) => String(r.report_date || '').trim())
+                .filter((d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d))
+            )
+          ).sort();
+
+          // Group distinct dates by YYYY-MM
+          const byMonth = new Map<string, string[]>();
+          for (const ymd of validFormatDates) {
+            const ym = ymd.slice(0, 7);
+            if (!byMonth.has(ym)) byMonth.set(ym, []);
+            byMonth.get(ym)!.push(ymd);
+          }
+
+          const dateUpdateStatements: any[] = [];
+          for (const [ym, monthDates] of byMonth.entries()) {
+            const [yStr, mStr] = ym.split('-');
+            const yearNum = Number(yStr);
+            const monthNum = Number(mStr);
+            const daysInMonth = new Date(Date.UTC(yearNum, monthNum, 0)).getUTCDate();
+
+            const allowedCandidates: { day: number; ymd: string }[] = [];
+            for (let day = 1; day <= daysInMonth; day++) {
+              const dow = new Date(Date.UTC(yearNum, monthNum - 1, day)).getUTCDay();
+              if (allowedSet.has(dow)) {
+                allowedCandidates.push({
+                  day,
+                  ymd: `${yStr}-${mStr}-${String(day).padStart(2, '0')}`
+                });
+              }
+            }
+            if (allowedCandidates.length === 0) continue;
+
+            const occupied = new Set<string>();
+            const invalidDates: { day: number; ymd: string }[] = [];
+
+            for (const ymd of monthDates) {
+              const day = Number(ymd.slice(8, 10));
+              const dow = new Date(Date.UTC(yearNum, monthNum - 1, day)).getUTCDay();
+              if (allowedSet.has(dow)) {
+                occupied.add(ymd);
+              } else {
+                invalidDates.push({ day, ymd });
+              }
+            }
+
+            if (invalidDates.length === 0) continue;
+
+            // Process chronologically, preferring nearest unoccupied allowed day in the same month
+            // (breaking equal-distance ties toward the later/following day)
+            for (const inv of invalidDates) {
+              const sortByNearest = (a: { day: number; ymd: string }, b: { day: number; ymd: string }) => {
+                const diffA = Math.abs(a.day - inv.day);
+                const diffB = Math.abs(b.day - inv.day);
+                if (diffA !== diffB) return diffA - diffB;
+                // On exact distance tie, prefer the following day (after original date)
+                return b.day - a.day;
+              };
+
+              const freeCandidates = allowedCandidates.filter(c => !occupied.has(c.ymd));
+              const pool = freeCandidates.length > 0 ? freeCandidates : allowedCandidates;
+              const best = [...pool].sort(sortByNearest)[0];
+              if (!best || best.ymd === inv.ymd) continue;
+
+              occupied.add(best.ymd);
+              remappedDatesCount++;
+
+              if (cleanCenter) {
+                dateUpdateStatements.push({
+                  sql: 'UPDATE "Reports Data" SET report_date = ?, month = ?, year = ? WHERE center_name = ? AND report_date = ?',
+                  args: [best.ymd, monthNum, yearNum, cleanCenter, inv.ymd]
+                });
+              } else {
+                dateUpdateStatements.push({
+                  sql: 'UPDATE "Reports Data" SET report_date = ?, month = ?, year = ? WHERE report_date = ?',
+                  args: [best.ymd, monthNum, yearNum, inv.ymd]
+                });
+              }
+            }
+          }
+
+          if (dateUpdateStatements.length > 0) {
+            const chunkSize = 500;
+            for (let i = 0; i < dateUpdateStatements.length; i += chunkSize) {
+              await db.batch(dateUpdateStatements.slice(i, i + chunkSize), "write");
+            }
+            memoryCache.invalidatePrefix('report:');
+          }
+        }
+
         memoryCache.set(cacheKey, sanitizedSettings, 15 * 60 * 1000);
-        data = true;
+        data = { success: true, propagatedCount, remappedDatesCount };
         break;
       }
 
@@ -743,6 +935,72 @@ app.post('/api', async (req: Request, res: Response) => {
       }
 
       // ----------------------------------------------------
+      // 4d. Weekly Month Summary (Saved Dates + Saved Departments + Last Saved Month)
+      // ----------------------------------------------------
+      case 'getWeeklyMonthSummary': {
+        const [monthStr, centerName] = args || [];
+        const cleanMonth = String(monthStr || '').trim();
+        const cleanCenter = String(centerName || '').trim();
+        const scopeKey = cleanCenter || 'global';
+
+        // 1. Resolve last saved report month (cached in RAM with 0 DB reads on repeat)
+        const lastMonthCacheKey = `report:${scopeKey}:last_saved_month`;
+        let lastSavedMonth = memoryCache.get<string>(lastMonthCacheKey);
+        if (lastSavedMonth === undefined || lastSavedMonth === null) {
+          const lastSql = cleanCenter
+            ? 'SELECT report_date FROM "Reports Data" WHERE center_name = ? ORDER BY id DESC LIMIT 1'
+            : 'SELECT report_date FROM "Reports Data" ORDER BY id DESC LIMIT 1';
+          const lastArgs = cleanCenter ? [cleanCenter] : [];
+          const lastRes = await db.execute(lastSql, lastArgs);
+          const rawLastDate = String((lastRes.rows?.[0] as any)?.report_date || '').trim();
+          lastSavedMonth = /^\d{4}-\d{2}/.test(rawLastDate) ? rawLastDate.slice(0, 7) : '';
+          memoryCache.set(lastMonthCacheKey, lastSavedMonth, 10 * 60 * 1000);
+        }
+
+        if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(cleanMonth)) {
+          data = { savedDates: [], savedDepartments: [], lastSavedMonth };
+          break;
+        }
+
+        // 2. Resolve saved dates & saved departments for the requested month
+        const summaryCacheKey = `report:${scopeKey}:weekly_summary:${cleanMonth}`;
+        const cachedSummary = memoryCache.get<{ savedDates: string[]; savedDepartments: string[] }>(summaryCacheKey);
+        if (cachedSummary) {
+          data = {
+            savedDates: cachedSummary.savedDates,
+            savedDepartments: cachedSummary.savedDepartments,
+            lastSavedMonth
+          };
+          break;
+        }
+
+        const [yearNum, monthNum] = cleanMonth.split('-').map(Number);
+        const sql = cleanCenter
+          ? 'SELECT DISTINCT report_date, department FROM "Reports Data" WHERE center_name = ? AND year = ? AND month = ? ORDER BY report_date ASC'
+          : 'SELECT DISTINCT report_date, department FROM "Reports Data" WHERE year = ? AND month = ? ORDER BY report_date ASC';
+        const sqlArgs = cleanCenter
+          ? [cleanCenter, yearNum, monthNum]
+          : [yearNum, monthNum];
+
+        const result = await db.execute(sql, sqlArgs);
+        const dateSet = new Set<string>();
+        const deptSet = new Set<string>();
+        for (const row of (result.rows || []) as any[]) {
+          const d = String(row.report_date || '').trim();
+          const dept = String(row.department || '').trim();
+          if (d) dateSet.add(d);
+          if (dept) deptSet.add(dept);
+        }
+
+        const savedDates = Array.from(dateSet).sort();
+        const savedDepartments = Array.from(deptSet);
+
+        memoryCache.set(summaryCacheKey, { savedDates, savedDepartments }, 10 * 60 * 1000);
+        data = { savedDates, savedDepartments, lastSavedMonth };
+        break;
+      }
+
+      // ----------------------------------------------------
       // 5. Copy Monthly Report (Cache-Aside + Batch Write + Per-Center support)
       // ----------------------------------------------------
       case 'copyMonthlyReport': {
@@ -871,6 +1129,8 @@ app.post('/api', async (req: Request, res: Response) => {
         memoryCache.delete(`report:${scopeKey}:yearly:${tgtYear}`);
         memoryCache.delete(`report:${scopeKey}:dashboard_metrics`);
         memoryCache.delete(`report:${scopeKey}:saved_dates:${targetMonth}`);
+        memoryCache.delete(`report:${scopeKey}:weekly_summary:${targetMonth}`);
+        memoryCache.delete(`report:${scopeKey}:last_saved_month`);
         memoryCache.invalidatePrefix(`report:${scopeKey}:daily:${targetMonth}`);
         memoryCache.invalidatePrefix(`report:${scopeKey}:range:`);
 

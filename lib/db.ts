@@ -340,7 +340,37 @@ const localDbExecutor = {
       return { rows };
     }
 
-    // 13b. Select distinct saved report dates for a month/center
+    // 13b. Select distinct saved report dates (and optionally departments) for a month/center
+    if (normalizedSql.includes('SELECT DISTINCT report_date, department FROM "Reports Data"')) {
+      const data = loadLocalData();
+      let list = [...(data["Reports Data"] || [])];
+      if (normalizedSql.includes("center_name = ?")) {
+        const targetCenter = String(getArgForClause("center_name = ?") || "");
+        list = list.filter((r: any) => (r.center_name || "") === targetCenter);
+      }
+      if (normalizedSql.includes("year = ?")) {
+        const y = Number(getArgForClause("year = ?"));
+        list = list.filter((r: any) => Number(r.year) === y);
+      }
+      if (normalizedSql.includes("month = ?")) {
+        const m = Number(getArgForClause("month = ?"));
+        list = list.filter((r: any) => Number(r.month) === m);
+      }
+      const seen = new Set<string>();
+      const rows: any[] = [];
+      for (const r of list) {
+        const d = String(r.report_date || "").trim();
+        const dept = String(r.department || "").trim();
+        const key = `${d}|||${dept}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          rows.push({ report_date: d, department: dept });
+        }
+      }
+      rows.sort((a, b) => a.report_date.localeCompare(b.report_date));
+      return { rows };
+    }
+
     if (normalizedSql.includes('SELECT DISTINCT report_date FROM "Reports Data"')) {
       const data = loadLocalData();
       let list = [...(data["Reports Data"] || [])];
@@ -360,6 +390,84 @@ const localDbExecutor = {
         new Set(list.map((r: any) => String(r.report_date || "").trim()).filter(Boolean))
       ).sort();
       return { rows: uniqueDates.map(report_date => ({ report_date })) };
+    }
+
+    // 13c. Select latest saved report_date (ORDER BY id DESC LIMIT 1)
+    if (normalizedSql.includes('SELECT report_date FROM "Reports Data"') && normalizedSql.includes("ORDER BY id DESC LIMIT 1")) {
+      const data = loadLocalData();
+      let list = [...(data["Reports Data"] || [])];
+      if (normalizedSql.includes("center_name = ?")) {
+        const targetCenter = String(getArgForClause("center_name = ?") || "");
+        list = list.filter((r: any) => (r.center_name || "") === targetCenter);
+      }
+      list.sort((a: any, b: any) => (Number(b.id) || 0) - (Number(a.id) || 0));
+      return { rows: list.length > 0 ? [{ report_date: String(list[0].report_date || "") }] : [] };
+    }
+
+    // 13d. Update Reports Data (propagating edited observation note/rec or remapped inspection dates)
+    if (normalizedSql.startsWith('UPDATE "Reports Data" SET')) {
+      const data = loadLocalData();
+      const whereIdx = normalizedSql.indexOf(" WHERE ");
+      const setPart = whereIdx >= 0 ? normalizedSql.slice('UPDATE "Reports Data" SET '.length, whereIdx) : "";
+      const wherePart = whereIdx >= 0 ? normalizedSql.slice(whereIdx + " WHERE ".length) : "";
+
+      const setFields = setPart.split(",").map(s => s.trim().split("=")[0].trim()).filter(Boolean);
+      const updates: Record<string, any> = {};
+      let argCursor = 0;
+      for (const field of setFields) {
+        const rawVal = queryArgs[argCursor++];
+        if (field === "month" || field === "year") {
+          updates[field] = Number(rawVal);
+        } else {
+          updates[field] = String(rawVal ?? "");
+        }
+      }
+
+      let filterCenter: string | null = null;
+      if (wherePart.includes("center_name = ?")) {
+        filterCenter = String(queryArgs[argCursor++] ?? "");
+      }
+      const requireStatusNo = wherePart.includes("status = 'No'");
+      const requireStatusNotNo = wherePart.includes("status != 'No'");
+
+      const remainingMatchers = queryArgs.slice(argCursor).map(v => String(v ?? ""));
+
+      let changed = false;
+      data["Reports Data"] = (data["Reports Data"] || []).map((r: any) => {
+        if (filterCenter !== null && String(r.center_name || "") !== filterCenter) return r;
+        if (requireStatusNo && String(r.status || "") !== "No") return r;
+        if (requireStatusNotNo && String(r.status || "") === "No") return r;
+
+        const rNote = String(r.note || "");
+        const rProc = String(r.procedure || "");
+        const rDate = String(r.report_date || "");
+        let matched = false;
+        if (wherePart.includes("report_date = ?")) {
+          matched = rDate === remainingMatchers[0];
+        } else if (wherePart.includes("note = ?")) {
+          const oldNoteArg = remainingMatchers[0];
+          const oldProcArg1 = remainingMatchers[1];
+          const oldProcArg2 = remainingMatchers[2];
+          matched = rNote === oldNoteArg || rProc === oldProcArg1 || (oldProcArg2 !== undefined && rProc === oldProcArg2);
+        } else if (wherePart.includes("procedure = ?")) {
+          const oldProcArg1 = remainingMatchers[0];
+          const oldProcArg2 = remainingMatchers[1];
+          matched = rProc === oldProcArg1 || (oldProcArg2 !== undefined && rProc === oldProcArg2);
+        }
+
+        if (!matched) return r;
+        changed = true;
+        return { ...r, ...updates };
+      });
+
+      if (changed) {
+        if (localDbExecutor._isBatching) {
+          inMemoryDb = data;
+        } else {
+          saveLocalData(data);
+        }
+      }
+      return { rows: [] };
     }
 
     // 14. Select reports with explicit columns (governed query without SELECT *)

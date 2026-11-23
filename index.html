@@ -1082,7 +1082,7 @@
                     <button type="button" onclick="toggleAllInspectionDays(false)" class="text-xs bg-slate-50 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 font-bold transition">إلغاء الكل</button>
                 </div>
             </div>
-            <p class="text-xs text-slate-500 mb-3">حدد أيام الأسبوع الخاصة بالمرور ليتم عرض التواريخ الموافقة لهذه الأيام فقط من الشهر في صفحة التقرير الأسبوعي.</p>
+            <p class="text-xs text-slate-500 mb-3">حدد أيام الأسبوع الخاصة بالمرور ليتم عرض التواريخ الموافقة لهذه الأيام فقط من الشهر في صفحة التقرير الأسبوعي (وعند تعديلها يتم تحويل تواريخ التقارير المحفوظة تلقائياً إلى أقرب يوم مرور مطابق).</p>
             <div id="inspection-days-settings-container" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
                 <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50/90 hover:bg-cyan-50 border border-slate-200 cursor-pointer select-none transition text-xs font-bold text-slate-800">
                     <input type="checkbox" value="6" class="inspection-day-chk accent-cyan-600 rounded w-4 h-4">
@@ -1239,7 +1239,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <div>
                     <label class="block text-sm font-bold mb-1.5 text-slate-700">الشهر</label>
-                    <input type="month" id="daily-month" onchange="populateWeeklyMonthDates(false, true)" class="w-full p-2.5 f-input text-sm font-mono-num">
+                    <input type="month" id="daily-month" onchange="onWeeklyMonthChanged()" class="w-full p-2.5 f-input text-sm font-mono-num">
                 </div>
                 <div>
                     <label class="block text-sm font-bold mb-1.5 text-slate-700">يوم وتاريخ المرور</label>
@@ -1253,6 +1253,7 @@
                 <div>
                     <label class="block text-sm font-bold mb-1.5 text-slate-700">القسم</label>
                     <select id="daily-dept" class="w-full p-2.5 f-input text-sm"></select>
+                    <p id="daily-dept-hint" class="text-[11px] text-slate-500 mt-1 font-medium"></p>
                 </div>
                 <div>
                     <label class="block text-sm font-bold mb-1.5 text-slate-700">القائم بالمرور</label>
@@ -1285,13 +1286,35 @@
                             <p class="text-xs text-slate-500 mt-0.5">حدد الملاحظات التي تم رصدها في هذا القسم لاحتساب المخالفات وتضمين التوصيات المقابلة لها مع ثبات الملاحظة والتوصية</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="toggleQuickAddObsModal(true)" class="btn-futuristic text-xs text-white bg-gradient-to-l from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 px-3.5 py-2 rounded-xl shadow-sm font-bold flex items-center gap-1.5">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" id="btn-toggle-obs-search" onclick="toggleWeeklyObsSearch()" class="btn-futuristic text-xs text-cyan-800 bg-cyan-50 hover:bg-cyan-100 px-3.5 py-2 rounded-xl border border-cyan-200 font-bold flex items-center gap-1.5 whitespace-nowrap">
+                            <i class="fas fa-search"></i> بحث عن ملاحظة
+                        </button>
+                        <button type="button" onclick="toggleQuickAddObsModal(true)" class="btn-futuristic text-xs text-white bg-gradient-to-l from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 px-3.5 py-2 rounded-xl shadow-sm font-bold flex items-center gap-1.5 whitespace-nowrap">
                             <i class="fas fa-plus-circle"></i> إضافة ملاحظة جديدة
                         </button>
-                        <button type="button" onclick="clearAllViolationCheckboxes()" class="text-xs text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl border border-slate-200 font-medium transition">
+                        <button type="button" onclick="clearAllViolationCheckboxes()" class="text-xs text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl border border-slate-200 font-medium transition whitespace-nowrap">
                             <i class="fas fa-times"></i> إلغاء تحديد الكل
                         </button>
+                    </div>
+                </div>
+
+                <!-- Search Observations Inline Panel -->
+                <div id="weekly-obs-search-panel" class="hidden mb-4 p-3.5 bg-slate-50/90 border border-cyan-200/80 rounded-2xl shadow-sm">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                        <div class="relative flex-1">
+                            <i class="fas fa-search text-cyan-600 text-xs absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            <input type="text" id="weekly-obs-search-input" oninput="filterWeeklyObservations()" placeholder="ابحث في نص الملاحظة أو التوصية..." class="w-full min-h-[42px] pr-9 pl-3 py-2 text-xs sm:text-sm f-input bg-white">
+                        </div>
+                        <div class="flex items-center justify-between sm:justify-end gap-2">
+                            <span id="weekly-obs-search-count" class="text-[11px] font-bold text-slate-500 font-mono-num whitespace-nowrap"></span>
+                            <button type="button" id="weekly-obs-search-clear" onclick="clearWeeklyObsSearch(true)" class="hidden min-h-[40px] px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-xl transition whitespace-nowrap">
+                                <i class="fas fa-eraser ml-1"></i> مسح
+                            </button>
+                            <button type="button" onclick="toggleWeeklyObsSearch(false)" class="min-h-[40px] px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 bg-white border border-slate-200 rounded-xl transition whitespace-nowrap" title="إغلاق البحث">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1327,6 +1350,18 @@
                                 <i class="fas fa-check"></i> إضافة وحفظ بالقائمة
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                <div id="weekly-obs-no-results" class="hidden mb-3 p-5 text-center bg-slate-50/90 border border-dashed border-slate-300 rounded-2xl">
+                    <p class="text-xs sm:text-sm font-bold text-slate-700 mb-2">لا توجد ملاحظات مطابقة لعبارة البحث الحالية</p>
+                    <div class="flex flex-wrap items-center justify-center gap-2">
+                        <button type="button" onclick="clearWeeklyObsSearch(true)" class="text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 px-3.5 py-2 rounded-xl transition">
+                            عرض جميع الملاحظات
+                        </button>
+                        <button type="button" onclick="openQuickAddFromObsSearch()" class="btn-futuristic text-xs font-bold text-white bg-gradient-to-l from-cyan-600 to-blue-600 px-3.5 py-2 rounded-xl flex items-center gap-1.5">
+                            <i class="fas fa-plus-circle"></i> إضافة كملاحظة جديدة
+                        </button>
                     </div>
                 </div>
 
@@ -2957,7 +2992,7 @@
       const tbody = document.getElementById('proc-table-body');
       tbody.innerHTML = '';
       (settingsData.procedures || []).forEach((proc) => {
-        addProcRow(proc.note || proc.name, proc.rec, true, false);
+        addProcRow(proc.note || proc.name, proc.rec, true, false, proc.name || proc.note);
       });
       updateProcRowNumbers();
       requestAnimationFrame(() => resizeAllProcTextareas());
@@ -3007,11 +3042,14 @@
       updateProcRowNumbers();
     }
 
-    function addProcRow(note='', rec='', isExisting=false, scrollIntoView=false) {
+    function addProcRow(note='', rec='', isExisting=false, scrollIntoView=false, origName='') {
       const tbody = document.getElementById('proc-table-body');
       const tr = document.createElement('tr');
       tr.className = "block md:table-row bg-white border border-slate-200 md:border-0 rounded-2xl md:rounded-none p-3.5 md:p-0 shadow-sm md:shadow-none hover:bg-cyan-50/40 transition";
       tr.dataset.existing = isExisting ? 'true' : 'false';
+      tr.dataset.origNote = isExisting ? String(note || '').trim() : '';
+      tr.dataset.origName = isExisting ? String(origName || note || '').trim() : '';
+      tr.dataset.origRec = isExisting ? String(rec || '').trim() : '';
 
       tr.innerHTML = `
         <td class="block md:table-cell p-0 md:p-2.5 md:border-b md:border-slate-100 align-top">
@@ -3402,10 +3440,26 @@
         procedures: []
       };
 
+      const renamedObservations = [];
       document.querySelectorAll('#proc-table-body tr').forEach(tr => {
-        const note = tr.querySelector('.proc-note')?.value.trim();
+        const note = tr.querySelector('.proc-note')?.value.trim() || '';
         const rec = tr.querySelector('.proc-rec')?.value.trim() || '';
         if (!note && !rec) return;
+
+        const isExisting = tr.dataset.existing === 'true';
+        const origNote = (tr.dataset.origNote || '').trim();
+        const origName = (tr.dataset.origName || origNote).trim();
+        const origRec = (tr.dataset.origRec || '').trim();
+        if (isExisting && origNote && (note !== origNote || rec !== origRec)) {
+          renamedObservations.push({
+            oldNote: origNote,
+            oldName: origName,
+            oldRec: origRec,
+            newNote: note,
+            newRec: rec
+          });
+        }
+
         newSettings.procedures.push({
           name: note || 'ملاحظة',
           note: note,
@@ -3415,16 +3469,29 @@
       });
 
       loading(true);
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandler(res => {
         loading(false);
         settingsData = newSettings;
         renderSettingsUI();
         applyRoleRestrictions();
-        showSettingsSaveBanner('تم حفظ الإعدادات بنجاح');
+        const propagated = res && typeof res === 'object' ? Number(res.propagatedCount || 0) : 0;
+        const remappedDates = res && typeof res === 'object' ? Number(res.remappedDatesCount || 0) : 0;
+        if (remappedDates > 0) {
+          invalidateSavedWeeklyDatesCache();
+        }
+        if (propagated > 0 && remappedDates > 0) {
+          showSettingsSaveBanner(`تم حفظ الإعدادات وتحديث (${propagated}) ملاحظة وتحويل (${remappedDates}) تاريخ مرور محفوظ إلى أقرب يوم مرور جديد بنجاح`);
+        } else if (remappedDates > 0) {
+          showSettingsSaveBanner(`تم حفظ الإعدادات وتعديل (${remappedDates}) تاريخ مرور محفوظ إلى أقرب يوم مرور جديد بنجاح`);
+        } else if (propagated > 0) {
+          showSettingsSaveBanner(`تم حفظ الإعدادات وتحديث نصوص الملاحظات المعدّلة (${propagated}) في جميع التقارير السابقة بنجاح`);
+        } else {
+          showSettingsSaveBanner('تم حفظ الإعدادات بنجاح');
+        }
       }).withFailureHandler(e => {
         loading(false);
         showSettingsSaveBanner('خطأ أثناء حفظ الإعدادات: ' + (e.message || e), true);
-      }).saveSettingsData(newSettings, '', currentCenter ? currentCenter.name : '');
+      }).saveSettingsData(newSettings, '', currentCenter ? currentCenter.name : '', renamedObservations);
     }
 
     // --- Weekly Report Logic & Implementer Checkboxes ---
@@ -3449,31 +3516,150 @@
       `).join('');
     }
 
-    let savedWeeklyDatesCache = {};
+    let savedWeeklyMonthSummaryCache = {};
+    let lastSavedReportMonthByCenter = {};
+    let showAllDeptsOverride = false;
     let weeklyDatesFetchSeq = 0;
 
     function getSavedDatesCacheKey(monthStr, centerName) {
       return `${String(centerName || '').trim()}::${String(monthStr || '').trim()}`;
     }
 
+    function getLastSavedReportMonth(centerName) {
+      const cKey = String(centerName || '').trim() || 'default';
+      if (lastSavedReportMonthByCenter[cKey] && /^\d{4}-\d{2}$/.test(lastSavedReportMonthByCenter[cKey])) {
+        return lastSavedReportMonthByCenter[cKey];
+      }
+      try {
+        const stored = localStorage.getItem(`last_saved_report_month:${cKey}`);
+        if (stored && /^\d{4}-\d{2}$/.test(stored)) {
+          lastSavedReportMonthByCenter[cKey] = stored;
+          return stored;
+        }
+      } catch (e) {}
+      return '';
+    }
+
+    function setLastSavedReportMonth(centerName, monthStr) {
+      const cleanMonth = String(monthStr || '').trim();
+      if (!/^\d{4}-\d{2}$/.test(cleanMonth)) return;
+      const cKey = String(centerName || '').trim() || 'default';
+      lastSavedReportMonthByCenter[cKey] = cleanMonth;
+      try {
+        localStorage.setItem(`last_saved_report_month:${cKey}`, cleanMonth);
+      } catch (e) {}
+    }
+
     function invalidateSavedWeeklyDatesCache(monthStr = null, centerName = null) {
       if (!monthStr) {
-        savedWeeklyDatesCache = {};
+        savedWeeklyMonthSummaryCache = {};
         return;
       }
       const key = getSavedDatesCacheKey(monthStr, centerName);
-      delete savedWeeklyDatesCache[key];
+      delete savedWeeklyMonthSummaryCache[key];
     }
 
-    function markWeeklyDateAsSaved(dateStr, centerName) {
+    function markWeeklyReportAsSaved(dateStr, departmentsList, centerName) {
       const cleanDate = String(dateStr || '').trim();
       if (!/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)) return;
       const monthStr = cleanDate.slice(0, 7);
       const key = getSavedDatesCacheKey(monthStr, centerName);
-      if (!(savedWeeklyDatesCache[key] instanceof Set)) {
-        savedWeeklyDatesCache[key] = new Set();
+      if (!savedWeeklyMonthSummaryCache[key]) {
+        savedWeeklyMonthSummaryCache[key] = {
+          savedDates: new Set(),
+          savedDepartments: new Set()
+        };
       }
-      savedWeeklyDatesCache[key].add(cleanDate);
+      savedWeeklyMonthSummaryCache[key].savedDates.add(cleanDate);
+      (Array.isArray(departmentsList) ? departmentsList : []).forEach(dept => {
+        const d = String(dept || '').trim();
+        if (d) savedWeeklyMonthSummaryCache[key].savedDepartments.add(d);
+      });
+      setLastSavedReportMonth(centerName, monthStr);
+    }
+
+    function getCurrentMonthSavedDepartmentsSet() {
+      const monthVal = document.getElementById('daily-month')?.value || '';
+      const cName = currentCenter ? currentCenter.name : '';
+      const key = getSavedDatesCacheKey(monthVal, cName);
+      const cached = savedWeeklyMonthSummaryCache[key];
+      return cached && cached.savedDepartments instanceof Set ? cached.savedDepartments : new Set();
+    }
+
+    function toggleShowAllWeeklyDepts(showAll) {
+      showAllDeptsOverride = Boolean(showAll);
+      refreshWeeklyDeptDropdown();
+    }
+
+    function onWeeklyMonthChanged() {
+      showAllDeptsOverride = false;
+      populateWeeklyMonthDates(false, true);
+    }
+
+    function renderWeeklyDeptSelectOptions(savedDeptsSet, isSyncing = false) {
+      const deptSelect = document.getElementById('daily-dept');
+      const hintEl = document.getElementById('daily-dept-hint');
+      if (!deptSelect) return;
+
+      const allDepts = Array.isArray(settingsData.departments) ? settingsData.departments.map(d => String(d || '').trim()).filter(Boolean) : [];
+      const prevSelected = deptSelect.value;
+
+      const draftedSet = new Set();
+      (weeklyDraftDepts || []).forEach((item, idx) => {
+        if (idx === editingWeeklyDraftIndex) return;
+        const d = String(item?.department || '').trim();
+        if (d) draftedSet.add(d);
+      });
+
+      const savedSet = savedDeptsSet instanceof Set ? savedDeptsSet : new Set();
+      const availableDepts = allDepts.filter(dept => {
+        if (draftedSet.has(dept)) return false;
+        if (!showAllDeptsOverride && savedSet.has(dept)) return false;
+        return true;
+      });
+
+      const hiddenSavedCount = allDepts.filter(dept => savedSet.has(dept)).length;
+      const hiddenTotalCount = allDepts.length - availableDepts.length;
+
+      if (allDepts.length === 0) {
+        deptSelect.innerHTML = '<option value="">-- لا توجد أقسام في الإعدادات --</option>';
+        if (hintEl) hintEl.innerText = '';
+        return;
+      }
+
+      if (availableDepts.length === 0) {
+        deptSelect.innerHTML = '<option value="">تم المرور على جميع الأقسام هذا الشهر</option>';
+        deptSelect.value = '';
+        if (hintEl) {
+          hintEl.innerHTML = `تم حفظ مرور جميع الأقسام (${allDepts.length} قسم). <button type="button" onclick="toggleShowAllWeeklyDepts(true)" class="text-cyan-700 font-bold underline">إظهار الكل لإعادة المرور</button>`;
+        }
+        return;
+      }
+
+      deptSelect.innerHTML = '<option value="">-- اختر --</option>' +
+        availableDepts.map(x => `<option value="${escapeHtmlAttr(x)}">${escapeHtml(x)}</option>`).join('');
+
+      if (prevSelected && availableDepts.includes(prevSelected)) {
+        deptSelect.value = prevSelected;
+      } else {
+        deptSelect.value = '';
+      }
+
+      if (hintEl) {
+        if (isSyncing) {
+          hintEl.innerText = 'جاري تحديث الأقسام المتاحة...';
+        } else if (showAllDeptsOverride && hiddenSavedCount > 0) {
+          hintEl.innerHTML = `عرض جميع الأقسام (${allDepts.length} قسم) — <button type="button" onclick="toggleShowAllWeeklyDepts(false)" class="text-cyan-700 font-bold underline">إخفاء المحفوظة</button>`;
+        } else if (hiddenTotalCount > 0) {
+          hintEl.innerText = `الأقسام المتبقية هذا الشهر: ${availableDepts.length} قسم (تم إخفاء ${hiddenTotalCount} قسم محفوظ)`;
+        } else {
+          hintEl.innerText = `الأقسام المتاحة: ${availableDepts.length} قسم`;
+        }
+      }
+    }
+
+    function refreshWeeklyDeptDropdown() {
+      renderWeeklyDeptSelectOptions(getCurrentMonthSavedDepartmentsSet(), false);
     }
 
     function renderWeeklyDateSelectOptions(allAllowedDates, savedDatesSet, preferToday = true, isSyncing = false) {
@@ -3569,43 +3755,59 @@
 
       const cName = currentCenter ? currentCenter.name : '';
       const cacheKey = getSavedDatesCacheKey(monthVal, cName);
-      const cachedSet = savedWeeklyDatesCache[cacheKey];
+      const cachedSummary = savedWeeklyMonthSummaryCache[cacheKey];
 
-      if (cachedSet instanceof Set && !forceRefresh) {
-        renderWeeklyDateSelectOptions(allAllowedDates, cachedSet, preferToday, false);
+      if (cachedSummary && !forceRefresh) {
+        renderWeeklyDateSelectOptions(allAllowedDates, cachedSummary.savedDates, preferToday, false);
+        renderWeeklyDeptSelectOptions(cachedSummary.savedDepartments, false);
         return;
       }
 
-      // Render immediately using cached set (if any) while syncing fresh saved dates from backend
-      renderWeeklyDateSelectOptions(allAllowedDates, cachedSet instanceof Set ? cachedSet : new Set(), preferToday, true);
+      // Render immediately using cached summary (if any) while syncing fresh data from backend
+      renderWeeklyDateSelectOptions(allAllowedDates, cachedSummary ? cachedSummary.savedDates : new Set(), preferToday, true);
+      renderWeeklyDeptSelectOptions(cachedSummary ? cachedSummary.savedDepartments : new Set(), true);
 
       const currentSeq = ++weeklyDatesFetchSeq;
-      google.script.run.withSuccessHandler(savedDates => {
+      google.script.run.withSuccessHandler(summary => {
         if (currentSeq !== weeklyDatesFetchSeq) return;
         const activeCenterName = currentCenter ? currentCenter.name : '';
         if (activeCenterName !== cName) return;
         const activeMonthEl = document.getElementById('daily-month');
         if (!activeMonthEl || activeMonthEl.value !== monthVal) return;
 
-        const freshSet = new Set(
-          (Array.isArray(savedDates) ? savedDates : [])
+        const freshDates = new Set(
+          (Array.isArray(summary?.savedDates) ? summary.savedDates : [])
             .map(d => String(d || '').trim())
             .filter(Boolean)
         );
-        savedWeeklyDatesCache[cacheKey] = freshSet;
-        renderWeeklyDateSelectOptions(allAllowedDates, freshSet, preferToday, false);
+        const freshDepts = new Set(
+          (Array.isArray(summary?.savedDepartments) ? summary.savedDepartments : [])
+            .map(d => String(d || '').trim())
+            .filter(Boolean)
+        );
+        if (summary?.lastSavedMonth && /^\d{4}-\d{2}$/.test(summary.lastSavedMonth)) {
+          setLastSavedReportMonth(cName, summary.lastSavedMonth);
+        }
+
+        savedWeeklyMonthSummaryCache[cacheKey] = {
+          savedDates: freshDates,
+          savedDepartments: freshDepts
+        };
+        renderWeeklyDateSelectOptions(allAllowedDates, freshDates, preferToday, false);
+        renderWeeklyDeptSelectOptions(freshDepts, false);
       }).withFailureHandler(err => {
-        console.error('Failed to fetch saved report dates:', err);
+        console.error('Failed to fetch weekly month summary:', err);
         if (currentSeq !== weeklyDatesFetchSeq) return;
-        renderWeeklyDateSelectOptions(allAllowedDates, cachedSet instanceof Set ? cachedSet : new Set(), preferToday, false);
-      }).getSavedReportDates(monthVal, cName);
+        renderWeeklyDateSelectOptions(allAllowedDates, cachedSummary ? cachedSummary.savedDates : new Set(), preferToday, false);
+        renderWeeklyDeptSelectOptions(cachedSummary ? cachedSummary.savedDepartments : new Set(), false);
+      }).getWeeklyMonthSummary(monthVal, cName);
     }
 
     function initDailyForm() {
       const cName = currentCenter ? currentCenter.name : '';
       const monthInput = document.getElementById('daily-month');
       if (monthInput && !monthInput.value) {
-        monthInput.value = getLocalYMD(new Date()).slice(0, 7);
+        monthInput.value = getLastSavedReportMonth(cName) || getLocalYMD(new Date()).slice(0, 7);
       }
       if (!settingsData.departments) {
         google.script.run.withSuccessHandler(data => {
@@ -3620,10 +3822,9 @@
     function populateDailyDropdowns() {
         const fill = (id, arr) => {
             const el = document.getElementById(id);
-            if (el) el.innerHTML = '<option value="">-- اختر --</option>' + (arr || []).map(x => `<option value="${x}">${x}</option>`).join('');
+            if (el) el.innerHTML = '<option value="">-- اختر --</option>' + (arr || []).map(x => `<option value="${escapeHtmlAttr(x)}">${escapeHtml(x)}</option>`).join('');
         };
         fill('daily-period', settingsData.periods);
-        fill('daily-dept', settingsData.departments);
         fill('daily-inspector', settingsData.inspectors);
         populateWeeklyMonthDates(true, true);
         renderWeeklyImplementersCheckboxes();
@@ -3669,7 +3870,8 @@
 
             const div = document.createElement('div');
             div.id = `obs_card_${idx}`;
-            div.className = `p-3.5 rounded-2xl border transition shadow-sm ${isChecked ? 'bg-rose-50/75 border-rose-300' : 'bg-white/95 hover:bg-cyan-50/40 border-slate-200/80'}`;
+            div.dataset.searchText = normalizeArabicSearchText(`${noteText} ${recText}`);
+            div.className = `obs-item-card p-3.5 rounded-2xl border transition shadow-sm ${isChecked ? 'bg-rose-50/75 border-rose-300' : 'bg-white/95 hover:bg-cyan-50/40 border-slate-200/80'}`;
             div.innerHTML = `
                 <label class="flex items-start gap-3 cursor-pointer select-none">
                     <input type="checkbox" id="obs_chk_${idx}" onchange="toggleObservationItem(${idx})" class="obs-checkbox mt-1 w-4 h-4 accent-rose-600 rounded cursor-pointer" ${isChecked ? 'checked' : ''}>
@@ -3692,6 +3894,98 @@
             `;
             list.appendChild(div);
         });
+
+        filterWeeklyObservations();
+    }
+
+    function normalizeArabicSearchText(str) {
+        return String(str || '')
+            .toLowerCase()
+            .replace(/[\u064B-\u065F\u0670]/g, '')
+            .replace(/[أإآ]/g, 'ا')
+            .replace(/ة/g, 'ه')
+            .replace(/ى/g, 'ي')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function toggleWeeklyObsSearch(forceShow = null) {
+        const panel = document.getElementById('weekly-obs-search-panel');
+        const input = document.getElementById('weekly-obs-search-input');
+        const btn = document.getElementById('btn-toggle-obs-search');
+        if (!panel) return;
+
+        const shouldShow = forceShow === null ? panel.classList.contains('hidden') : Boolean(forceShow);
+        if (shouldShow) {
+            panel.classList.remove('hidden');
+            if (btn) {
+                btn.classList.add('bg-cyan-100', 'border-cyan-400');
+            }
+            filterWeeklyObservations();
+            setTimeout(() => input?.focus(), 40);
+        } else {
+            panel.classList.add('hidden');
+            if (btn) {
+                btn.classList.remove('bg-cyan-100', 'border-cyan-400');
+            }
+            clearWeeklyObsSearch(false);
+        }
+    }
+
+    function clearWeeklyObsSearch(refocus = false) {
+        const input = document.getElementById('weekly-obs-search-input');
+        if (input) input.value = '';
+        filterWeeklyObservations();
+        if (refocus && input) input.focus();
+    }
+
+    function filterWeeklyObservations() {
+        const input = document.getElementById('weekly-obs-search-input');
+        const countEl = document.getElementById('weekly-obs-search-count');
+        const clearBtn = document.getElementById('weekly-obs-search-clear');
+        const noResEl = document.getElementById('weekly-obs-no-results');
+
+        const rawQuery = input ? input.value : '';
+        const normQuery = normalizeArabicSearchText(rawQuery);
+        const cards = Array.from(document.querySelectorAll('#procedures-list .obs-item-card'));
+        const total = cards.length;
+
+        if (clearBtn) {
+            clearBtn.classList.toggle('hidden', !rawQuery.trim());
+        }
+
+        if (total === 0) {
+            if (countEl) countEl.textContent = '';
+            if (noResEl) noResEl.classList.add('hidden');
+            return;
+        }
+
+        let visibleCount = 0;
+        const terms = normQuery ? normQuery.split(' ').filter(Boolean) : [];
+        cards.forEach(card => {
+            const haystack = card.dataset.searchText || '';
+            const matched = terms.length === 0 || terms.every(t => haystack.includes(t));
+            card.classList.toggle('hidden', !matched);
+            if (matched) visibleCount++;
+        });
+
+        if (countEl) {
+            countEl.textContent = normQuery
+                ? `النتائج: ${visibleCount} من ${total}`
+                : `الإجمالي: ${total} ملاحظة`;
+        }
+        if (noResEl) {
+            noResEl.classList.toggle('hidden', !(normQuery && visibleCount === 0));
+        }
+    }
+
+    function openQuickAddFromObsSearch() {
+        const query = document.getElementById('weekly-obs-search-input')?.value.trim() || '';
+        toggleQuickAddObsModal(true);
+        const noteInput = document.getElementById('quick-obs-note');
+        if (noteInput && query) {
+            noteInput.value = query;
+        }
     }
 
     function toggleObservationItem(idx) {
@@ -3980,6 +4274,7 @@
 
         renderWeeklyDraftDeptsPanel();
         resetCurrentDeptInputsOnly();
+        refreshWeeklyDeptDropdown();
         showWeeklyDraftBanner(actionMsg, false);
     }
 
@@ -3988,6 +4283,7 @@
         if (!item) return;
 
         editingWeeklyDraftIndex = idx;
+        refreshWeeklyDeptDropdown();
         const setSelectVal = (id, val) => {
             const el = document.getElementById(id);
             if (!el) return;
@@ -4036,6 +4332,7 @@
             editingWeeklyDraftIndex--;
         }
         renderWeeklyDraftDeptsPanel();
+        refreshWeeklyDeptDropdown();
     }
 
     function clearWeeklyDraftDepts() {
@@ -4044,6 +4341,7 @@
         const btnLabel = document.getElementById('btn-add-dept-draft-label');
         if (btnLabel) btnLabel.innerText = 'إضافة القسم لتقرير اليوم (وإدخال قسم آخر)';
         renderWeeklyDraftDeptsPanel();
+        refreshWeeklyDeptDropdown();
         hideWeeklyDraftBanner();
     }
 
@@ -4091,13 +4389,14 @@
         loading(true);
         google.script.run.withSuccessHandler(() => {
             loading(false);
-            markWeeklyDateAsSaved(dateVal, payload.centerName);
-            populateWeeklyMonthDates(false, false);
+            showAllDeptsOverride = false;
+            markWeeklyReportAsSaved(dateVal, finalReports.map(r => r.department), payload.centerName);
             weeklyDraftDepts = [];
             editingWeeklyDraftIndex = -1;
             const btnLabel = document.getElementById('btn-add-dept-draft-label');
             if (btnLabel) btnLabel.innerText = 'إضافة القسم لتقرير اليوم (وإدخال قسم آخر)';
             renderWeeklyDraftDeptsPanel();
+            populateWeeklyMonthDates(false, false);
             hideWeeklyDraftBanner();
             showDailyResult(payload);
         }).withFailureHandler(err => {
@@ -4252,8 +4551,13 @@
     function resetDailyForm() {
         document.getElementById('daily-form-container').classList.remove('hidden');
         document.getElementById('daily-result-view').classList.add('hidden');
+        const cName = currentCenter ? currentCenter.name : '';
         const monthInput = document.getElementById('daily-month');
-        if (monthInput) monthInput.value = getLocalYMD(new Date()).slice(0, 7);
+        const lastSavedMonth = getLastSavedReportMonth(cName);
+        if (monthInput) {
+            monthInput.value = lastSavedMonth || monthInput.value || getLocalYMD(new Date()).slice(0, 7);
+        }
+        showAllDeptsOverride = false;
         document.querySelectorAll('.implementer-chk').forEach(cb => cb.checked = false);
         clearWeeklyDraftDepts();
         initDailyForm();
